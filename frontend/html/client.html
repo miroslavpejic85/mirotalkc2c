@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>MiroTalk WebRTC C2C</title>
+
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <meta property="og:type" content="app-webrtc" />
+        <meta property="og:site_name" content="MiroTalk C2C" />
+        <meta property="og:title" content="Click the link to join this call." />
+        <meta property="og:description" content="Free WebRTC cam 2 cam video calls." />
+        <meta property="og:image" content="https://c2c.mirotalk.com/images/logo.svg" />
+        <meta property="og:url" content="https://c2c.mirotalk.com" />
+
+        <link rel="shortcut icon" href="./images/logo.svg" />
+        <link rel="apple-touch-icon" href="./images/logo.svg" />
+        <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon.png" />
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+        <link rel="stylesheet" href="../css/client.css" />
+
+        <!-- <script
+            async
+            defer
+            data-website-id="05e39f33-f2fc-4146-8f0c-b6ab1a15aa8a"
+            src="https://stats.mirotalk.org/umami.js"
+        ></script> -->
+
+        <script defer src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+        <script defer src="/socket.io/socket.io.js"></script>
+        <script defer src="../js/utils.js"></script>
+        <script defer src="../js/client.js"></script>
+    </head>
+
+    <body onload="initClient()">
+        <noscript>You need to enable JavaScript to run this app.</noscript>
+
+        <div id="loadingDivContainer">
+            <div id="loadingDiv" class="center pulsate">
+                <h1>Loading...</h1>
+                <pre>
+Please allow camera & microphone
+access to use this app.          
+                </pre>
+            </div>
+        </div>
+
+        <div id="waitingDivContainer">
+            <div id="waitingDiv" class="center pulsate">
+                <h1>Waiting...</h1>
+                <pre>
+Wait user to join.
+                </pre>
+                <button id="initAudioBtn" class="fas fa-microphone"></button>
+                <button id="initVideoBtn" class="fas fa-video"></button>
+                <button id="shareRoomBtn" class="fas fa-share-nodes"></button>
+                <button id="homeBtn" class="fas fa-home"></button>
+            </div>
+        </div>
+
+        <div id="buttonsBar" class="fadeIn">
+            <button id="hideMeBtn" class="fas fa-user"></button>
+            <button id="audioBtn" class="fas fa-microphone"></button>
+            <button id="videoBtn" class="fas fa-video"></button>
+            <button id="swapCameraBtn" class="fas fa-camera-rotate"></button>
+            <button id="screenShareBtn" class="fas fa-desktop"></button>
+            <button id="settingsBtn" class="fas fa-ellipsis-vertical"></button>
+            <button id="endCallBtn" class="fas fa-home"></button>
+        </div>
+
+        <div id="settings" class="hidden">
+            <button id="settingsCloseBtn" class="fas fa-times"></button>
+            <label for="videoSource">📹 Camera</label>
+            <select id="videoSource"></select>
+            <label for="audioSource">🎙️ Microphone</label>
+            <select id="audioSource"></select>
+        </div>
+    </body>
+</html>

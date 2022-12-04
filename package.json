@@ -1,0 +1,34 @@
+{
+    "name": "mirotalkc2c",
+    "version": "1.0.0",
+    "description": "A free WebRTC Cam 2 Cam browser-based video calls",
+    "main": "server.js",
+    "scripts": {
+        "start": "node backend/server.js",
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "lint": "npx prettier --write ."
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/miroslavpejic85/mirotalkc2c"
+    },
+    "keywords": [
+        "c2c",
+        "webrtc",
+        "socket.io",
+        "video"
+    ],
+    "author": "Miroslav Pejic",
+    "license": "MIT",
+    "homepage": "https://github.com/miroslavpejic85/mirotalkc2c",
+    "dependencies": {
+        "compression": "^1.7.4",
+        "cors": "^2.8.5",
+        "express": "^4.18.2",
+        "socket.io": "^4.5.4"
+    },
+    "devDependencies": {
+        "dotenv": "^16.0.3",
+        "prettier": "2.8.0"
+    }
+}

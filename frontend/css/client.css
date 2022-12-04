@@ -1,0 +1,439 @@
+@import url('https://fonts.googleapis.com/css?family=Comfortaa:wght@500&display=swap');
+
+/*--------------------------------------------------------------
+# Root settings
+--------------------------------------------------------------*/
+
+:root {
+    --primary-color: #202123;
+    --secondary-color: #45494c;
+    --btn-bg: #f5f5f5;
+    --video-hf-bg: rgba(0, 0, 0, 0.1);
+    --btn-color: #000000;
+    --text-color: #f5f5f5;
+    --hover-color: #45494c;
+    --border: 0.1px solid #45494c;
+    --border-radius: 1rem;
+    --video-obj-fit: cover;
+    --my-video-wrap-width: 320px;
+    --my-video-wrap-height: 240px;
+    --btn-hover-scale: scale(1.1);
+}
+
+* {
+    font-family: 'Comfortaa';
+    outline: none;
+}
+
+/*--------------------------------------------------------------
+# Body Html
+--------------------------------------------------------------*/
+html,
+body {
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    margin: 0 0 0 0;
+    background: var(--primary-color);
+}
+
+/*--------------------------------------------------------------
+# Loading... Waiting...
+--------------------------------------------------------------*/
+
+#waitingDivContainer {
+    position: absolute;
+    z-index: 8;
+    display: none;
+    width: 100%;
+    height: 100%;
+}
+
+#loadingDiv,
+#waitingDiv {
+    padding: 30px;
+    border: var(--border);
+    border-radius: var(--border-radius);
+    background: var(--secondary-color);
+    color: #ffffff;
+}
+
+#waitingDiv h1,
+#loadingDiv h1 {
+    font-size: 60px;
+}
+
+#waitingDiv pre,
+#loadingDiv pre {
+    padding: 5px;
+    font-size: 15px;
+}
+
+#waitingDivContainer button {
+    width: 2rem;
+    height: 2rem;
+    padding: 5px;
+    border: none;
+    border-radius: 50px;
+    background: var(--btn-bg);
+    text-align: center;
+    color: var(--btn-color);
+    font-size: 1rem;
+}
+
+#waitingDivContainer button:hover {
+    color: var(--hover-color);
+    transform: var(--btn-hover-scale);
+    -webkit-transform: var(--btn-hover-scale);
+    -moz-transform: var(--btn-hover-scale);
+}
+
+/*--------------------------------------------------------------
+# Main buttons
+--------------------------------------------------------------*/
+
+#buttonsBar {
+    position: fixed;
+    z-index: 6;
+    bottom: 0;
+    display: none;
+    padding: 10px;
+    border-radius: 20px;
+    background: transparent;
+}
+
+#buttonsBar button {
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 10px;
+    border: none;
+    border-radius: 50px;
+    background: var(--btn-bg);
+    color: var(--btn-color);
+    text-align: center;
+    font-size: 1.1rem;
+    -webkit-transition: all 0.3s ease-in-out;
+    -moz-transition: all 0.3s ease-in-out;
+    -ms-transition: all 0.3s ease-in-out;
+    -o-transition: all 0.3s ease-in-out;
+    transition: all 0.3s ease-in-out;
+}
+
+#buttonsBar button:hover {
+    color: var(--hover-color);
+    transform: var(--btn-hover-scale);
+    -webkit-transform: var(--btn-hover-scale);
+    -moz-transform: var(--btn-hover-scale);
+}
+
+#buttonsBar button:focus {
+    outline: none;
+}
+
+.fa-user-slash,
+.fa-microphone-slash,
+.fa-video-slash {
+    color: #e74c3c !important;
+}
+
+/*--------------------------------------------------------------
+# Video Wrap - Header - Footer
+--------------------------------------------------------------*/
+
+.myVideoWrap {
+    position: absolute;
+    z-index: 5;
+    width: var(--my-video-wrap-width);
+    height: var(--my-video-wrap-height);
+    margin: 10px 0 0 10px; /* top right bottom  left */
+    border: var(--border);
+    border-radius: var(--border-radius);
+}
+
+.remoteVideoWrap {
+    z-index: 4;
+    width: 100vw;
+    height: 100vh;
+    float: left;
+}
+
+.videoHeader {
+    position: absolute;
+    z-index: 2;
+    top: 5px;
+    right: 10px;
+    overflow: hidden;
+    width: auto;
+    padding: 5px;
+    border-radius: var(--border-radius);
+    font-size: small;
+    font-weight: bold;
+    text-align: right;
+    background: var(--video-hf-bg);
+    cursor: default;
+}
+
+.videoHeader button {
+    display: inline;
+    border: none;
+    margin-right: 3px;
+    background: transparent;
+    color: var(--text-color);
+    font-size: 1rem;
+}
+
+.videoFooter {
+    position: absolute;
+    z-index: 3;
+    left: 10px;
+    bottom: 5px;
+    overflow: hidden;
+    width: auto;
+    padding: 5px;
+    border-radius: var(--border-radius);
+    background: var(--video-hf-bg);
+    font-size: small;
+    font-weight: bold;
+    text-align: left;
+    cursor: default;
+}
+
+.remoteVideoFooter {
+    position: absolute;
+    z-index: 3;
+    right: 10px;
+    bottom: 5px;
+    overflow: hidden;
+    width: auto;
+    padding: 5px;
+    border-radius: var(--border-radius);
+    background: var(--video-hf-bg);
+    font-size: small;
+    font-weight: bold;
+    text-align: left;
+    cursor: default;
+}
+
+.videoFooter *,
+.remoteVideoFooter * {
+    display: inline;
+    border: none;
+    margin-left: 5px;
+    color: var(--text-color);
+}
+
+/*--------------------------------------------------------------
+# Avatar Image on video OFF
+--------------------------------------------------------------*/
+
+.videoAvatarImage {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: none;
+    width: 15vh;
+    height: 15vh;
+    margin: auto;
+}
+
+/*--------------------------------------------------------------
+# Video View Options
+--------------------------------------------------------------*/
+
+.mirror {
+    -webkit-transform: rotateY(180deg);
+    -moz-transform: rotateY(180deg);
+    transform: rotateY(180deg);
+}
+
+video {
+    width: 100%;
+    height: 100%;
+    border-radius: var(--border-radius);
+    object-fit: cover;
+}
+
+video:fullscreen {
+    border: var(--border-color);
+    object-fit: contain;
+}
+
+/*--------------------------------------------------------------
+# My settings
+--------------------------------------------------------------*/
+
+#settings {
+    position: absolute;
+    z-index: 7;
+    bottom: 80px;
+    left: 10px;
+    overflow: hidden;
+    background: var(--primary-color);
+    width: 280px;
+    padding: 20px;
+    border: var(--border);
+    border-radius: var(--border-radius);
+}
+
+#settings button {
+    display: inline;
+    border: none;
+    float: right;
+    background: transparent;
+    color: var(--text-color);
+    font-size: 1rem;
+}
+
+#settings label {
+    display: flex;
+    margin-top: 15px;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+#settings select {
+    margin-top: 15px;
+    height: 40px;
+    max-width: 280px;
+    border-radius: 5px;
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+/*--------------------------------------------------------------
+# FadeIn class effect
+--------------------------------------------------------------*/
+
+.fadeIn {
+    -webkit-animation: fadeIn ease-in 1;
+    -moz-animation: fadeIn ease-in 1;
+    animation: fadeIn ease-in 1;
+    -webkit-animation-fill-mode: forwards;
+    -moz-animation-fill-mode: forwards;
+    animation-fill-mode: forwards;
+    -webkit-animation-duration: 1s;
+    -moz-animation-duration: 1s;
+    animation-duration: 1s;
+}
+
+@-webkit-keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@-moz-keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/*--------------------------------------------------------------
+# Pulse class effect
+--------------------------------------------------------------*/
+
+.pulsate {
+    animation: pulsate 3s ease-out;
+    animation-iteration-count: infinite;
+    -webkit-animation: pulsate 3s ease-out;
+    -webkit-animation-iteration-count: infinite;
+    opacity: 0.5;
+}
+
+@-webkit-keyframes pulsate {
+    0% {
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.5;
+    }
+}
+
+@keyframes pulsate {
+    0% {
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.5;
+    }
+}
+
+@-webkit-keyframes pulsate {
+    0% {
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.5;
+    }
+}
+
+/*--------------------------------------------------------------
+# Common
+--------------------------------------------------------------*/
+
+button {
+    cursor: pointer;
+}
+
+.hidden {
+    display: none;
+}
+
+.show {
+    display: block;
+}
+
+.center {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+}
+
+/*
+z-index:
+    1 video avatar img
+    2 videoHeader
+        - full screen mode
+        - video status
+        - audio status
+    3 videoFooter
+        - peer name
+    ------------------
+    4 myVideoContainer
+    5 remoteVideoContainer
+    6 main buttons
+    7 settings
+    8 waitingDivContainer
+*/
