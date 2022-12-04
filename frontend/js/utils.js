@@ -34,13 +34,13 @@ function isDesktop() {
 }
 
 function isFullScreen() {
-    const full_screen_element =
+    const elementFullScreen =
         document.fullscreenElement ||
         document.webkitFullscreenElement ||
         document.mozFullScreenElement ||
         document.msFullscreenElement ||
         null;
-    if (full_screen_element === null) return false;
+    if (elementFullScreen === null) return false;
     return true;
 }
 
