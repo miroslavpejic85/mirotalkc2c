@@ -5,6 +5,7 @@ const peerName = new URLSearchParams(window.location.search).get('name');
 
 const loadingDivContainer = document.getElementById('loadingDivContainer');
 const waitingDivContainer = document.getElementById('waitingDivContainer');
+const initHideMeBtn = document.getElementById('initHideMeBtn');
 const initAudioBtn = document.getElementById('initAudioBtn');
 const initVideoBtn = document.getElementById('initVideoBtn');
 const shareRoomBtn = document.getElementById('shareRoomBtn');
@@ -489,7 +490,7 @@ function handleEvents() {
     } else {
         shareRoomBtn.style.display = 'none';
     }
-    hideMeBtn.onclick = () => {
+    initHideMeBtn.onclick = () => {
         toggleHideMe();
     };
     initAudioBtn.onclick = (e) => {
@@ -497,6 +498,9 @@ function handleEvents() {
     };
     initVideoBtn.onclick = (e) => {
         setVideoStatus(!localMediaStream.getVideoTracks()[0].enabled, e);
+    };
+    hideMeBtn.onclick = () => {
+        toggleHideMe();
     };
     audioBtn.onclick = (e) => {
         setAudioStatus(!localMediaStream.getAudioTracks()[0].enabled, e);
@@ -550,6 +554,7 @@ function showWaitingUser() {
 function toggleHideMe() {
     const isVideoWrapHidden = myVideoWrap.style.display == 'none';
     hideMeBtn.className = isVideoWrapHidden ? className.user : className.userOff;
+    initHideMeBtn.className = isVideoWrapHidden ? className.user : className.userOff;
     myVideoWrap.style.display = isVideoWrapHidden ? 'block' : 'none';
 }
 
@@ -659,6 +664,7 @@ function setAudioStatus(active = true, e = false) {
     if (e) e.target.className = isAudioStreaming ? className.audioOn : className.audioOff;
     myAudioStatusIcon.className = active ? className.audioOn : className.audioOff;
     audioBtn.className = isAudioStreaming ? className.audioOn : className.audioOff;
+    initAudioBtn.className = isAudioStreaming ? className.audioOn : className.audioOff;
     emitPeerStatus('audio', active);
 }
 
@@ -667,6 +673,7 @@ function setVideoStatus(active = true, e = false, type = 'video') {
     localMediaStream.getVideoTracks()[0].enabled = active;
     if (e) e.target.className = isVideoStreaming ? className.videoOn : className.videoOff;
     videoBtn.className = isVideoStreaming ? className.videoOn : className.videoOff;
+    initVideoBtn.className = isVideoStreaming ? className.videoOn : className.videoOff;
     myVideoAvatarImage.style.display = active ? 'none' : 'block';
     emitPeerStatus(type, active);
 }
