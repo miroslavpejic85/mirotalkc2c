@@ -35,6 +35,7 @@ body {
     height: 100%;
     margin: 0 0 0 0;
     background: var(--primary-color);
+    user-select: none;
 }
 
 /*--------------------------------------------------------------

@@ -72,7 +72,7 @@ function handleBodyEvents() {
     document.body.onmousemove = () => {
         if (buttonsBar.style.display == 'none' && waitingDivContainer.style.display == 'none') {
             toggleClassElements('videoHeader', 'inline');
-            buttonsBar.style.display = 'inline';
+            buttonsBar.style.display = 'block';
         }
     };
 }

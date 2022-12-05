@@ -414,7 +414,7 @@ function setLocalMedia(stream) {
     myLocalMedia.volume = 0;
     myLocalMedia.controls = false;
     myVideoWrap.id = 'myVideoWrap';
-    myVideoWrap.className = 'myVideoWrap';
+    myVideoWrap.className = 'myVideoWrap fadeIn';
     myVideoWrap.appendChild(myVideoHeader);
     myVideoWrap.appendChild(myVideoFooter);
     myVideoWrap.appendChild(myVideoAvatarImage);

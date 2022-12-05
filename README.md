@@ -1,6 +1,6 @@
 # MiroTalk C2C
 
-MiroTalk C2C WebRTC real-time cam 2 cam video calls, end-to-end encrypted, to embed in any website with a simple iframe.
+MiroTalk C2C WebRTC real-time cam-2-cam video calls & screen sharing, end-to-end encrypted, to embed in any website with a simple iframe.
 
 ```html
 <iframe
