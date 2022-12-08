@@ -49,6 +49,14 @@ Direct join: http://localhost:8080/join?room=test&name=test
 | room   | string | roomId      |
 | name   | string | userName    |
 
+## Discussions
+
+Join with us on [Discord](https://discord.gg/rgGYfeYW3N), ask questions and post answers without opening issues.
+
+## Support
+
+You can support MiroTalk by [sponsoring](https://github.com/sponsors/miroslavpejic85) it. Thanks!
+
 ## License
 
 [MIT](./LICENSE)
