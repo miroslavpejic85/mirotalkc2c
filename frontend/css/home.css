@@ -18,7 +18,7 @@ body {
 
 form {
     width: 240px;
-    padding: 50px 50px 50px 25px;
+    padding: 10px 50px 40px 25px;
     border-radius: 1rem;
     background-color: var(--secondary-color);
     color: var(--text-color);
@@ -36,7 +36,7 @@ label {
 }
 
 input {
-    margin-top: 10px;
+    margin-top: 20px;
     width: 100%;
     padding: 12px;
     border: 0;

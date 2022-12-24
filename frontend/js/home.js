@@ -1,6 +1,7 @@
 'use strict';
 
 console.log('Location', window.location);
+console.log('LocalStorage', window.localStorage);
 
 const roomId = new URLSearchParams(window.location.search).get('room') || '';
 
