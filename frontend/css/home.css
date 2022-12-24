@@ -29,6 +29,9 @@ form:focus-within {
 }
 
 label {
+    display: block;
+    margin-top: 20px;
+    font-weight: bold;
     font-size: 14px;
 }
 
@@ -41,7 +44,6 @@ input {
     background-color: var(--primary-color);
     color: var(--text-color);
     font-size: 16px;
-    font-weight: bold;
     outline: none;
 }
 
@@ -52,6 +54,7 @@ input:focus {
 }
 
 button {
+    display: block;
     margin-top: 25px;
     width: 50%;
     padding: 12px;

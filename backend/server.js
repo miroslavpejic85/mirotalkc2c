@@ -13,6 +13,7 @@ const logs = require('./logs');
 const log = new logs('server');
 const port = process.env.PORT || 8080;
 const queryJoin = '/join?room=test&name=test';
+const queryRoom = '/?room=test';
 const server = http.createServer(app);
 const host = 'http://' + 'localhost' + ':' + port;
 
@@ -67,6 +68,7 @@ server.listen(port, null, () => {
     log.debug('settings', {
         iceServers: iceServers,
         home: host,
+        room: host + queryRoom,
         join: host + queryJoin,
         nodeVersion: process.versions.node,
     });

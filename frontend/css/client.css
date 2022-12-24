@@ -8,7 +8,7 @@
     --primary-color: #202123;
     --secondary-color: #45494c;
     --btn-bg: #f5f5f5;
-    --video-hf-bg: rgba(0, 0, 0, 0.1);
+    --video-hf-bg: rgba(0, 0, 0, 0.5);
     --btn-color: #000000;
     --text-color: #f5f5f5;
     --hover-color: #45494c;
@@ -218,8 +218,8 @@ body {
 .videoFooter *,
 .remoteVideoFooter * {
     display: inline;
+    padding: 10px;
     border: none;
-    margin-left: 5px;
     color: var(--text-color);
 }
 
@@ -273,7 +273,7 @@ video:fullscreen {
     left: 10px;
     overflow: hidden;
     background: var(--primary-color);
-    width: 280px;
+    max-width: 280px;
     padding: 20px;
     border: var(--border);
     border-radius: var(--border-radius);
