@@ -1,6 +1,6 @@
 # MiroTalk C2C
 
-MiroTalk C2C WebRTC real-time cam-2-cam video calls & screen sharing, end-to-end encrypted, to embed in any website with a simple iframe.
+MiroTalk C2C WebRTC real-time cam-2-cam video calls & screen sharing, end-to-end encrypted, to embed in any website with a [simple iframe](https://github.com/miroslavpejic85/mirotalkc2c/issues/2#issuecomment-1340587150).
 
 ```html
 <iframe
@@ -17,8 +17,6 @@ MiroTalk C2C WebRTC real-time cam-2-cam video calls & screen sharing, end-to-end
 ## Quick start
 
 ```bash
-# Go to project dir
-$ cd mirotalkc2c
 # Install dependencies
 $ npm install
 # Start the server
@@ -38,11 +36,13 @@ $ docker-compose up
 
 ## Join room
 
-Home page: http://localhost:8080
+| Localhost                                      | Live Demo                                         | Description                |
+| ---------------------------------------------- | ------------------------------------------------- | -------------------------- |
+| http://localhost:8080                          | https://c2c.mirotalk.com                          | Home page                  |
+| http://localhost:8080/?room=test               | https://c2c.mirotalk.com/?room=test               | Home page with room preset |
+| http://localhost:8080/join?room=test&name=test | https://c2c.mirotalk.com/join?room=test&name=test | Direct join                |
 
-Home page with room param: http://localhost:8080/?room=test
-
-Direct join: http://localhost:8080/join?room=test&name=test
+Query parameters
 
 | Params | Type   | Description |
 | ------ | ------ | ----------- |
