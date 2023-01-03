@@ -15,6 +15,7 @@ const hideMeBtn = document.getElementById('hideMeBtn');
 const audioBtn = document.getElementById('audioBtn');
 const videoBtn = document.getElementById('videoBtn');
 const swapCameraBtn = document.getElementById('swapCameraBtn');
+const sendMsgBtn = document.getElementById('sendMsgBtn');
 const settingsBtn = document.getElementById('settingsBtn');
 const screenShareBtn = document.getElementById('screenShareBtn');
 const endCallBtn = document.getElementById('endCallBtn');
@@ -38,6 +39,11 @@ const className = {
     fullScreenOff: 'fas fa-compress',
 };
 
+const swal = {
+    background: '#202123',
+    textColor: '#ffffff',
+};
+
 let userAgent;
 let isWebRTCSupported = false;
 let isMobileDevice = false;
@@ -59,6 +65,7 @@ let roomPeersCount = 0;
 let peerDevice = {};
 let peerConnections = {};
 let peerMediaElements = {};
+let dataChannels = {};
 
 let audioDevices = [];
 let videoDevices = [];
@@ -173,6 +180,7 @@ function handleAddPeer(config) {
 
     handlePeersConnectionStatus(peerId);
     handleOnIceCandidate(peerId);
+    handleRTCDataChannels(peerId);
     handleOnTrack(peerId, peers);
     handleAddTracks(peerId);
 
@@ -210,6 +218,25 @@ function handleOnIceCandidate(peerId) {
                 candidate: event.candidate.candidate,
             },
         });
+    };
+}
+
+async function handleRTCDataChannels(peerId) {
+    peerConnections[peerId].ondatachannel = (event) => {
+        console.log('Datachannel event peerId: ' + peerId, event);
+        event.channel.onmessage = (msg) => {
+            let config = {};
+            try {
+                config = JSON.parse(msg.data);
+                handleIncomingDataChannelMessage(config);
+            } catch (err) {
+                console.log('Datachannel error', err);
+            }
+        };
+    };
+    dataChannels[peerId] = peerConnections[peerId].createDataChannel('mt_c2c_dc');
+    dataChannels[peerId].onopen = (event) => {
+        console.log('DataChannels created for peerId: ' + peerId, event);
     };
 }
 
@@ -310,6 +337,7 @@ function handleDisconnect() {
     }
     peerConnections = {};
     peerMediaElements = {};
+    dataChannels = {};
 }
 
 function handleRemovePeer(config) {
@@ -319,6 +347,7 @@ function handleRemovePeer(config) {
     if (peerId in peerMediaElements) document.body.removeChild(peerMediaElements[peerId].parentNode);
     if (peerId in peerConnections) peerConnections[peerId].close();
 
+    delete dataChannels[peerId];
     delete peerConnections[peerId];
     delete peerMediaElements[peerId];
 
@@ -479,6 +508,16 @@ function setRemoteMedia(stream, peers, peerId) {
     }
 }
 
+function handleIncomingDataChannelMessage(config) {
+    switch (config.type) {
+        case 'chat':
+            handleMessage(config);
+            break;
+        default:
+            break;
+    }
+}
+
 function handleEvents() {
     homeBtn.onclick = () => {
         openURL('/');
@@ -535,6 +574,9 @@ function handleEvents() {
     } else {
         settingsBtn.style.display = 'none';
     }
+    sendMsgBtn.onclick = () => {
+        sendMessage();
+    };
     audioSource.onchange = (e) => {
         changeMicrophone(e.target.value);
     };
@@ -727,6 +769,61 @@ function handleFullScreen(fullScreenBtn, videoWrap, videoMedia) {
     videoMedia.onclick = () => {
         if (isDesktopDevice) fullScreenBtn.click();
     };
+}
+
+function sendMessage() {
+    Swal.fire({
+        position: 'center',
+        background: swal.background,
+        color: swal.textColor,
+        input: 'textarea',
+        inputLabel: 'Send Message',
+        inputPlaceholder: 'Type your message here...',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showDenyButton: true,
+        confirmButtonText: `Send`,
+        denyButtonText: `Close`,
+    }).then((result) => {
+        if (result.isConfirmed) emitDcMsg(result.value);
+    });
+}
+
+function handleMessage(config) {
+    playSound('message');
+    console.log('Receive msg: ' + config.msg);
+    Swal.fire({
+        position: 'center',
+        background: swal.background,
+        color: swal.textColor,
+        icon: 'info',
+        input: 'textarea',
+        inputLabel: `New message from ${config.peerName}`,
+        inputValue: config.msg,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showDenyButton: true,
+        confirmButtonText: `Reply`,
+        denyButtonText: `Close`,
+    }).then((result) => {
+        if (result.isConfirmed) emitDcMsg(result.value);
+    });
+}
+
+function emitDcMsg(msg) {
+    if (msg) {
+        console.log('Send msg: ' + msg);
+        Object.keys(dataChannels).map((peerId) =>
+            dataChannels[peerId].send(
+                JSON.stringify({
+                    type: 'chat',
+                    roomId: roomId,
+                    peerName: peerName,
+                    msg: msg,
+                }),
+            ),
+        );
+    }
 }
 
 function emitPeerStatus(element, active) {
