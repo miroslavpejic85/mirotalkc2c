@@ -36,18 +36,11 @@ $ docker-compose up
 
 ## Join room
 
-| Localhost                                      | Live Demo                                         | Description                |
-| ---------------------------------------------- | ------------------------------------------------- | -------------------------- |
-| http://localhost:8080                          | https://c2c.mirotalk.com                          | Home page                  |
-| http://localhost:8080/?room=test               | https://c2c.mirotalk.com/?room=test               | Home page with room preset |
-| http://localhost:8080/join?room=test&name=test | https://c2c.mirotalk.com/join?room=test&name=test | Direct join                |
-
-Query parameters
-
-| Params | Type   | Description |
-| ------ | ------ | ----------- |
-| room   | string | roomId      |
-| name   | string | userName    |
+| Localhost                                      | Live Demo                                         | Description |
+| ---------------------------------------------- | ------------------------------------------------- | ----------- |
+| http://localhost:8080                          | https://c2c.mirotalk.com                          | Home page   |
+| http://localhost:8080/?room=test               | https://c2c.mirotalk.com/?room=test               | Room preset |
+| http://localhost:8080/join?room=test&name=test | https://c2c.mirotalk.com/join?room=test&name=test | Direct join |
 
 ## Discussions
 
