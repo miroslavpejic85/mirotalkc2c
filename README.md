@@ -2,14 +2,6 @@
 
 MiroTalk C2C WebRTC real-time cam-2-cam video calls & screen sharing, end-to-end encrypted, to embed in any website with a [simple iframe](https://github.com/miroslavpejic85/mirotalkc2c/issues/2#issuecomment-1340587150).
 
-```html
-<iframe
-    allow="camera; microphone; fullscreen; display-capture; autoplay"
-    src="https://c2c.mirotalk.com"
-    style="height: 100%; width: 100%; border: 0px;"
-></iframe>
-```
-
 `Live demo`: https://c2c.mirotalk.com
 
 ![mirotalkc2c](./frontend/images/ui.png)
@@ -33,14 +25,6 @@ $ docker-compose up
 ```
 
 [Docker official image](https://hub.docker.com/r/mirotalk/c2c)
-
-## Join room
-
-| Localhost                                      | Live Demo                                         | Description |
-| ---------------------------------------------- | ------------------------------------------------- | ----------- |
-| http://localhost:8080                          | https://c2c.mirotalk.com                          | Home page   |
-| http://localhost:8080/?room=test               | https://c2c.mirotalk.com/?room=test               | Room preset |
-| http://localhost:8080/join?room=test&name=test | https://c2c.mirotalk.com/join?room=test&name=test | Direct join |
 
 ## Discussions
 
