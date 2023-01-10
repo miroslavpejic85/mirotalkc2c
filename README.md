@@ -8,7 +8,7 @@ MiroTalk C2C WebRTC real-time cam-2-cam video calls & screen sharing, end-to-end
 
 ## Quick start
 
-Install [NodeJs](https://nodejs.org/en/blog/release/v16.15.1/) and then:
+Install [NodeJs](https://nodejs.org/en/blog/release/v16.15.1/).
 
 ```bash
 # Install dependencies
@@ -19,7 +19,7 @@ $ npm start
 
 ## Docker
 
-Install [docker](https://docs.docker.com/engine/install/) and [docker-compose](https://docs.docker.com/compose/install/) and then:
+Install [docker](https://docs.docker.com/engine/install/) and [docker-compose](https://docs.docker.com/compose/install/).
 
 ```bash
 # Build or rebuild services
