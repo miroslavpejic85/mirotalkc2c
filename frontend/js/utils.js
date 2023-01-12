@@ -59,9 +59,22 @@ function goOutFullscreen() {
     else if (document.msExitFullscreen) document.msExitFullscreen();
 }
 
+function copyRoom() {
+    const tmpInput = document.createElement('input');
+    document.body.appendChild(tmpInput);
+    tmpInput.value = roomURL;
+    tmpInput.select();
+    tmpInput.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(tmpInput.value).then(() => {
+        console.log('Copied to clipboard Join Link ', roomURL);
+        document.body.removeChild(tmpInput);
+        alert('Meeting URL copied to clipboard 👍');
+    });
+}
+
 async function shareRoom() {
     try {
-        await navigator.share({ url: window.location.origin + '/?room=' + roomId });
+        await navigator.share({ url: roomURL });
     } catch (err) {
         console.error('[Error] navigator share', err);
     }

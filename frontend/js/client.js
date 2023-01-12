@@ -5,10 +5,11 @@ const peerName = new URLSearchParams(window.location.search).get('name');
 
 const loadingDivContainer = document.getElementById('loadingDivContainer');
 const waitingDivContainer = document.getElementById('waitingDivContainer');
+const copyRoomBtn = document.getElementById('copyRoomBtn');
+const shareRoomBtn = document.getElementById('shareRoomBtn');
 const initHideMeBtn = document.getElementById('initHideMeBtn');
 const initAudioBtn = document.getElementById('initAudioBtn');
 const initVideoBtn = document.getElementById('initVideoBtn');
-const shareRoomBtn = document.getElementById('shareRoomBtn');
 const homeBtn = document.getElementById('homeBtn');
 const buttonsBar = document.getElementById('buttonsBar');
 const hideMeBtn = document.getElementById('hideMeBtn');
@@ -23,6 +24,8 @@ const settings = document.getElementById('settings');
 const settingsCloseBtn = document.getElementById('settingsCloseBtn');
 const audioSource = document.getElementById('audioSource');
 const videoSource = document.getElementById('videoSource');
+
+const roomURL = window.location.origin + '/?room=' + roomId;
 
 const camOffImg = '../images/camOff.png';
 const className = {
@@ -88,6 +91,7 @@ function thereIsPeerConnections() {
 }
 
 function initClient() {
+    console.log('RoomURL', roomURL);
     console.log('Location', window.location);
 
     isWebRTCSupported = IsSupportedWebRTC();
@@ -528,6 +532,10 @@ function handleEvents() {
         };
     } else {
         shareRoomBtn.style.display = 'none';
+        copyRoomBtn.style.display = 'inline';
+        copyRoomBtn.onclick = () => {
+            copyRoom();
+        };
     }
     initHideMeBtn.onclick = () => {
         toggleHideMe();

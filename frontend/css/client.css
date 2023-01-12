@@ -52,6 +52,7 @@ body {
 
 #loadingDiv,
 #waitingDiv {
+    max-width: 300px;
     padding: 30px;
     border: var(--border);
     border-radius: var(--border-radius);
@@ -87,6 +88,10 @@ body {
     transform: var(--btn-hover-scale);
     -webkit-transform: var(--btn-hover-scale);
     -moz-transform: var(--btn-hover-scale);
+}
+
+#copyRoomBtn {
+    display: none;
 }
 
 /*--------------------------------------------------------------
