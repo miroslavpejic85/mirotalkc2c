@@ -68,7 +68,9 @@ function copyRoom() {
     navigator.clipboard.writeText(tmpInput.value).then(() => {
         console.log('Copied to clipboard Join Link ', roomURL);
         document.body.removeChild(tmpInput);
-        alert('Meeting URL copied to clipboard 👍');
+        alert(
+            `Meeting link copied to clipboard 👍 \n${roomURL}\nShare the meeting link with the user you want to join.`,
+        );
     });
 }
 

@@ -526,16 +526,15 @@ function handleEvents() {
     homeBtn.onclick = () => {
         openURL('/');
     };
+    copyRoomBtn.onclick = () => {
+        copyRoom();
+    };
     if (navigator.share) {
         shareRoomBtn.onclick = () => {
             shareRoom();
         };
     } else {
         shareRoomBtn.style.display = 'none';
-        copyRoomBtn.style.display = 'inline';
-        copyRoomBtn.onclick = () => {
-            copyRoom();
-        };
     }
     initHideMeBtn.onclick = () => {
         toggleHideMe();
