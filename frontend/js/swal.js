@@ -13,6 +13,12 @@ function popupMessage(type, message, timer = 3000) {
                 icon: type,
                 title: type,
                 html: message,
+                showClass: {
+                    popup: 'animate__animated animate__fadeInDown',
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutUp',
+                },
             });
             break;
         case 'toast':
