@@ -49,7 +49,7 @@ function goInFullscreen(element) {
     else if (element.mozRequestFullScreen) element.mozRequestFullScreen();
     else if (element.webkitRequestFullscreen) element.webkitRequestFullscreen();
     else if (element.msRequestFullscreen) element.msRequestFullscreen();
-    else alert('Full screen mode not supported by this browser on this device.');
+    else popupMessage('warning', 'Full screen mode not supported by this browser on this device.');
 }
 
 function goOutFullscreen() {
@@ -68,8 +68,11 @@ function copyRoom() {
     navigator.clipboard.writeText(tmpInput.value).then(() => {
         console.log('Copied to clipboard Join Link ', roomURL);
         document.body.removeChild(tmpInput);
-        alert(
-            `Meeting link copied to clipboard 👍 \n${roomURL}\nShare the meeting link with the user you want to join.`,
+        popupMessage(
+            'info',
+            `Meeting link copied to clipboard
+            <p style="color: green">${roomURL}</p>
+            Share the meeting link with the user you want to join.`,
         );
     });
 }

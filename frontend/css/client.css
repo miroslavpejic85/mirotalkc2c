@@ -308,6 +308,31 @@ video:fullscreen {
 }
 
 /*--------------------------------------------------------------
+# Swal custom
+--------------------------------------------------------------*/
+
+.swal2-title,
+.swal2-content {
+    background-color: var(--panel-color) !important;
+    color: var(--text-color) !important;
+    text-align: center;
+}
+
+.swal2-html-container {
+    background-color: var(--panel-color) !important;
+    color: var(--text-color) !important;
+}
+
+.swal2-popup {
+    border: var(--border) !important;
+    background-color: var(--primary-color) !important;
+}
+
+.swal2-timer-progress-bar-container {
+    background: #376df9;
+}
+
+/*--------------------------------------------------------------
 # FadeIn class effect
 --------------------------------------------------------------*/
 
