@@ -409,7 +409,7 @@ function setupLocalMedia(callback, errorBack) {
         .catch((err) => {
             playSound('error');
             console.error('[Error] access denied for audio/video', err);
-            if (err.name == 'NotAllowedError')
+            if (err.name == 'NotAllowedError') {
                 popupMessage(
                     'warning',
                     `
@@ -418,6 +418,16 @@ function setupLocalMedia(callback, errorBack) {
                     <p style="color: red">${err.toString()}</p>
                     `,
                 );
+            } else {
+                popupMessage(
+                    'warning',
+                    `
+                    <p>Meet needs access to the camera and microphone.</p>
+                    <p>Make sure is not used by another app</p> 
+                    <p style="color: red">${err.toString()}</p>
+                    `,
+                );
+            }
             if (errorBack) errorBack();
         });
 }
