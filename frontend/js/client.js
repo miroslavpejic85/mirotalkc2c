@@ -519,7 +519,6 @@ function setRemoteMedia(stream, peers, peerId) {
     remoteMedia.playsInline = true;
     remoteMedia.autoplay = true;
     remoteMedia.controls = false;
-    if (peerVideo && peerScreen) remoteMedia.style.objectFit = 'contain';
     peerMediaElements[peerId] = remoteMedia;
     remoteVideoWrap.id = peerId + '_remoteVideoWrap';
     remoteVideoWrap.className = 'remoteVideoWrap';
@@ -532,6 +531,7 @@ function setRemoteMedia(stream, peers, peerId) {
     handleFullScreen(remoteFullScreenBtn, remoteVideoWrap, remoteMedia);
     setPeerVideoStatus(peerId, peerVideo);
     setPeerAudioStatus(peerId, peerAudio);
+    if (peerVideo && peerScreen) setPeerScreenStatus(peerId, peerScreen);
     if (isMobileDevice && !isTabletDevice && !isIPadDevice) {
         document.documentElement.style.setProperty('--my-video-wrap-width', '190px');
         document.documentElement.style.setProperty('--my-video-wrap-height', '150px');
@@ -887,18 +887,21 @@ function handlePeerStatus(config) {
 }
 
 function setPeerVideoStatus(peerId, active) {
+    console.log('Peer video status: ', active);
     const peerVideoAvatarImage = document.getElementById(peerId + '_remoteVideoAvatar');
     peerVideoAvatarImage.style.display = active ? 'none' : 'block';
 }
 
 function setPeerAudioStatus(peerId, active) {
+    console.log('Peer audio status: ', active);
     const peerAudioStatus = document.getElementById(peerId + '_remoteAudioStatus');
     peerAudioStatus.className = active ? className.audioOn : className.audioOff;
 }
 
 function setPeerScreenStatus(peerId, active) {
-    const remoteVideo = document.getElementById(peerId + '_remoteVideo');
-    const remoteVideoAvatarImage = document.getElementById(peerId + '_remoteVideoAvatar');
-    remoteVideo.style.objectFit = active ? 'contain' : 'cover';
-    remoteVideoAvatarImage.style.display = active ? 'none' : 'block';
+    console.log('Peer screen status: ', active);
+    const peerVideo = document.getElementById(peerId + '_remoteVideo');
+    const peerVideoAvatarImage = document.getElementById(peerId + '_remoteVideoAvatar');
+    peerVideo.style.objectFit = active ? 'contain' : 'cover';
+    peerVideoAvatarImage.style.display = active ? 'none' : 'block';
 }
