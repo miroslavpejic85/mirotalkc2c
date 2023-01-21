@@ -383,7 +383,14 @@ function setupLocalMedia(callback, errorBack) {
     }
     console.log('Requesting access to local audio/video inputs');
     navigator.mediaDevices
-        .getUserMedia({ audio: true, video: true })
+        .getUserMedia({
+            audio: true,
+            video: {
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                frameRate: { ideal: 30 },
+            },
+        })
         .then((stream) => {
             setLocalMedia(stream);
             if (callback) callback();
@@ -682,7 +689,14 @@ async function toggleScreenSharing() {
 
 function changeCamera(deviceId) {
     navigator.mediaDevices
-        .getUserMedia({ video: { deviceId: deviceId } })
+        .getUserMedia({
+            video: {
+                deviceId: deviceId,
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                frameRate: { ideal: 30 },
+            },
+        })
         .then((camStream) => {
             localMediaStream.getVideoTracks()[0].stop();
             refreshMyLocalVideoStream(camStream);
