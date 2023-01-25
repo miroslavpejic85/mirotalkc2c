@@ -1,5 +1,15 @@
 'use strict';
 
+/**
+ * MiroTalk C2C - Client component
+ *
+ * @link    GitHub: https://github.com/miroslavpejic85/mirotalkc2c
+ * @link    Live demo: https://c2c.mirotalk.com
+ * @license For open source under MIT
+ * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
+ * @version 1.0.0
+ */
+
 const roomId = new URLSearchParams(window.location.search).get('room');
 const peerName = new URLSearchParams(window.location.search).get('name');
 
@@ -676,7 +686,8 @@ async function toggleScreenSharing() {
             isScreenStreaming = !isScreenStreaming;
             refreshMyLocalVideoStream(screenMediaPromise);
             refreshMyVideoStreamToPeers(screenMediaPromise);
-            setVideoStatus(isScreenStreaming, false, 'screen');
+            setVideoStatus(isScreenStreaming);
+            setScreenStatus(isScreenStreaming);
             myVideo.classList.toggle('mirror');
             myVideo.style.objectFit = isScreenStreaming ? 'contain' : 'cover';
             screenShareBtn.className = isScreenStreaming ? className.screenOff : className.screenOn;
@@ -748,6 +759,7 @@ function logStreamSettingsInfo(name, stream) {
 }
 
 function setAudioStatus(active = true, e = false) {
+    console.log('My audio status', active);
     isAudioStreaming = active;
     localMediaStream.getAudioTracks()[0].enabled = active;
     if (e) e.target.className = isAudioStreaming ? className.audioOn : className.audioOff;
@@ -757,14 +769,23 @@ function setAudioStatus(active = true, e = false) {
     emitPeerStatus('audio', active);
 }
 
-function setVideoStatus(active = true, e = false, type = 'video') {
+function setVideoStatus(active = true, e = false) {
+    console.log('My video status', active);
     isVideoStreaming = active;
     localMediaStream.getVideoTracks()[0].enabled = active;
     if (e) e.target.className = isVideoStreaming ? className.videoOn : className.videoOff;
     videoBtn.className = isVideoStreaming ? className.videoOn : className.videoOff;
     initVideoBtn.className = isVideoStreaming ? className.videoOn : className.videoOff;
     myVideoAvatarImage.style.display = active ? 'none' : 'block';
-    emitPeerStatus(type, active);
+    emitPeerStatus('video', active);
+}
+
+function setScreenStatus(active = false) {
+    console.log('My screen status', active);
+    isScreenStreaming = active;
+    videoBtn.className = isScreenStreaming ? className.videoOn : className.videoOff;
+    myVideoAvatarImage.style.display = active ? 'none' : 'block';
+    emitPeerStatus('screen', active);
 }
 
 function refreshMyLocalVideoStream(stream) {
