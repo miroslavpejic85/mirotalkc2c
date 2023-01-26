@@ -222,6 +222,12 @@ function roomIsBusy() {
         text: 'Please try with another one',
         showDenyButton: false,
         confirmButtonText: `OK`,
+        showClass: {
+            popup: 'animate__animated animate__fadeInDown',
+        },
+        hideClass: {
+            popup: 'animate__animated animate__fadeOutUp',
+        },
     }).then((result) => {
         if (result.isConfirmed) {
             openURL('/');
@@ -862,6 +868,12 @@ function sendMessage() {
         showDenyButton: true,
         confirmButtonText: `Send`,
         denyButtonText: `Close`,
+        showClass: {
+            popup: 'animate__animated animate__fadeInDown',
+        },
+        hideClass: {
+            popup: 'animate__animated animate__fadeOutUp',
+        },
     }).then((result) => {
         if (result.isConfirmed) emitDcMsg(result.value);
     });
@@ -883,6 +895,12 @@ function handleMessage(config) {
         showDenyButton: true,
         confirmButtonText: `Reply`,
         denyButtonText: `Close`,
+        showClass: {
+            popup: 'animate__animated animate__fadeInDown',
+        },
+        hideClass: {
+            popup: 'animate__animated animate__fadeOutUp',
+        },
     }).then((result) => {
         if (result.isConfirmed) emitDcMsg(result.value);
     });
