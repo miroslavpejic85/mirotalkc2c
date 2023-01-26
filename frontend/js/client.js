@@ -5,9 +5,10 @@
  *
  * @link    GitHub: https://github.com/miroslavpejic85/mirotalkc2c
  * @link    Live demo: https://c2c.mirotalk.com
- * @license For open source under MIT
+ * @license For open source under AGPL-3.0
+ * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.0.0
+ * @version 1.0.1
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');

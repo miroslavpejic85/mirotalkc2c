@@ -40,4 +40,4 @@ You can support MiroTalk by [sponsoring](https://github.com/sponsors/miroslavpej
 
 ## License
 
-[MIT](./LICENSE)
+[AGPLv3](./LICENSE)
