@@ -85,6 +85,17 @@ async function shareRoom() {
     }
 }
 
+function copyToClipboard(text) {
+    navigator.clipboard
+        .writeText(text)
+        .then(() => {
+            popupMessage('toast', 'Message copied!');
+        })
+        .catch((err) => {
+            popupMessage('error', err);
+        });
+}
+
 function handleBodyEvents() {
     checkElements();
     document.body.onmousemove = () => {

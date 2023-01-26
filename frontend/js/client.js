@@ -893,8 +893,12 @@ function handleMessage(config) {
         allowOutsideClick: false,
         allowEscapeKey: false,
         showDenyButton: true,
+        showCancelButton: true,
+        cancelButtonColor: 'red',
+        denyButtonColor: 'green',
         confirmButtonText: `Reply`,
-        denyButtonText: `Close`,
+        denyButtonText: `Copy`,
+        cancelButtonText: `Close`,
         showClass: {
             popup: 'animate__animated animate__fadeInDown',
         },
@@ -902,6 +906,7 @@ function handleMessage(config) {
             popup: 'animate__animated animate__fadeOutUp',
         },
     }).then((result) => {
+        if (result.isDenied) copyToClipboard(result.value);
         if (result.isConfirmed) emitDcMsg(result.value);
     });
 }
