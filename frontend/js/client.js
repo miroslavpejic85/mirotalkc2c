@@ -178,6 +178,8 @@ function handleAddPeer(config) {
         return roomIsBusy();
     }
 
+    console.log('Add peer', config.peers);
+
     const peerId = config.peerId;
     const peers = config.peers;
     const shouldCreateOffer = config.shouldCreateOffer;
@@ -759,33 +761,40 @@ function logStreamSettingsInfo(name, stream) {
 }
 
 function setAudioStatus(active = true, e = false) {
-    console.log('My audio status', active);
+    console.log(`This PeerId ${thisPeerId} audio status`, active);
     isAudioStreaming = active;
-    localMediaStream.getAudioTracks()[0].enabled = active;
-    if (e) e.target.className = isAudioStreaming ? className.audioOn : className.audioOff;
-    myAudioStatusIcon.className = active ? className.audioOn : className.audioOff;
-    audioBtn.className = isAudioStreaming ? className.audioOn : className.audioOff;
-    initAudioBtn.className = isAudioStreaming ? className.audioOn : className.audioOff;
+    setAudioButtons(active, e);
     emitPeerStatus('audio', active);
 }
 
 function setVideoStatus(active = true, e = false) {
-    console.log('My video status', active);
+    console.log(`This PeerId ${thisPeerId} video status`, active);
     isVideoStreaming = active;
-    localMediaStream.getVideoTracks()[0].enabled = active;
-    if (e) e.target.className = isVideoStreaming ? className.videoOn : className.videoOff;
-    videoBtn.className = isVideoStreaming ? className.videoOn : className.videoOff;
-    initVideoBtn.className = isVideoStreaming ? className.videoOn : className.videoOff;
-    myVideoAvatarImage.style.display = active ? 'none' : 'block';
+    setVideoButtons(active, e);
     emitPeerStatus('video', active);
 }
 
-function setScreenStatus(active = false) {
-    console.log('My screen status', active);
+function setScreenStatus(active = false, e = false) {
+    console.log(`This PeerId ${thisPeerId} screen status`, active);
     isScreenStreaming = active;
-    videoBtn.className = isScreenStreaming ? className.videoOn : className.videoOff;
-    myVideoAvatarImage.style.display = active ? 'none' : 'block';
+    setVideoButtons(active, e);
     emitPeerStatus('screen', active);
+}
+
+function setAudioButtons(active, e = false) {
+    localMediaStream.getAudioTracks()[0].enabled = active;
+    if (e) e.target.className = active ? className.audioOn : className.audioOff;
+    myAudioStatusIcon.className = active ? className.audioOn : className.audioOff;
+    audioBtn.className = active ? className.audioOn : className.audioOff;
+    initAudioBtn.className = active ? className.audioOn : className.audioOff;
+}
+
+function setVideoButtons(active, e = false) {
+    localMediaStream.getVideoTracks()[0].enabled = active;
+    if (e) e.target.className = active ? className.videoOn : className.videoOff;
+    videoBtn.className = active ? className.videoOn : className.videoOff;
+    initVideoBtn.className = active ? className.videoOn : className.videoOff;
+    myVideoAvatarImage.style.display = active ? 'none' : 'block';
 }
 
 function refreshMyLocalVideoStream(stream) {
@@ -922,19 +931,19 @@ function handlePeerStatus(config) {
 }
 
 function setPeerVideoStatus(peerId, active) {
-    console.log('Peer video status: ', active);
+    console.log(`Remote PeerId ${peerId} video status`, active);
     const peerVideoAvatarImage = document.getElementById(peerId + '_remoteVideoAvatar');
     peerVideoAvatarImage.style.display = active ? 'none' : 'block';
 }
 
 function setPeerAudioStatus(peerId, active) {
-    console.log('Peer audio status: ', active);
+    console.log(`Remote PeerId ${peerId} audio status`, active);
     const peerAudioStatus = document.getElementById(peerId + '_remoteAudioStatus');
     peerAudioStatus.className = active ? className.audioOn : className.audioOff;
 }
 
 function setPeerScreenStatus(peerId, active) {
-    console.log('Peer screen status: ', active);
+    console.log(`Remote PeerId ${peerId} screen status`, active);
     const peerVideo = document.getElementById(peerId + '_remoteVideo');
     const peerVideoAvatarImage = document.getElementById(peerId + '_remoteVideoAvatar');
     peerVideo.style.objectFit = active ? 'contain' : 'cover';
