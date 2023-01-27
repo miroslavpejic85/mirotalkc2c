@@ -906,7 +906,7 @@ function handleMessage(config) {
             popup: 'animate__animated animate__fadeOutUp',
         },
     }).then((result) => {
-        if (result.isDenied) copyToClipboard(result.value);
+        if (result.isDenied) copyToClipboard(config.msg);
         if (result.isConfirmed) emitDcMsg(result.value);
     });
 }
