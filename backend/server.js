@@ -36,6 +36,8 @@ const turnUsername = process.env.TURN_USERNAME;
 const turnCredential = process.env.TURN_PASSWORD;
 const iceServers = [{ urls: stunUrls }, { urls: turnUrls, username: turnUsername, credential: turnCredential }];
 
+const redirectURL = process.env.REDIRECT_URL || false;
+
 const frontendDir = path.join(__dirname, '../', 'frontend');
 const htmlClient = path.join(__dirname, '../', 'frontend/html/client.html');
 const htmlHome = path.join(__dirname, '../', 'frontend/html/home.html');
@@ -81,6 +83,7 @@ server.listen(port, null, () => {
         home: host,
         room: host + queryRoom,
         join: host + queryJoin,
+        redirectURL: redirectURL,
         nodeVersion: process.versions.node,
     });
 });
@@ -112,6 +115,7 @@ io.sockets.on('connect', (socket) => {
 
         sendToPeer(socket.id, sockets, 'serverInfo', {
             roomPeersCount: Object.keys(peers[channel]).length,
+            redirectURL: redirectURL,
         });
     });
 

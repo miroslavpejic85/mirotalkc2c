@@ -21,7 +21,7 @@ const shareRoomBtn = document.getElementById('shareRoomBtn');
 const initHideMeBtn = document.getElementById('initHideMeBtn');
 const initAudioBtn = document.getElementById('initAudioBtn');
 const initVideoBtn = document.getElementById('initVideoBtn');
-const homeBtn = document.getElementById('homeBtn');
+const initHomeBtn = document.getElementById('initHomeBtn');
 const buttonsBar = document.getElementById('buttonsBar');
 const hideMeBtn = document.getElementById('hideMeBtn');
 const audioBtn = document.getElementById('audioBtn');
@@ -30,7 +30,7 @@ const swapCameraBtn = document.getElementById('swapCameraBtn');
 const sendMsgBtn = document.getElementById('sendMsgBtn');
 const settingsBtn = document.getElementById('settingsBtn');
 const screenShareBtn = document.getElementById('screenShareBtn');
-const endCallBtn = document.getElementById('endCallBtn');
+const homeButton = document.getElementById('homeButton');
 const settings = document.getElementById('settings');
 const settingsCloseBtn = document.getElementById('settingsCloseBtn');
 const audioSource = document.getElementById('audioSource');
@@ -38,7 +38,11 @@ const videoSource = document.getElementById('videoSource');
 
 const roomURL = window.location.origin + '/?room=' + roomId;
 
-const camOffImg = '../images/camOff.png';
+const image = {
+    camOff: '../images/camOff.png',
+    feedback: '../images/feedback.png',
+};
+
 const className = {
     user: 'fas fa-user',
     userOff: 'fas fa-user-slash',
@@ -88,6 +92,8 @@ let myVideo;
 let myVideoWrap;
 let myVideoAvatarImage;
 let myAudioStatusIcon;
+
+let redirectURL = false;
 
 function getDocumentElementsById() {
     myVideo = document.getElementById('myVideo');
@@ -172,6 +178,7 @@ function joinToChannel() {
 
 function handleServerInfo(config) {
     roomPeersCount = config.roomPeersCount;
+    redirectURL = config.redirectURL;
 }
 
 function handleAddPeer(config) {
@@ -487,7 +494,7 @@ function setLocalMedia(stream) {
     myAudioStatusIcon.id = 'myAudioStatusIcon';
     myAudioStatusIcon.className = className.audioOn;
     myVideoAvatarImage.id = 'myVideoAvatarImage';
-    myVideoAvatarImage.setAttribute('src', camOffImg);
+    myVideoAvatarImage.setAttribute('src', image.camOff);
     myVideoAvatarImage.className = 'videoAvatarImage pulsate';
     myVideoHeader.appendChild(myFullScreenBtn);
     myVideoHeader.appendChild(myAudioStatusIcon);
@@ -536,7 +543,7 @@ function setRemoteMedia(stream, peers, peerId) {
     remoteAudioStatusIcon.id = peerId + '_remoteAudioStatus';
     remoteAudioStatusIcon.className = className.audioOn;
     remoteVideoAvatarImage.id = peerId + '_remoteVideoAvatar';
-    remoteVideoAvatarImage.src = camOffImg;
+    remoteVideoAvatarImage.src = image.camOff;
     remoteVideoAvatarImage.className = 'videoAvatarImage pulsate';
     remoteVideoHeader.appendChild(remoteFullScreenBtn);
     remoteVideoHeader.appendChild(remoteAudioStatusIcon);
@@ -575,8 +582,8 @@ function handleIncomingDataChannelMessage(config) {
 }
 
 function handleEvents() {
-    homeBtn.onclick = () => {
-        openURL('/');
+    initHomeBtn.onclick = () => {
+        endCall();
     };
     copyRoomBtn.onclick = () => {
         copyRoom();
@@ -642,7 +649,7 @@ function handleEvents() {
     videoSource.onchange = (e) => {
         changeCamera(e.target.value);
     };
-    endCallBtn.onclick = () => {
+    homeButton.onclick = () => {
         endCall();
     };
 }
@@ -746,7 +753,33 @@ function changeMicrophone(deviceId) {
 
 function endCall() {
     signalingSocket.disconnect();
-    openURL('/');
+    giveMeFeedback();
+}
+
+function giveMeFeedback() {
+    Swal.fire({
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showDenyButton: true,
+        background: swal.background,
+        imageUrl: image.feedback,
+        title: 'Leave a feedback',
+        text: 'Do you want to rate your MiroTalk experience?',
+        confirmButtonText: `Yes`,
+        denyButtonText: `No`,
+        showClass: {
+            popup: 'animate__animated animate__fadeInDown',
+        },
+        hideClass: {
+            popup: 'animate__animated animate__fadeOutUp',
+        },
+    }).then((result) => {
+        if (result.isConfirmed) {
+            redirectURL ? openURL(redirectURL) : openURL('/');
+        } else {
+            openURL('/');
+        }
+    });
 }
 
 function attachMediaStream(element, stream) {
