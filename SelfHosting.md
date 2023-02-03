@@ -2,7 +2,8 @@
 
 ## Requirements
 
--   Recommended: [Hetzner](https://www.hetzner.com/cloud) (`CX11` it's enough, OS: `Ubuntu 20.04 LTS / 22.04.1 LTS`). Use [my personal link](https://hetzner.cloud/?ref=XdRifCzCK3bn) to receive `€⁠20 in cloud credits`.
+-   Recommended: [Hetzner](https://www.hetzner.com/cloud) (`CX11` it's enough, OS: `Ubuntu 20.04 LTS / 22.04.1 LTS`).
+-   Use my [personal link](https://hetzner.cloud/?ref=XdRifCzCK3bn) to receive `€⁠20 in cloud credits`.
 -   Mandatory: [Node.js](https://nodejs.org/en/) at least 16x (`16.15.1 LTS`) & npm
 -   Mandatory: Your domain name, example: `your.domain.name`
 
