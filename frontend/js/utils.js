@@ -85,6 +85,18 @@ async function shareRoom() {
     }
 }
 
+function pasteAndSendMsg() {
+    navigator.clipboard
+        .readText()
+        .then((text) => {
+            document.getElementsByClassName('swal2-textarea').value = text;
+            emitDcMsg(document.getElementsByClassName('swal2-textarea').value);
+        })
+        .catch((err) => {
+            popupMessage('error', err);
+        });
+}
+
 function copyToClipboard(text) {
     navigator.clipboard
         .writeText(text)

@@ -900,8 +900,12 @@ function sendMessage() {
         allowOutsideClick: false,
         allowEscapeKey: false,
         showDenyButton: true,
+        showCancelButton: true,
+        cancelButtonColor: 'red',
+        denyButtonColor: 'green',
         confirmButtonText: `Send`,
-        denyButtonText: `Close`,
+        denyButtonText: `Paste and Send`,
+        cancelButtonText: `Close`,
         showClass: {
             popup: 'animate__animated animate__fadeInDown',
         },
@@ -909,6 +913,7 @@ function sendMessage() {
             popup: 'animate__animated animate__fadeOutUp',
         },
     }).then((result) => {
+        if (result.isDenied) pasteAndSendMsg();
         if (result.isConfirmed) emitDcMsg(result.value);
     });
 }
