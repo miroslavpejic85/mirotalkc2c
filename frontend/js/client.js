@@ -39,6 +39,8 @@ const videoSource = document.getElementById('videoSource');
 
 const roomURL = window.location.origin + '/?room=' + roomId;
 
+const forceToMaxVideoAndFps = false;
+
 const image = {
     camOff: '../images/camOff.png',
     feedback: '../images/feedback.png',
@@ -409,14 +411,14 @@ function setupLocalMedia(callback, errorBack) {
         return;
     }
     console.log('Requesting access to local audio/video inputs');
+
+    const audioConstraints = getAudioConstraints();
+    const videoConstraints = getVideoConstraints();
+
     navigator.mediaDevices
         .getUserMedia({
-            audio: true,
-            video: {
-                width: { ideal: 1280 },
-                height: { ideal: 720 },
-                frameRate: { ideal: 30 },
-            },
+            audio: audioConstraints,
+            video: videoConstraints,
         })
         .then((stream) => {
             setLocalMedia(stream);
@@ -716,14 +718,10 @@ async function toggleScreenSharing() {
 }
 
 function changeCamera(deviceId) {
+    const videoConstraints = getVideoConstraints(deviceId);
     navigator.mediaDevices
         .getUserMedia({
-            video: {
-                deviceId: deviceId,
-                width: { ideal: 1280 },
-                height: { ideal: 720 },
-                frameRate: { ideal: 30 },
-            },
+            video: videoConstraints,
         })
         .then((camStream) => {
             localMediaStream.getVideoTracks()[0].stop();
@@ -750,6 +748,29 @@ function changeMicrophone(deviceId) {
             console.error('[Error] changeMicrophone', err);
             popupMessage('error', 'Error while swapping microphone' + err.toString());
         });
+}
+
+function getAudioConstraints() {
+    return true;
+}
+
+function getVideoConstraints(deviceId = false) {
+    let videoConstraints = true;
+    if (forceToMaxVideoAndFps) {
+        videoConstraints = {
+            width: { ideal: 3840 },
+            height: { ideal: 2160 },
+            frameRate: { ideal: 60 },
+        };
+    } else {
+        videoConstraints = {
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            frameRate: { ideal: 30 },
+        };
+    }
+    if (deviceId) videoConstraints['deviceId'] = deviceId;
+    return videoConstraints;
 }
 
 function endCall() {
