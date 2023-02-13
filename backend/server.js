@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.0.1
+ * @version 1.0.2
  */
 
 require('dotenv').config();
@@ -20,6 +20,7 @@ const compression = require('compression');
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const ngrok = require('ngrok');
 const app = express();
 const logs = require('./logs');
 const log = new logs('server');
@@ -30,6 +31,8 @@ const server = http.createServer(app);
 const host = 'http://' + 'localhost' + ':' + port;
 
 const io = new Server({ maxHttpBufferSize: 1e7, transports: ['websocket'] }).listen(server);
+
+const ngrokAuthToken = process.env.NGROK_AUTH_TOKEN || false;
 
 const stunUrls = process.env.STUN_URLS;
 const turnUrls = process.env.TURN_URLS;
@@ -78,15 +81,44 @@ function notFound(res) {
     res.send({ data: '404 not found' });
 }
 
+async function ngrokStart() {
+    try {
+        await ngrok.authtoken(ngrokAuthToken);
+        await ngrok.connect(port);
+        const api = ngrok.getApi();
+        const data = JSON.parse(await api.get('api/tunnels')); // v3
+        // const data = await api.listTunnels(); // v4
+        const pu0 = data.tunnels[0].public_url;
+        const pu1 = data.tunnels[1].public_url;
+        const tunnelHttps = pu0.startsWith('https') ? pu0 : pu1;
+        log.debug('settings', {
+            ngrokAuthToken: ngrokAuthToken,
+            iceServers: iceServers,
+            ngrokHome: tunnelHttps,
+            ngrokRoom: tunnelHttps + queryRoom,
+            ngrokJoin: tunnelHttps + queryJoin,
+            redirectURL: redirectURL,
+            nodeVersion: process.versions.node,
+        });
+    } catch (err) {
+        log.warn('[Error] ngrokStart', err);
+        process.exit(1);
+    }
+}
+
 server.listen(port, null, () => {
-    log.debug('settings', {
-        iceServers: iceServers,
-        home: host,
-        room: host + queryRoom,
-        join: host + queryJoin,
-        redirectURL: redirectURL,
-        nodeVersion: process.versions.node,
-    });
+    if (ngrokAuthToken) {
+        ngrokStart();
+    } else {
+        log.debug('settings', {
+            iceServers: iceServers,
+            home: host,
+            room: host + queryRoom,
+            join: host + queryJoin,
+            redirectURL: redirectURL,
+            nodeVersion: process.versions.node,
+        });
+    }
 });
 
 io.sockets.on('connect', (socket) => {

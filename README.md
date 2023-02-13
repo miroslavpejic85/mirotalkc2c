@@ -54,12 +54,23 @@ $ docker-compose up
 
 </details>
 
+<details>
+<summary>Ngrok</summary>
+
+<br/>
+
+To expose MiroTalk C2C in `HTTPS` from your `Local PC`, just follow [this steps](./docs/ngrok.md).
+
+</details>
+
+</details>
+
 <details open>
 <summary>Self-Hosting</summary>
 
 <br/>
 
-To self-hosting MiroTalk C2C, just follow [this steps](./SelfHosting.md).
+To self-hosting MiroTalk C2C, just follow [this steps](./docs/SelfHosting.md).
 
 </details>
 
