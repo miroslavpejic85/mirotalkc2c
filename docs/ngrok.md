@@ -16,7 +16,7 @@ NGROK_AUTH_TOKEN=YourNgrokAuthToken
 
 ---
 
-Then, when you run it with `npm start`, you should see in the console log this line:
+Then, when you run it with `npm start`, you should see in the console log:
 
 ```bash
 ngrokHome: 'https://xxxx-xx-xx-xxx-xx.ngrok.io',
@@ -24,4 +24,4 @@ ngrokRoom: 'https://xxxx-xx-xx-xxx-xx.ngrok.io/?room=test',
 ngrokJoin: 'https://xxxx-xx-xx-xxx-xx.ngrok.io/join?room=test&name=test',
 ```
 
-So open it in your browser, join in the room, `Share` the `URL` to whom you want and wait participants to join.
+So open the URL in your browser, join in the room, `Share` the `URL` to whom you want and wait participants to join.
