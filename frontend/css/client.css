@@ -15,8 +15,8 @@
     --border: 0.1px solid #45494c;
     --border-radius: 1rem;
     --video-obj-fit: cover;
-    --my-video-wrap-width: 200px;
-    --my-video-wrap-height: 160px;
+    --my-video-wrap-width: 320px;
+    --my-video-wrap-height: 240px;
     --btn-hover-scale: scale(1.1);
 }
 
