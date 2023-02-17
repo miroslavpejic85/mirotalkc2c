@@ -34,11 +34,20 @@ const io = new Server({ maxHttpBufferSize: 1e7, transports: ['websocket'] }).lis
 
 const ngrokAuthToken = process.env.NGROK_AUTH_TOKEN || false;
 
-const stunUrls = process.env.STUN_URLS;
-const turnUrls = process.env.TURN_URLS;
-const turnUsername = process.env.TURN_USERNAME;
-const turnCredential = process.env.TURN_PASSWORD;
-const iceServers = [{ urls: stunUrls }, { urls: turnUrls, username: turnUsername, credential: turnCredential }];
+const stunServerUrl = process.env.STUN_SERVER_URL || false;
+const turnServerUrl = process.env.TURN_SERVER_URL;
+const turnServerUsername = process.env.TURN_SERVER_USERNAME;
+const turnServerCredential = process.env.TURN_SERVER_CREDENTIAL;
+
+if (!stunServerUrl) {
+    log.error('[Error] Missing Mandatory Stun server URL', { error: 'The Stun server URL seems not set in the environment variables!' });
+    process.exit(1);
+}
+
+const iceServers = [
+    { urls: stunServerUrl },
+    { urls: turnServerUrl, username: turnServerUsername, credential: turnServerCredential },
+];
 
 const redirectURL = process.env.REDIRECT_URL || false;
 
