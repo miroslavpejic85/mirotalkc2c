@@ -19,6 +19,7 @@ const http = require('http');
 const compression = require('compression');
 const express = require('express');
 const cors = require('cors');
+const checkXSS = require('./xss.js');
 const path = require('path');
 const ngrok = require('ngrok');
 const app = express();
@@ -129,7 +130,9 @@ io.sockets.on('connect', (socket) => {
     socket.channels = {};
     sockets[socket.id] = socket;
 
-    socket.on('join', (config) => {
+    socket.on('join', (cfg) => {
+        const config = checkXSS(cfg);
+
         log.debug('[' + socket.id + '] join ', config);
 
         const channel = config.channel;
@@ -186,7 +189,9 @@ io.sockets.on('connect', (socket) => {
         delete sockets[socket.id];
     });
 
-    socket.on('peerStatus', (config) => {
+    socket.on('peerStatus', (cfg) => {
+        const config = checkXSS(cfg);
+
         const roomId = config.roomId;
         const peerName = config.peerName;
         const element = config.element;

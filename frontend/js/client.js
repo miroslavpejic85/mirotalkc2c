@@ -271,7 +271,7 @@ async function handleRTCDataChannels(peerId) {
         event.channel.onmessage = (msg) => {
             let config = {};
             try {
-                config = JSON.parse(msg.data);
+                config = JSON.parse(filterXSS(msg.data));
                 handleIncomingDataChannelMessage(config);
             } catch (err) {
                 console.log('Datachannel error', err);
