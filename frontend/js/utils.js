@@ -89,8 +89,9 @@ function pasteAndSendMsg() {
     navigator.clipboard
         .readText()
         .then((text) => {
-            document.getElementsByClassName('swal2-textarea').value = text;
-            emitDcMsg(document.getElementsByClassName('swal2-textarea').value);
+            const msg = sanitizeMsg(text);
+            document.getElementsByClassName('swal2-textarea').value = msg;
+            emitDcMsg(msg);
         })
         .catch((err) => {
             popupMessage('error', err);
@@ -131,6 +132,28 @@ function toggleClassElements(className, displayState) {
     for (let i = 0; i < elements.length; i++) {
         elements[i].style.display = displayState;
     }
+}
+
+function sanitizeMsg(text) {
+    if (text.trim().length == 0) return;
+    if (isHtml(text)) return sanitizeHtml(text);
+    return text;
+}
+
+function isHtml(str) {
+    const a = document.createElement('div');
+    a.innerHTML = str;
+    for (let c = a.childNodes, i = c.length; i--; ) {
+        if (c[i].nodeType == 1) return true;
+    }
+    return false;
+}
+
+function sanitizeHtml(str) {
+    const tagsToReplace = { '&': '&amp;', '<': '&lt;', '>': '&gt;' };
+    const replaceTag = (tag) => tagsToReplace[tag] || tag;
+    const safe_tags_replace = (str) => str.replace(/[&<>]/g, replaceTag);
+    return safe_tags_replace(str);
 }
 
 async function playSound(name) {
