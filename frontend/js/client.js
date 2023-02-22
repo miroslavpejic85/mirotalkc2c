@@ -36,6 +36,7 @@ const settings = document.getElementById('settings');
 const settingsCloseBtn = document.getElementById('settingsCloseBtn');
 const audioSource = document.getElementById('audioSource');
 const videoSource = document.getElementById('videoSource');
+const sessionTime = document.getElementById('sessionTime');
 
 const roomURL = window.location.origin + '/?room=' + roomId;
 
@@ -519,6 +520,7 @@ function setLocalMedia(stream) {
     logStreamSettingsInfo('localMediaStream', localMediaStream);
     attachMediaStream(myLocalMedia, localMediaStream);
     handleFullScreen(myFullScreenBtn, myVideoWrap, myLocalMedia);
+    startSessionTime();
 }
 
 function setRemoteMedia(stream, peers, peerId) {

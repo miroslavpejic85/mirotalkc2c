@@ -307,6 +307,11 @@ video:fullscreen {
     cursor: pointer;
 }
 
+#settings p {
+    font-weight: bold;
+    color: var(--text-color);
+}
+
 /*--------------------------------------------------------------
 # Swal custom
 --------------------------------------------------------------*/

@@ -156,6 +156,27 @@ function sanitizeHtml(str) {
     return safe_tags_replace(str);
 }
 
+function startSessionTime() {
+    const callStartTime = Date.now();
+    setInterval(function printTime() {
+        const callElapsedTime = Date.now() - callStartTime;
+        sessionTime.innerHTML = getTimeToString(callElapsedTime);
+    }, 1000);
+}
+
+function getTimeToString(time) {
+    const diffInHrs = time / 3600000;
+    const hh = Math.floor(diffInHrs);
+    const diffInMin = (diffInHrs - hh) * 60;
+    const mm = Math.floor(diffInMin);
+    const diffInSec = (diffInMin - mm) * 60;
+    const ss = Math.floor(diffInSec);
+    const formattedHH = hh.toString().padStart(2, '0');
+    const formattedMM = mm.toString().padStart(2, '0');
+    const formattedSS = ss.toString().padStart(2, '0');
+    return `${formattedHH}:${formattedMM}:${formattedSS}`;
+}
+
 async function playSound(name) {
     let sound = '../sounds/' + name + '.mp3';
     let audioToPlay = new Audio(sound);
