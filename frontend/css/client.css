@@ -308,8 +308,10 @@ video:fullscreen {
 }
 
 #settings p {
+    display: flex;
     font-weight: bold;
     color: var(--text-color);
+    float: right;
 }
 
 /*--------------------------------------------------------------
