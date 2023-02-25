@@ -635,16 +635,12 @@ function handleEvents() {
             swapCameraBtn.style.display = 'none';
         }
     });
-    if (isDesktopDevice) {
-        settingsBtn.onclick = () => {
-            settings.classList.toggle('show');
-        };
-        settingsCloseBtn.onclick = () => {
-            settings.classList.toggle('show');
-        };
-    } else {
-        settingsBtn.style.display = 'none';
-    }
+    settingsBtn.onclick = () => {
+        settings.classList.toggle('show');
+    };
+    settingsCloseBtn.onclick = () => {
+        settings.classList.toggle('show');
+    };
     sendMsgBtn.onclick = () => {
         sendMessage();
     };

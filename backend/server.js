@@ -131,7 +131,7 @@ io.sockets.on('connect', (socket) => {
     sockets[socket.id] = socket;
 
     socket.on('join', (cfg) => {
-        const config = checkXSS(cfg);
+        const config = checkXSS(socket.id, cfg);
 
         log.debug('[' + socket.id + '] join ', config);
 
@@ -190,7 +190,7 @@ io.sockets.on('connect', (socket) => {
     });
 
     socket.on('peerStatus', (cfg) => {
-        const config = checkXSS(cfg);
+        const config = checkXSS(socket.id, cfg);
 
         const roomId = config.roomId;
         const peerName = config.peerName;
