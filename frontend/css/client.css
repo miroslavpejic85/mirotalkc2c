@@ -270,11 +270,12 @@ video:fullscreen {
 #settings {
     position: absolute;
     z-index: 8;
-    bottom: 80px;
-    left: 10px;
+    top: 5px;
+    right: 5px;
     overflow: hidden;
     background: var(--primary-color);
     max-width: 280px;
+    height: 93%;
     padding: 20px;
     border: var(--border);
     border-radius: var(--border-radius);
