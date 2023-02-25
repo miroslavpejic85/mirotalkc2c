@@ -22,6 +22,7 @@ const shareRoomBtn = document.getElementById('shareRoomBtn');
 const initHideMeBtn = document.getElementById('initHideMeBtn');
 const initAudioBtn = document.getElementById('initAudioBtn');
 const initVideoBtn = document.getElementById('initVideoBtn');
+const initSettingsBtn = document.getElementById('initSettingsBtn');
 const initHomeBtn = document.getElementById('initHomeBtn');
 const buttonsBar = document.getElementById('buttonsBar');
 const hideMeBtn = document.getElementById('hideMeBtn');
@@ -608,6 +609,9 @@ function handleEvents() {
     };
     initVideoBtn.onclick = (e) => {
         setVideoStatus(!localMediaStream.getVideoTracks()[0].enabled, e);
+    };
+    initSettingsBtn.onclick = () => {
+        settingsBtn.click();
     };
     hideMeBtn.onclick = () => {
         toggleHideMe();

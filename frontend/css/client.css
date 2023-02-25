@@ -44,7 +44,7 @@ body {
 
 #waitingDivContainer {
     position: absolute;
-    z-index: 8;
+    z-index: 7;
     display: none;
     width: 100%;
     height: 100%;
@@ -269,7 +269,7 @@ video:fullscreen {
 
 #settings {
     position: absolute;
-    z-index: 7;
+    z-index: 8;
     bottom: 80px;
     left: 10px;
     overflow: hidden;
@@ -468,6 +468,6 @@ z-index:
     4 myVideoContainer
     5 remoteVideoContainer
     6 main buttons
-    7 settings
-    8 waitingDivContainer
+    7 waitingDivContainer
+    8 settings
 */
