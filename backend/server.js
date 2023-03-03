@@ -16,6 +16,7 @@ require('dotenv').config();
 
 const { Server } = require('socket.io');
 const http = require('http');
+const https = require('https');
 const compression = require('compression');
 const express = require('express');
 const cors = require('cors');
@@ -25,11 +26,24 @@ const ngrok = require('ngrok');
 const app = express();
 const logs = require('./logs');
 const log = new logs('server');
+const isHttps = process.env.HTTPS == 'true';
 const port = process.env.PORT || 8080;
 const queryJoin = '/join?room=test&name=test';
 const queryRoom = '/?room=test';
-const server = http.createServer(app);
-const host = 'http://' + 'localhost' + ':' + port;
+
+let server;
+if (isHttps) {
+    const fs = require('fs');
+    const options = {
+        key: fs.readFileSync(path.join(__dirname, 'ssl/key.pem'), 'utf-8'),
+        cert: fs.readFileSync(path.join(__dirname, 'ssl/cert.pem'), 'utf-8'),
+    };
+    server = https.createServer(options, app);
+} else {
+    server = http.createServer(app);
+}
+
+const host = `http${isHttps ? 's' : ''}://localhost:${port}`;
 
 const io = new Server({ maxHttpBufferSize: 1e7, transports: ['websocket'] }).listen(server);
 
@@ -111,7 +125,7 @@ async function ngrokStart() {
 }
 
 server.listen(port, null, () => {
-    if (ngrokAuthToken) {
+    if (!isHttps && ngrokAuthToken) {
         ngrokStart();
     } else {
         log.debug('settings', {
