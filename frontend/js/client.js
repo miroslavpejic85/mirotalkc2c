@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.0.2
+ * @version 1.0.3
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -22,6 +22,7 @@ const shareRoomBtn = document.getElementById('shareRoomBtn');
 const initHideMeBtn = document.getElementById('initHideMeBtn');
 const initAudioBtn = document.getElementById('initAudioBtn');
 const initVideoBtn = document.getElementById('initVideoBtn');
+const initScreenShareBtn = document.getElementById('initScreenShareBtn');
 const initSettingsBtn = document.getElementById('initSettingsBtn');
 const initHomeBtn = document.getElementById('initHomeBtn');
 const buttonsBar = document.getElementById('buttonsBar');
@@ -623,10 +624,14 @@ function handleEvents() {
         setVideoStatus(!localMediaStream.getVideoTracks()[0].enabled, e);
     };
     if (!isMobileDevice && (navigator.getDisplayMedia || navigator.mediaDevices.getDisplayMedia)) {
+        initScreenShareBtn.onclick = async () => {
+            await toggleScreenSharing();
+        };
         screenShareBtn.onclick = async () => {
             await toggleScreenSharing();
         };
     } else {
+        initScreenShareBtn.style.display = 'none';
         screenShareBtn.style.display = 'none';
     }
     navigator.mediaDevices.enumerateDevices().then((devices) => {
@@ -711,6 +716,7 @@ async function toggleScreenSharing() {
             setScreenStatus(isScreenStreaming);
             myVideo.classList.toggle('mirror');
             myVideo.style.objectFit = isScreenStreaming ? 'contain' : 'cover';
+            initScreenShareBtn.className = isScreenStreaming ? className.screenOff : className.screenOn;
             screenShareBtn.className = isScreenStreaming ? className.screenOff : className.screenOn;
         }
     } catch (err) {
