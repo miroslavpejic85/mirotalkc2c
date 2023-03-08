@@ -16,3 +16,4 @@ package-lock.json
 
 # personal
 docker-push.sh
+docker-compose.yml

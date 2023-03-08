@@ -44,8 +44,10 @@ Open in browser: http://localhost:8080
 Install [docker](https://docs.docker.com/engine/install/) and [docker-compose](https://docs.docker.com/compose/install/).
 
 ```bash
-# Build or rebuild services
-$ docker-compose build
+# Copy docker-compose.template.yml in docker-compose.yml and edit it if needed
+$ cp docker-compose.template.yml docker-compose.yml
+# Get official image from Docker Hub
+$ docker pull mirotalk/c2c:latest
 # Create and start containers
 $ docker-compose up
 ```
