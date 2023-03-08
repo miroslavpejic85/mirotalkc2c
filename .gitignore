@@ -15,5 +15,6 @@ package-lock.json
 .cache
 
 # personal
+.env
 docker-push.sh
 docker-compose.yml

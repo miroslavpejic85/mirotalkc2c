@@ -33,6 +33,8 @@ $ npm install -g npm@latest
 $ git clone https://github.com/miroslavpejic85/mirotalkc2c.git
 # Go to project dir
 $ cd mirotalkc2c
+# Copy .env.template in .env and edit it if needed
+$ cp .env.template .env
 # Install dependencies
 $ npm install
 # Start the server
@@ -73,6 +75,8 @@ Using `Docker`
 $ sudo apt install docker.io
 # Instal docker-compose
 $ sudo apt install docker-compose
+# Copy .env.template in .env and edit it if needed
+$ cp .env.template .env
 # Copy docker-compose.template.yml in docker-compose.yml and edit it if needed
 $ cp docker-compose.template.yml docker-compose.yml
 # Get official image from Docker Hub
