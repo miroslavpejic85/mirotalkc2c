@@ -10,6 +10,9 @@ services:
         hostname: mirotalkc2c
         volumes:
             - .env:/src/.env:ro
+            # These volumes are not mandatory, uncomment if you want to use it
+            # - ./frontend/:/src/frontend/:ro
+            # - ./backend/:/src/backend/:ro
         restart: unless-stopped
         ports:
             - '${PORT}:${PORT}'
