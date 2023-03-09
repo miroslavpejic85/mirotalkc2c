@@ -10,6 +10,7 @@
         "docker-build": "docker build --tag mirotalk/c2c:latest .",
         "docker-rmi": "docker images |grep '<none>' |awk '{print $3}' |xargs docker rmi",
         "docker-push": "docker push mirotalk/c2c:latest",
+        "docker-pull": "docker pull mirotalk/c2c:latest",
         "docker-rmc": "docker container rm mirotalkc2c --force",
         "docker-run": "docker run -d -p 8080:8080 --name mirotalkc2c mirotalk/c2c:latest",
         "docker-rune": "docker run -d -p 8080:8080 -v .env:/src/.env:ro --name mirotalkc2c mirotalk/c2c:latest",
