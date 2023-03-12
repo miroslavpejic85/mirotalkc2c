@@ -501,7 +501,7 @@ function setLocalMedia(stream) {
     myAudioStatusIcon.className = className.audioOn;
     myVideoAvatarImage.id = 'myVideoAvatarImage';
     myVideoAvatarImage.setAttribute('src', image.camOff);
-    myVideoAvatarImage.className = 'videoAvatarImage pulsate';
+    myVideoAvatarImage.className = 'videoAvatarImage';
     myVideoHeader.appendChild(myFullScreenBtn);
     myVideoHeader.appendChild(myAudioStatusIcon);
     myVideoFooter.appendChild(myVideoPeerName);
@@ -551,7 +551,7 @@ function setRemoteMedia(stream, peers, peerId) {
     remoteAudioStatusIcon.className = className.audioOn;
     remoteVideoAvatarImage.id = peerId + '_remoteVideoAvatar';
     remoteVideoAvatarImage.src = image.camOff;
-    remoteVideoAvatarImage.className = 'videoAvatarImage pulsate';
+    remoteVideoAvatarImage.className = 'videoAvatarImage';
     remoteVideoHeader.appendChild(remoteFullScreenBtn);
     remoteVideoHeader.appendChild(remoteAudioStatusIcon);
     remoteVideoFooter.appendChild(remoteVideoPeerName);
