@@ -569,6 +569,7 @@ function setRemoteMedia(stream, peers, peerId) {
     document.body.appendChild(remoteVideoWrap);
     attachMediaStream(remoteMedia, remoteMediaStream);
     handleFullScreen(remoteFullScreenBtn, remoteVideoWrap, remoteMedia);
+    handleVideoZoom(remoteMedia);
     setPeerVideoStatus(peerId, peerVideo);
     setPeerAudioStatus(peerId, peerAudio);
     if (peerVideo && peerScreen) setPeerScreenStatus(peerId, peerScreen);
@@ -916,6 +917,18 @@ function handleFullScreen(fullScreenBtn, videoWrap, videoMedia) {
     videoMedia.onclick = () => {
         if (isDesktopDevice) fullScreenBtn.click();
     };
+}
+
+function handleVideoZoom(videoMedia) {
+    let zoom = 1;
+
+    videoMedia.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        let delta = e.wheelDelta ? e.wheelDelta : -e.deltaY;
+        delta > 0 ? (zoom *= 1.2) : (zoom /= 1.2);
+        if (zoom < 1) zoom = 1;
+        videoMedia.style.scale = zoom;
+    });
 }
 
 function sendMessage() {
