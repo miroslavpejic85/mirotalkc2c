@@ -569,7 +569,7 @@ function setRemoteMedia(stream, peers, peerId) {
     document.body.appendChild(remoteVideoWrap);
     attachMediaStream(remoteMedia, remoteMediaStream);
     handleFullScreen(remoteFullScreenBtn, remoteVideoWrap, remoteMedia);
-    handleVideoZoom(remoteMedia);
+    handleVideoZoom(remoteMedia, remoteVideoAvatarImage);
     setPeerVideoStatus(peerId, peerVideo);
     setPeerAudioStatus(peerId, peerAudio);
     if (peerVideo && peerScreen) setPeerScreenStatus(peerId, peerScreen);
@@ -919,16 +919,17 @@ function handleFullScreen(fullScreenBtn, videoWrap, videoMedia) {
     };
 }
 
-function handleVideoZoom(videoMedia) {
+function handleVideoZoom(videoMedia, videoAvatarImage) {
     let zoom = 1;
 
-    videoMedia.addEventListener('wheel', (e) => {
+    videoMedia.onwheel = (e) => {
         e.preventDefault();
+        if (videoAvatarImage.style.display == 'block') return;
         let delta = e.wheelDelta ? e.wheelDelta : -e.deltaY;
         delta > 0 ? (zoom *= 1.2) : (zoom /= 1.2);
         if (zoom < 1) zoom = 1;
         videoMedia.style.scale = zoom;
-    });
+    };
 }
 
 function sendMessage() {
