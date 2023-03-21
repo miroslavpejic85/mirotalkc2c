@@ -38,6 +38,8 @@ const settings = document.getElementById('settings');
 const settingsCloseBtn = document.getElementById('settingsCloseBtn');
 const audioSource = document.getElementById('audioSource');
 const videoSource = document.getElementById('videoSource');
+const pushToTalkDiv = document.getElementById('pushToTalkDiv');
+const switchPushToTalk = document.getElementById('switchPushToTalk');
 const sessionTime = document.getElementById('sessionTime');
 
 const roomURL = window.location.origin + '/?room=' + roomId;
@@ -79,6 +81,8 @@ let myVideoChange = false;
 let isVideoStreaming = true;
 let isAudioStreaming = true;
 let isScreenStreaming = false;
+let isPushToTalkActive = false;
+let isSpaceDown = false;
 let camera = 'user';
 let thisPeerId;
 let peerConnection;
@@ -660,6 +664,38 @@ function handleEvents() {
     videoSource.onchange = (e) => {
         changeCamera(e.target.value);
     };
+    if (isMobileDevice) {
+        pushToTalkDiv.style.display = 'none';
+    } else {
+        switchPushToTalk.onchange = (e) => {
+            isPushToTalkActive = e.currentTarget.checked;
+            if (isPushToTalkActive) {
+                popupMessage(
+                    'info',
+                    'If Active, When SpaceBar keydown the microphone will be activated, otherwise will be deactivated, like a walkie-talkie.',
+                );
+            }
+        };
+        document.onkeydown = (e) => {
+            e.preventDefault();
+            if (!isPushToTalkActive) return;
+            if (e.code === 'Space') {
+                if (isSpaceDown) return;
+                setAudioStatus(true, audioBtn.event);
+                isSpaceDown = true;
+                console.log('Push-to-talk: audio ON');
+            }
+        };
+        document.onkeyup = (e) => {
+            e.preventDefault();
+            if (!isPushToTalkActive) return;
+            if (e.code === 'Space') {
+                setAudioStatus(false, audioBtn.event);
+                isSpaceDown = false;
+                console.log('Push-to-talk: audio OFF');
+            }
+        };
+    }
     homeButton.onclick = () => {
         endCall();
     };
