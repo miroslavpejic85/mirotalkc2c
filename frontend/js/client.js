@@ -671,8 +671,9 @@ function handleEvents() {
             isPushToTalkActive = e.currentTarget.checked;
             if (isPushToTalkActive) {
                 popupMessage(
-                    'info',
+                    'toast',
                     'If Active, When SpaceBar keydown the microphone will be activated, otherwise will be deactivated, like a walkie-talkie.',
+                    6000,
                 );
             }
         };
