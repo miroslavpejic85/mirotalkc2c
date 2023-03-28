@@ -316,8 +316,19 @@ video:fullscreen {
     float: right;
 }
 
-#switchPushToTalk {
-    margin-top: 15px;
+#settingsTable {
+    margin-top: 20px;
+    width: 100%;
+    color: var(--text-color);
+}
+#settingsTable td,
+th {
+    border: var(--border);
+    text-align: center;
+    padding: 10px;
+}
+#settingsTable tr:nth-child(even) {
+    background-color: var(--secondary-color);
 }
 
 /*--------------------------------------------------------------

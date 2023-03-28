@@ -88,12 +88,16 @@ Wait user to join.
             <select id="videoSource"></select>
             <label for="audioSource">🎙️ Microphone</label>
             <select id="audioSource"></select>
-            <div id="pushToTalkDiv">
-                <label for="switchPushToTalk">👆 Push to talk</label>
-                <input id="switchPushToTalk" class="toggle" type="checkbox" />
-            </div>
-            <label for="sessionTime">⏱️ Session time</label>
-            <p id="sessionTime">00:00:00</p>
+            <table id="settingsTable">
+                <tr id="pushToTalkDiv">
+                    <td>👆 Push to talk</td>
+                    <td><input id="switchPushToTalk" class="toggle" type="checkbox" /></td>
+                </tr>
+                <tr>
+                    <td>⏱️ Session time</td>
+                    <td id="sessionTime">00:00:00</td>
+                </tr>
+            </table>
         </div>
     </body>
 </html>
