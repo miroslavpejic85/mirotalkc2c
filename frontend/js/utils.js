@@ -102,7 +102,7 @@ function copyToClipboard(text) {
     navigator.clipboard
         .writeText(text)
         .then(() => {
-            popupMessage('toast', 'Message copied!');
+            popupMessage('toast', 'Message copied!', 'top-end');
         })
         .catch((err) => {
             popupMessage('error', err);

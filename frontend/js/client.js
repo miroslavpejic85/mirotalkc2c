@@ -673,6 +673,7 @@ function handleEvents() {
                 popupMessage(
                     'toast',
                     'If Active, When SpaceBar keydown the microphone will be activated, otherwise will be deactivated, like a walkie-talkie.',
+                    'bottom-start',
                     6000,
                 );
             }

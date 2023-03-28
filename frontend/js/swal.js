@@ -1,6 +1,6 @@
 'use-strict';
 
-function popupMessage(type, message, timer = 3000) {
+function popupMessage(type, message, position = 'center', timer = 3000) {
     switch (type) {
         case 'info':
         case 'success':
@@ -9,7 +9,7 @@ function popupMessage(type, message, timer = 3000) {
             Swal.fire({
                 allowOutsideClick: false,
                 allowEscapeKey: false,
-                position: 'center',
+                position: position,
                 icon: type,
                 title: type,
                 html: message,
@@ -24,7 +24,7 @@ function popupMessage(type, message, timer = 3000) {
         case 'toast':
             const Toast = Swal.mixin({
                 toast: true,
-                position: 'top-end',
+                position: position,
                 icon: 'info',
                 showConfirmButton: false,
                 timerProgressBar: true,
