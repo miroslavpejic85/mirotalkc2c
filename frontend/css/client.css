@@ -319,11 +319,9 @@ th {
     text-align: center;
     padding: 10px;
 }
-#settings tr td p {
-    display: flex;
-    font-weight: bold;
+#settingsTable tr td span {
+    display: block;
     text-align: left;
-    color: var(--text-color);
 }
 #settingsTable tr:nth-child(even) {
     background-color: var(--secondary-color);
