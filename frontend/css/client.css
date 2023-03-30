@@ -290,7 +290,6 @@ video:fullscreen {
     font-size: 1rem;
 }
 
-#pushToTalkDiv label,
 #settings label {
     display: flex;
     margin-top: 15px;
@@ -309,13 +308,6 @@ video:fullscreen {
     cursor: pointer;
 }
 
-#settings p {
-    display: flex;
-    font-weight: bold;
-    color: var(--text-color);
-    float: right;
-}
-
 #settingsTable {
     margin-top: 20px;
     width: 100%;
@@ -326,6 +318,12 @@ th {
     border: var(--border);
     text-align: center;
     padding: 10px;
+}
+#settings tr td p {
+    display: flex;
+    font-weight: bold;
+    text-align: left;
+    color: var(--text-color);
 }
 #settingsTable tr:nth-child(even) {
     background-color: var(--secondary-color);
