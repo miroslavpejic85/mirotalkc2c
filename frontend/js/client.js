@@ -677,6 +677,7 @@ function handleEvents() {
                     6000,
                 );
             }
+            playSound('switch');
         };
         document.onkeydown = (e) => {
             if (!isPushToTalkActive) return;
