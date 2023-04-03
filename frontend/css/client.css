@@ -312,10 +312,15 @@ video:fullscreen {
     margin-top: 20px;
     width: 100%;
     color: var(--text-color);
+    color: #fff;
+    border-collapse: collapse;
+    border-radius: 5px;
+    border-style: hidden;
+    box-shadow: 0 0 0 1px #666;
 }
 #settingsTable td,
 th {
-    border: var(--border);
+    /* border: var(--border); */
     text-align: center;
     padding: 10px;
 }
