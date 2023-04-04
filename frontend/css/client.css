@@ -314,9 +314,9 @@ video:fullscreen {
     color: var(--text-color);
     color: #fff;
     border-collapse: collapse;
-    border-radius: 5px;
     border-style: hidden;
-    box-shadow: 0 0 0 1px #666;
+    /* border-radius: 5px; */
+    /* box-shadow: 0 0 0 1px #666; */
 }
 #settingsTable td,
 th {
@@ -329,7 +329,11 @@ th {
     text-align: left;
 }
 #settingsTable tr:nth-child(even) {
-    background-color: var(--secondary-color);
+    /* background-color: var(--secondary-color); */
+}
+
+hr {
+    border: 1px solid grey;
 }
 
 /*--------------------------------------------------------------
