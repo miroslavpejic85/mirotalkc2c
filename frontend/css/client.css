@@ -308,6 +308,10 @@ video:fullscreen {
     cursor: pointer;
 }
 
+/*--------------------------------------------------------------
+# My settings table
+--------------------------------------------------------------*/
+
 #settingsTable {
     margin-top: 20px;
     width: 100%;
@@ -315,8 +319,6 @@ video:fullscreen {
     color: #fff;
     border-collapse: collapse;
     border-style: hidden;
-    /* border-radius: 5px; */
-    /* box-shadow: 0 0 0 1px #666; */
 }
 #settingsTable td,
 th {
@@ -327,14 +329,6 @@ th {
 #settingsTable tr td span {
     display: block;
     text-align: left;
-}
-#settingsTable tr:nth-child(even) {
-    /* background-color: var(--secondary-color); */
-}
-
-hr {
-    margin-top: 25px;
-    border: 1px solid grey;
 }
 
 /*--------------------------------------------------------------
@@ -529,6 +523,11 @@ button {
     transform: translate(-50%, -50%);
     -webkit-transform: translate(-50%, -50%);
     -moz-transform: translate(-50%, -50%);
+}
+
+hr {
+    margin-top: 25px;
+    border: 1px solid grey;
 }
 
 /*
