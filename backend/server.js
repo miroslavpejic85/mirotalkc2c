@@ -80,9 +80,8 @@ app.get('/join/', (req, res) => {
     if (Object.keys(req.query).length > 0) {
         //http://localhost:3000/join?room=test&name=test
         log.debug('[' + req.headers.host + ']' + ' request query', req.query);
-        const roomId = req.query.room;
-        const peerName = req.query.name;
-        if (roomId && peerName) {
+        const { room, name } = req.query;
+        if (room && name) {
             return res.sendFile(htmlClient);
         }
         return notFound(res);
@@ -173,8 +172,7 @@ io.sockets.on('connect', (socket) => {
     });
 
     socket.on('relaySDP', (config) => {
-        const peerId = config.peerId;
-        const sessionDescription = config.sessionDescription;
+        const { peerId, sessionDescription } = config;
 
         sendToPeer(peerId, sockets, 'sessionDescription', {
             peerId: socket.id,
@@ -186,8 +184,7 @@ io.sockets.on('connect', (socket) => {
     });
 
     socket.on('relayICE', (config) => {
-        const peerId = config.peerId;
-        const iceCandidate = config.iceCandidate;
+        const { peerId, iceCandidate } = config;
 
         sendToPeer(peerId, sockets, 'iceCandidate', {
             peerId: socket.id,
@@ -206,10 +203,7 @@ io.sockets.on('connect', (socket) => {
     socket.on('peerStatus', (cfg) => {
         const config = checkXSS(socket.id, cfg);
 
-        const roomId = config.roomId;
-        const peerName = config.peerName;
-        const element = config.element;
-        const active = config.active;
+        const { roomId, peerName, element, active } = config;
 
         for (let peerId in peers[roomId]) {
             if (peers[roomId][peerId]['peerName'] == peerName) {
@@ -226,17 +220,16 @@ io.sockets.on('connect', (socket) => {
                 }
             }
         }
-        sendToRoom(roomId, socket.id, 'peerStatus', {
+
+        const data = {
             peerId: socket.id,
             peerName: peerName,
             element: element,
             active: active,
-        });
-        log.debug('[' + socket.id + '] emit peerStatus to [roomId: ' + roomId + ']', {
-            peerName: peerName,
-            element: element,
-            active: active,
-        });
+        };
+        sendToRoom(roomId, socket.id, 'peerStatus', data);
+
+        log.debug('[' + socket.id + '] emit peerStatus to [roomId: ' + roomId + ']', data);
     });
 
     async function addPeerTo(channel) {

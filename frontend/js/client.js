@@ -195,13 +195,9 @@ function handleAddPeer(config) {
     if (roomPeersCount > 2) {
         return roomIsBusy();
     }
+    const { peers, peerId, shouldCreateOffer, iceServers } = config;
 
-    console.log('Add peer', config.peers);
-
-    const peerId = config.peerId;
-    const peers = config.peers;
-    const shouldCreateOffer = config.shouldCreateOffer;
-    const iceServers = config.iceServers;
+    console.log('Add peer', peers);
 
     if (peerId in peerConnections) {
         return console.warn('Peer already connected', peerId);
@@ -334,14 +330,13 @@ function handleRtcOffer(peerId) {
 
 function handleSessionDescription(config) {
     console.log('Remote Session Description', config);
-    const peerId = config.peerId;
-    const remoteDescription = config.sessionDescription;
-    const description = new RTCSessionDescription(remoteDescription);
+    const { peerId, sessionDescription } = config;
+    const remoteDescription = new RTCSessionDescription(sessionDescription);
     peerConnections[peerId]
-        .setRemoteDescription(description)
+        .setRemoteDescription(remoteDescription)
         .then(() => {
             console.log('Set remote description done!');
-            if (remoteDescription.type == 'offer') {
+            if (sessionDescription.type == 'offer') {
                 console.log('Creating answer');
                 peerConnections[peerId]
                     .createAnswer()
@@ -371,8 +366,7 @@ function handleSessionDescription(config) {
 }
 
 function handleIceCandidate(config) {
-    const peerId = config.peerId;
-    const iceCandidate = config.iceCandidate;
+    const { peerId, iceCandidate } = config;
     peerConnections[peerId].addIceCandidate(new RTCIceCandidate(iceCandidate)).catch((err) => {
         console.error('[Error] addIceCandidate', err);
     });
@@ -393,7 +387,7 @@ function handleDisconnect() {
 
 function handleRemovePeer(config) {
     console.log('Signaling server said to remove peer:', config);
-    const peerId = config.peerId;
+    const { peerId } = config;
 
     if (peerId in peerMediaElements) document.body.removeChild(peerMediaElements[peerId].parentNode);
     if (peerId in peerConnections) peerConnections[peerId].close();
@@ -1001,15 +995,16 @@ function sendMessage() {
 
 function handleMessage(config) {
     playSound('message');
-    console.log('Receive msg: ' + config.msg);
+    const { peerName, msg } = config;
+    console.log('Receive msg: ' + msg);
     Swal.fire({
         position: 'center',
         background: swal.background,
         color: swal.textColor,
         icon: 'info',
         input: 'textarea',
-        inputLabel: `New message from ${config.peerName}`,
-        inputValue: config.msg,
+        inputLabel: `New message from ${peerName}`,
+        inputValue: msg,
         allowOutsideClick: false,
         allowEscapeKey: false,
         showDenyButton: true,
@@ -1026,7 +1021,7 @@ function handleMessage(config) {
             popup: 'animate__animated animate__fadeOutUp',
         },
     }).then((result) => {
-        if (result.isDenied) copyToClipboard(config.msg);
+        if (result.isDenied) copyToClipboard(msg);
         if (result.isConfirmed) emitDcMsg(sanitizeMsg(result.value));
     });
 }
@@ -1057,10 +1052,7 @@ function emitPeerStatus(element, active) {
 }
 
 function handlePeerStatus(config) {
-    const element = config.element;
-    const peerId = config.peerId;
-    const active = config.active;
-
+    const { element, peerId, active } = config;
     switch (element) {
         case 'video':
             setPeerVideoStatus(peerId, active);
