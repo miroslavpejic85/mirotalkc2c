@@ -35,13 +35,13 @@
     "dependencies": {
         "compression": "^1.7.4",
         "cors": "^2.8.5",
+        "dotenv": "^16.0.3",
         "express": "^4.18.2",
         "ngrok": "^4.3.3",
         "socket.io": "^4.6.1",
         "xss": "^1.0.14"
     },
     "devDependencies": {
-        "dotenv": "^16.0.3",
         "prettier": "2.8.7"
     }
 }
