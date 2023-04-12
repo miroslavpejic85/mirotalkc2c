@@ -80,7 +80,7 @@ app.get('/join/', (req, res) => {
     if (Object.keys(req.query).length > 0) {
         //http://localhost:3000/join?room=test&name=test
         log.debug('[' + req.headers.host + ']' + ' request query', req.query);
-        const { room, name } = req.query;
+        const { room, name } = checkXSS('join', req.query);
         if (room && name) {
             return res.sendFile(htmlClient);
         }

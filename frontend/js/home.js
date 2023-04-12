@@ -3,15 +3,15 @@
 console.log('Location', window.location);
 console.log('LocalStorage', window.localStorage);
 
-const roomId = new URLSearchParams(window.location.search).get('room') || '';
+const roomId = filterXSS(new URLSearchParams(window.location.search).get('room') || '');
 
 const roomIdIn = document.getElementById('roomIdInput');
 const userNameIn = document.getElementById('userNameInput');
 const joinBtn = document.getElementById('joinBtn');
 
 function initHome() {
-    roomIdIn.value = roomId ? roomId : window.localStorage.room || '';
-    userNameIn.value = window.localStorage.name || '';
+    roomIdIn.value = roomId ? roomId : filterXSS(window.localStorage.room) || '';
+    userNameIn.value = filterXSS(window.localStorage.name) || '';
 
     joinBtn.onclick = () => {
         if (roomIdIn.value && userNameIn.value) {

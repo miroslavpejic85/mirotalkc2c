@@ -10,7 +10,7 @@ const checkXSS = (id, dataObject) => {
         log.debug('[' + id + '] Sanitization done');
         return JSON.parse(data);
     }
-    return dataObject;
+    return xss(dataObject);
 };
 
 module.exports = checkXSS;
