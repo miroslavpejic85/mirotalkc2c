@@ -71,12 +71,21 @@ To expose MiroTalk C2C in `HTTPS` from your `Local PC`, just follow [this steps]
 
 </details>
 
+<details>
+<summary>Stun/Turn</summary>
+
+<br/>
+
+To install your own [Stun](https://bloggeek.me/webrtcglossary/stun) and [Turn](https://bloggeek.me/webrtcglossary/turn), just follow [this steps](./docs/coturn.md) and edit it in the `.env` file.
+
+</details>
+
 <details open>
 <summary>Self-Hosting</summary>
 
 <br/>
 
-To self-hosting MiroTalk C2C, just follow [this steps](./docs/SelfHosting.md).
+To self-hosting MiroTalk C2C, just follow [this steps](./docs/self-hosting.md).
 
 </details>
 
