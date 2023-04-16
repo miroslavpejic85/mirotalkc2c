@@ -123,7 +123,7 @@ function initClient() {
 
     isWebRTCSupported = IsSupportedWebRTC();
     if (!isWebRTCSupported) {
-        return popupMessage('warning', 'This browser seems not supported WebRTC!');
+        return popupMessage('warning', 'WebRTC', 'This browser seems not supported WebRTC!');
     }
     userAgent = navigator.userAgent.toLowerCase();
     isMobileDevice = isMobile(userAgent);
@@ -449,6 +449,7 @@ function setupLocalMedia(callback, errorBack) {
             if (err.name == 'NotAllowedError') {
                 popupMessage(
                     'warning',
+                    'GetUserMedia',
                     `
                     <p>Meet needs access to the camera and microphone.</p>
                     <p>Click the locked camera and microphone icon in your browser's address bar, before to join room.</p> 
@@ -458,6 +459,7 @@ function setupLocalMedia(callback, errorBack) {
             } else {
                 popupMessage(
                     'warning',
+                    'GetUserMedia',
                     `
                     <p>Meet needs access to the camera and microphone.</p>
                     <p>Make sure is not used by another app</p> 
@@ -666,6 +668,7 @@ function handleEvents() {
             if (isPushToTalkActive) {
                 popupMessage(
                     'toast',
+                    'Push to talk',
                     'If Active, When SpaceBar keydown the microphone will be activated, otherwise will be deactivated, like a walkie-talkie.',
                     'bottom-end',
                     6000,
@@ -726,7 +729,7 @@ function swapCamera() {
         })
         .catch((err) => {
             console.error('[Error] to swapping camera', err);
-            popupMessage('error', 'Error to swapping the camera ' + err.toString());
+            popupMessage('error', 'Swap camera', 'Error to swapping the camera ' + err.toString());
         });
 }
 
@@ -754,7 +757,7 @@ async function toggleScreenSharing() {
         }
     } catch (err) {
         console.error('[Error] unable to share the screen', err);
-        popupMessage('error', 'Unable to share the screen ' + err.toString());
+        popupMessage('error', 'Screen sharing', 'Unable to share the screen ' + err.toString());
     }
 }
 
@@ -772,7 +775,7 @@ function changeCamera(deviceId) {
         })
         .catch((err) => {
             console.error('[Error] changeCamera', err);
-            popupMessage('error', 'Error while swapping camera' + err.tostring());
+            popupMessage('error', 'Change camera', 'Error while swapping camera' + err.tostring());
         });
 }
 
@@ -787,7 +790,7 @@ function changeMicrophone(deviceId) {
         })
         .catch((err) => {
             console.error('[Error] changeMicrophone', err);
-            popupMessage('error', 'Error while swapping microphone' + err.toString());
+            popupMessage('error', 'Change microphone', 'Error while swapping microphone' + err.toString());
         });
 }
 

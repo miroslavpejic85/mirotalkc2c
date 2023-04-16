@@ -49,7 +49,7 @@ function goInFullscreen(element) {
     else if (element.mozRequestFullScreen) element.mozRequestFullScreen();
     else if (element.webkitRequestFullscreen) element.webkitRequestFullscreen();
     else if (element.msRequestFullscreen) element.msRequestFullscreen();
-    else popupMessage('warning', 'Full screen mode not supported by this browser on this device.');
+    else popupMessage('warning', 'Full screen', 'Full screen mode not supported by this browser on this device.');
 }
 
 function goOutFullscreen() {
@@ -69,11 +69,17 @@ function copyRoom() {
         console.log('Copied to clipboard Join Link ', roomURL);
         document.body.removeChild(tmpInput);
         popupMessage(
-            'info',
-            `Meeting link copied to clipboard
-            <p style="color: green">${roomURL}</p>
-            Share the meeting link with the user you want to join.`,
+            'clean',
+            'Room sharing',
+            `<div id="qrRoomContainer">
+                <canvas id="qrRoom"></canvas>
+            </div>
+            <br/>
+            <p style="color:rgb(8, 189, 89);">Join from your mobile device</p>
+            <p style="background:transparent; color:white;">No need for apps, simply capture the QR code with your mobile camera Or Invite someone else to join by sending them the following URL</p>
+            <p style="color:rgb(8, 189, 89);">${roomURL}</p>`,
         );
+        makeRoomQR();
     });
 }
 
@@ -94,7 +100,7 @@ function pasteAndSendMsg() {
             emitDcMsg(msg);
         })
         .catch((err) => {
-            popupMessage('error', err);
+            popupMessage('error', 'Clipboard', err);
         });
 }
 
@@ -102,10 +108,10 @@ function copyToClipboard(text) {
     navigator.clipboard
         .writeText(text)
         .then(() => {
-            popupMessage('toast', 'Message copied!', 'top-end');
+            popupMessage('toast', 'Clipboard', 'Message copied!', 'top-end');
         })
         .catch((err) => {
-            popupMessage('error', err);
+            popupMessage('error', 'Clipboard', err);
         });
 }
 
@@ -175,6 +181,16 @@ function getTimeToString(time) {
     const formattedMM = mm.toString().padStart(2, '0');
     const formattedSS = ss.toString().padStart(2, '0');
     return `${formattedHH}:${formattedMM}:${formattedSS}`;
+}
+
+function makeRoomQR() {
+    let qr = new QRious({
+        element: document.getElementById('qrRoom'),
+        value: roomURL,
+    });
+    qr.set({
+        size: 256,
+    });
 }
 
 async function playSound(name) {

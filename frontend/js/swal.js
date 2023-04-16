@@ -1,7 +1,7 @@
 'use-strict';
 
-function popupMessage(type, message, position = 'center', timer = 3000) {
-    switch (type) {
+function popupMessage(icon, title, message, position = 'center', timer = 3000) {
+    switch (icon) {
         case 'info':
         case 'success':
         case 'warning':
@@ -10,8 +10,23 @@ function popupMessage(type, message, position = 'center', timer = 3000) {
                 allowOutsideClick: false,
                 allowEscapeKey: false,
                 position: position,
-                icon: type,
-                title: type,
+                icon: icon,
+                title: title,
+                html: message,
+                showClass: {
+                    popup: 'animate__animated animate__fadeInDown',
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutUp',
+                },
+            });
+            break;
+        case 'clean':
+            Swal.fire({
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                position: position,
+                title: title,
                 html: message,
                 showClass: {
                     popup: 'animate__animated animate__fadeInDown',
