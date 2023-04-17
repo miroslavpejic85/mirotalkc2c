@@ -119,16 +119,16 @@ function handleBodyEvents() {
     checkElements();
     document.body.onmousemove = () => {
         if (buttonsBar.style.display == 'none' && waitingDivContainer.style.display == 'none') {
-            toggleClassElements('videoHeader', 'inline');
-            buttonsBar.style.display = 'block';
+            toggleClassElements('videoHeader', true);
+            elemDisplay(buttonsBar, true);
         }
     };
 }
 
 function checkElements() {
     if (buttonsBar.style.display != 'none') {
-        toggleClassElements('videoHeader', 'none');
-        buttonsBar.style.display = 'none';
+        toggleClassElements('videoHeader', false);
+        elemDisplay(buttonsBar, false);
     }
     setTimeout(checkElements, 20000);
 }
@@ -136,7 +136,7 @@ function checkElements() {
 function toggleClassElements(className, displayState) {
     const elements = document.getElementsByClassName(className);
     for (let i = 0; i < elements.length; i++) {
-        elements[i].style.display = displayState;
+        elemDisplay(elements[i], displayState);
     }
 }
 
