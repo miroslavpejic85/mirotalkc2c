@@ -280,16 +280,16 @@ video:fullscreen {
 #settings {
     position: absolute;
     z-index: 8;
-    top: 5px;
-    right: 5px;
+    top: 0px;
+    right: 0px;
     display: none;
     overflow: hidden;
     background: var(--primary-color);
     max-width: 280px;
-    height: 93%;
+    height: 100%;
     padding: 20px;
     border: var(--border);
-    border-radius: var(--border-radius);
+    border-radius: var(--border-radius) 0%;
 }
 
 #settings button {

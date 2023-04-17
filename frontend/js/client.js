@@ -399,7 +399,7 @@ function handleRemovePeer(config) {
     if (!thereIsPeerConnections()) {
         elemDisplay(waitingDivContainer, true);
         elemDisplay(buttonsBar, false);
-        if (settings.classList.contains('show')) settings.classList.toggle('show');
+        elemDisplay(settings, false);
     }
 
     console.log('Peers count: ' + Object.keys(peerConnections).length);
@@ -646,7 +646,7 @@ function handleEvents() {
         }
     });
     settingsBtn.onclick = () => {
-        elemDisplay(settings, true);
+        elemDisplay(settings, settings.style.display == 'none' || settings.style.display == '');
     };
     settingsCloseBtn.onclick = () => {
         elemDisplay(settings, false);
