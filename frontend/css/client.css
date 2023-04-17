@@ -282,6 +282,7 @@ video:fullscreen {
     z-index: 8;
     top: 5px;
     right: 5px;
+    display: none;
     overflow: hidden;
     background: var(--primary-color);
     max-width: 280px;

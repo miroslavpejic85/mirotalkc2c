@@ -203,7 +203,7 @@ function handleAddPeer(config) {
         return console.warn('Peer already connected', peerId);
     }
 
-    buttonsBar.style.display = 'block';
+    elemDisplay(buttonsBar, true);
 
     peerConnection = new RTCPeerConnection({ iceServers: iceServers });
     peerConnections[peerId] = peerConnection;
@@ -218,7 +218,7 @@ function handleAddPeer(config) {
         handleRtcOffer(peerId);
     }
     if (thereIsPeerConnections()) {
-        waitingDivContainer.style.display = 'none';
+        elemDisplay(waitingDivContainer, false);
     }
     handleBodyEvents();
     playSound('join');
@@ -397,8 +397,8 @@ function handleRemovePeer(config) {
     delete peerMediaElements[peerId];
 
     if (!thereIsPeerConnections()) {
-        waitingDivContainer.style.display = 'block';
-        buttonsBar.style.display = 'none';
+        elemDisplay(waitingDivContainer, true);
+        elemDisplay(buttonsBar, false);
         if (settings.classList.contains('show')) settings.classList.toggle('show');
     }
 
@@ -492,7 +492,7 @@ function setLocalMedia(stream) {
     myFullScreenBtn.id = 'myFullScreen';
     myFullScreenBtn.className = className.fullScreenOn;
     myVideoHeader.id = 'myVideoHeader';
-    myVideoHeader.className = 'videoHeader fadeIn';
+    myVideoHeader.className = 'videoHeader animate__animated animate__fadeInDown animate__faster';
     myVideoFooter.id = 'myVideoFooter';
     myVideoFooter.className = 'videoFooter';
     myVideoPeerName.id = 'myVideoPeerName';
@@ -513,7 +513,7 @@ function setLocalMedia(stream) {
     myLocalMedia.volume = 0;
     myLocalMedia.controls = false;
     myVideoWrap.id = 'myVideoWrap';
-    myVideoWrap.className = 'myVideoWrap fadeIn';
+    myVideoWrap.className = 'myVideoWrap animate__animated animate__fadeInLeft animate__faster';
     myVideoWrap.appendChild(myVideoHeader);
     myVideoWrap.appendChild(myVideoFooter);
     myVideoWrap.appendChild(myVideoAvatarImage);
@@ -540,7 +540,7 @@ function setRemoteMedia(stream, peers, peerId) {
     const remoteAudioStatusIcon = document.createElement('button');
     const remoteVideoAvatarImage = document.createElement('img');
     remoteVideoHeader.id = peerId + '_remoteVideoHeader';
-    remoteVideoHeader.className = 'videoHeader fadeIn';
+    remoteVideoHeader.className = 'videoHeader animate__animated animate__fadeInDown animate__faster';
     remoteVideoFooter.id = peerId + '_remoteVideoFooter';
     remoteVideoFooter.className = 'remoteVideoFooter';
     remoteVideoPeerName.id = peerId + '_remotePeerName';
@@ -601,7 +601,7 @@ function handleEvents() {
             shareRoom();
         };
     } else {
-        shareRoomBtn.style.display = 'none';
+        elemDisplay(shareRoomBtn, false);
     }
     initHideMeBtn.onclick = () => {
         toggleHideMe();
@@ -632,8 +632,8 @@ function handleEvents() {
             await toggleScreenSharing();
         };
     } else {
-        initScreenShareBtn.style.display = 'none';
-        screenShareBtn.style.display = 'none';
+        elemDisplay(initScreenShareBtn, false);
+        elemDisplay(screenShareBtn, false);
     }
     navigator.mediaDevices.enumerateDevices().then((devices) => {
         const videoInput = devices.filter((device) => device.kind === 'videoinput');
@@ -642,14 +642,14 @@ function handleEvents() {
                 swapCamera();
             };
         } else {
-            swapCameraBtn.style.display = 'none';
+            elemDisplay(swapCameraBtn, false);
         }
     });
     settingsBtn.onclick = () => {
-        settings.classList.toggle('show');
+        elemDisplay(settings, true);
     };
     settingsCloseBtn.onclick = () => {
-        settings.classList.toggle('show');
+        elemDisplay(settings, false);
     };
     sendMsgBtn.onclick = () => {
         sendMessage();
@@ -661,7 +661,7 @@ function handleEvents() {
         changeCamera(e.target.value);
     };
     if (isMobileDevice) {
-        pushToTalkDiv.style.display = 'none';
+        elemDisplay(pushToTalkDiv, false);
     } else {
         switchPushToTalk.onchange = (e) => {
             isPushToTalkActive = e.currentTarget.checked;
@@ -701,15 +701,15 @@ function handleEvents() {
 }
 
 function showWaitingUser() {
-    loadingDivContainer.style.display = 'none';
-    waitingDivContainer.style.display = 'block';
+    elemDisplay(loadingDivContainer, false);
+    elemDisplay(waitingDivContainer, true);
 }
 
 function toggleHideMe() {
     const isVideoWrapHidden = myVideoWrap.style.display == 'none';
     hideMeBtn.className = isVideoWrapHidden ? className.user : className.userOff;
     initHideMeBtn.className = isVideoWrapHidden ? className.user : className.userOff;
-    myVideoWrap.style.display = isVideoWrapHidden ? 'block' : 'none';
+    elemDisplay(myVideoWrap, isVideoWrapHidden ? true : false);
 }
 
 function swapCamera() {
@@ -900,7 +900,7 @@ function setVideoButtons(active, e = false) {
     if (e) e.target.className = active ? className.videoOn : className.videoOff;
     videoBtn.className = active ? className.videoOn : className.videoOff;
     initVideoBtn.className = active ? className.videoOn : className.videoOff;
-    myVideoAvatarImage.style.display = active ? 'none' : 'block';
+    elemDisplay(myVideoAvatarImage, active ? false : true);
 }
 
 function refreshMyLocalVideoStream(stream) {
@@ -1072,7 +1072,7 @@ function handlePeerStatus(config) {
 function setPeerVideoStatus(peerId, active) {
     console.log(`Remote PeerId ${peerId} video status`, active);
     const peerVideoAvatarImage = document.getElementById(peerId + '_remoteVideoAvatar');
-    peerVideoAvatarImage.style.display = active ? 'none' : 'block';
+    elemDisplay(peerVideoAvatarImage, active ? false : true);
 }
 
 function setPeerAudioStatus(peerId, active) {
@@ -1086,5 +1086,5 @@ function setPeerScreenStatus(peerId, active) {
     const peerVideo = document.getElementById(peerId + '_remoteVideo');
     const peerVideoAvatarImage = document.getElementById(peerId + '_remoteVideoAvatar');
     peerVideo.style.objectFit = active ? 'contain' : 'cover';
-    peerVideoAvatarImage.style.display = active ? 'none' : 'block';
+    elemDisplay(peerVideoAvatarImage, active ? false : true);
 }

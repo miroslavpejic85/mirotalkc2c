@@ -183,6 +183,10 @@ function getTimeToString(time) {
     return `${formattedHH}:${formattedMM}:${formattedSS}`;
 }
 
+function elemDisplay(elem, show) {
+    elem.style.display = show ? 'block' : 'none';
+}
+
 function makeRoomQR() {
     let qr = new QRious({
         element: document.getElementById('qrRoom'),
