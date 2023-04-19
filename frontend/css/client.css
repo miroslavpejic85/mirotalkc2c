@@ -155,9 +155,10 @@ body {
 .myVideoWrap {
     position: absolute;
     z-index: 5;
+    top: 10px;
+    left: 10px;
     width: var(--my-video-wrap-width);
     height: var(--my-video-wrap-height);
-    margin: 10px 0 0 10px; /* top right bottom  left */
     border: var(--border);
     border-radius: var(--border-radius);
 }
