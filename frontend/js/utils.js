@@ -121,6 +121,7 @@ function handleBodyEvents() {
         if (buttonsBar.style.display == 'none' && waitingDivContainer.style.display == 'none') {
             toggleClassElements('videoHeader', true);
             elemDisplay(buttonsBar, true);
+            animateCSS(buttonsBar, 'fadeInUp');
         }
     };
 }
@@ -128,7 +129,9 @@ function handleBodyEvents() {
 function checkElements() {
     if (buttonsBar.style.display != 'none') {
         toggleClassElements('videoHeader', false);
-        elemDisplay(buttonsBar, false);
+        animateCSS(buttonsBar, 'fadeOutDown').then((msg) => {
+            elemDisplay(buttonsBar, false);
+        });
     }
     setTimeout(checkElements, 20000);
 }
@@ -185,6 +188,19 @@ function getTimeToString(time) {
 
 function elemDisplay(elem, show) {
     elem.style.display = show ? 'block' : 'none';
+}
+
+function animateCSS(element, animation, prefix = 'animate__') {
+    return new Promise((resolve, reject) => {
+        const animationName = `${prefix}${animation}`;
+        element.classList.add(`${prefix}animated`, animationName);
+        function handleAnimationEnd(event) {
+            event.stopPropagation();
+            element.classList.remove(`${prefix}animated`, animationName);
+            resolve('Animation ended');
+        }
+        element.addEventListener('animationend', handleAnimationEnd, { once: true });
+    });
 }
 
 function makeRoomQR() {

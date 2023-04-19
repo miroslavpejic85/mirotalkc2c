@@ -44,7 +44,9 @@ const sessionTime = document.getElementById('sessionTime');
 
 const roomURL = window.location.origin + '/?room=' + roomId;
 
-const forceToMaxVideoAndFps = false;
+const config = {
+    forceToMaxVideoAndFps: false,
+};
 
 const image = {
     camOff: '../images/camOff.png',
@@ -204,6 +206,7 @@ function handleAddPeer(config) {
     }
 
     elemDisplay(buttonsBar, true);
+    animateCSS(buttonsBar, 'fadeInUp');
 
     peerConnection = new RTCPeerConnection({ iceServers: iceServers });
     peerConnections[peerId] = peerConnection;
@@ -513,7 +516,7 @@ function setLocalMedia(stream) {
     myLocalMedia.volume = 0;
     myLocalMedia.controls = false;
     myVideoWrap.id = 'myVideoWrap';
-    myVideoWrap.className = 'myVideoWrap animate__animated animate__fadeInLeft animate__faster';
+    myVideoWrap.className = 'myVideoWrap';
     myVideoWrap.appendChild(myVideoHeader);
     myVideoWrap.appendChild(myVideoFooter);
     myVideoWrap.appendChild(myVideoAvatarImage);
@@ -646,10 +649,10 @@ function handleEvents() {
         }
     });
     settingsBtn.onclick = () => {
-        elemDisplay(settings, settings.style.display == 'none' || settings.style.display == '');
+        toggleSettings();
     };
     settingsCloseBtn.onclick = () => {
-        elemDisplay(settings, false);
+        toggleSettings();
     };
     sendMsgBtn.onclick = () => {
         sendMessage();
@@ -709,7 +712,25 @@ function toggleHideMe() {
     const isVideoWrapHidden = myVideoWrap.style.display == 'none';
     hideMeBtn.className = isVideoWrapHidden ? className.user : className.userOff;
     initHideMeBtn.className = isVideoWrapHidden ? className.user : className.userOff;
-    elemDisplay(myVideoWrap, isVideoWrapHidden ? true : false);
+    if (isVideoWrapHidden) {
+        elemDisplay(myVideoWrap, true);
+        animateCSS(myVideoWrap, 'fadeInLeft');
+    } else {
+        animateCSS(myVideoWrap, 'fadeOutLeft').then((msg) => {
+            elemDisplay(myVideoWrap, false);
+        });
+    }
+}
+
+function toggleSettings() {
+    if (settings.style.display == 'none' || settings.style.display == '') {
+        elemDisplay(settings, true);
+        animateCSS(settings, 'fadeInRight');
+    } else {
+        animateCSS(settings, 'fadeOutRight').then((msg) => {
+            elemDisplay(settings, false);
+        });
+    }
 }
 
 function swapCamera() {
@@ -800,7 +821,7 @@ function getAudioConstraints() {
 
 function getVideoConstraints(deviceId = false) {
     let videoConstraints = true;
-    if (forceToMaxVideoAndFps) {
+    if (config.forceToMaxVideoAndFps) {
         videoConstraints = {
             width: { ideal: 3840 },
             height: { ideal: 2160 },
