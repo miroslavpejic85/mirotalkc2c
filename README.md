@@ -121,3 +121,35 @@ For a MiroTalk license under conditions other than AGPLv3, please contact us at 
 Thank you!
 
 </details>
+
+
+---
+
+<details>
+<summary>MiroTalk P2P</summary>
+
+<br>
+
+Try also [MiroTalk P2P](https://github.com/miroslavpejic85/mirotalk) `peer to peer` real-time video conferences, optimized for small groups. Unlimited time, unlimited rooms each having 5-8 participants.
+
+</details>
+
+<details>
+<summary>MiroTalk SFU</summary>
+
+<br>
+
+Try also [MiroTalk SFU](https://github.com/miroslavpejic85/mirotalksfu) `selective forwarding unit` real-time video conferences, optimized for large groups. Unlimited time, unlimited rooms each having 8+ participants.
+
+</details>
+
+<details>
+<summary>MiroTalk WEB</summary>
+
+<br>
+
+Try also [MiroTalk WEB](https://github.com/miroslavpejic85/mirotalkwebrtc) rooms scheduler.
+
+</details>
+
+---
