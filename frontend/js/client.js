@@ -1013,12 +1013,17 @@ function sendMessage() {
         },
     }).then((result) => {
         if (result.isDenied) pasteAndSendMsg();
-        if (result.isConfirmed) emitDcMsg(sanitizeMsg(result.value));
+        if (result.isConfirmed) {
+            result.value = filterXSS(result.value);
+            emitDcMsg(result.value);
+        }
     });
 }
 
 function handleMessage(config) {
     playSound('message');
+    config.peerName = filterXSS(config.peerName);
+    config.msg = filterXSS(config.msg);
     const { peerName, msg } = config;
     console.log('Receive msg: ' + msg);
     Swal.fire({
@@ -1046,7 +1051,10 @@ function handleMessage(config) {
         },
     }).then((result) => {
         if (result.isDenied) copyToClipboard(msg);
-        if (result.isConfirmed) emitDcMsg(sanitizeMsg(result.value));
+        if (result.isConfirmed) {
+            result.value = filterXSS(result.value);
+            emitDcMsg(result.value);
+        }
     });
 }
 

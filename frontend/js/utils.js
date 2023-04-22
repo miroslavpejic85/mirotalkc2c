@@ -143,7 +143,8 @@ function toggleClassElements(className, displayState) {
     }
 }
 
-function sanitizeMsg(text) {
+function sanitizeMsg(txt) {
+    const text = filterXSS(txt);
     if (text.trim().length == 0) return;
     if (isHtml(text)) return sanitizeHtml(text);
     return text;
@@ -158,11 +159,16 @@ function isHtml(str) {
     return false;
 }
 
-function sanitizeHtml(str) {
-    const tagsToReplace = { '&': '&amp;', '<': '&lt;', '>': '&gt;' };
-    const replaceTag = (tag) => tagsToReplace[tag] || tag;
-    const safe_tags_replace = (str) => str.replace(/[&<>]/g, replaceTag);
-    return safe_tags_replace(str);
+function sanitizeHtml(input) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;',
+        '/': '&#x2F;',
+    };
+    return input.replace(/[&<>"'/]/g, (m) => map[m]);
 }
 
 function startSessionTime() {
