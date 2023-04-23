@@ -499,7 +499,7 @@ function setLocalMedia(stream) {
     myVideoFooter.id = 'myVideoFooter';
     myVideoFooter.className = 'videoFooter';
     myVideoPeerName.id = 'myVideoPeerName';
-    myVideoPeerName.innerHTML = peerName + ' (me)';
+    myVideoPeerName.innerText = peerName + ' (me)';
     myAudioStatusIcon.id = 'myAudioStatusIcon';
     myAudioStatusIcon.className = className.audioOn;
     myVideoAvatarImage.id = 'myVideoAvatarImage';
@@ -547,7 +547,7 @@ function setRemoteMedia(stream, peers, peerId) {
     remoteVideoFooter.id = peerId + '_remoteVideoFooter';
     remoteVideoFooter.className = 'remoteVideoFooter';
     remoteVideoPeerName.id = peerId + '_remotePeerName';
-    remoteVideoPeerName.innerHTML = peerName;
+    remoteVideoPeerName.innerText = peerName;
     remoteFullScreenBtn.id = peerId + '_remoteFullScreen';
     remoteFullScreenBtn.className = className.fullScreenOn;
     remoteAudioStatusIcon.id = peerId + '_remoteAudioStatus';

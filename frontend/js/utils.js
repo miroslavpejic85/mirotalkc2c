@@ -175,7 +175,7 @@ function startSessionTime() {
     const callStartTime = Date.now();
     setInterval(function printTime() {
         const callElapsedTime = Date.now() - callStartTime;
-        sessionTime.innerHTML = getTimeToString(callElapsedTime);
+        sessionTime.innerText = getTimeToString(callElapsedTime);
     }, 1000);
 }
 
