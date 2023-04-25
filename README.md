@@ -21,7 +21,7 @@
 
 <br/>
 
-Install [NodeJs](https://nodejs.org/en/blog/release/v16.15.1/).
+Install [NodeJs](https://nodejs.org/en/blog/release/v18.16.0).
 
 ```bash
 # Copy .env.template in .env and edit it if needed
