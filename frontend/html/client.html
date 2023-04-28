@@ -23,6 +23,7 @@
 
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+        <link rel="stylesheet" href="../css/chat.css" />
         <link rel="stylesheet" href="../css/client.css" />
 
         <script async src="../js/umami.js"></script>
@@ -73,7 +74,7 @@ Wait user to join.
             <button id="videoBtn" class="fas fa-video"></button>
             <button id="swapCameraBtn" class="fas fa-camera-rotate"></button>
             <button id="screenShareBtn" class="fas fa-desktop"></button>
-            <button id="sendMsgBtn" class="fas fa-paper-plane"></button>
+            <button id="chatOpenBtn" class="fas fa-paper-plane"></button>
             <button id="settingsBtn" class="fas fa-ellipsis-vertical"></button>
             <button id="homeButton" class="fas fa-home"></button>
         </div>
@@ -96,6 +97,18 @@ Wait user to join.
                 </tr>
             </table>
             <hr />
+        </div>
+
+        <div id="chat" class="chat">
+            <div class="header">
+                <span class="title">Chat</span>
+                <button id="chatCloseBtn" class="fas fa-times"></button>
+            </div>
+            <div class="body" id="chatBody"></div>
+            <div class="footer">
+                <textarea id="chatInput" placeholder="Write a message..."></textarea>
+                <button id="chatSendBtn" class="fas fa-paper-plane"></button>
+            </div>
         </div>
     </body>
 </html>

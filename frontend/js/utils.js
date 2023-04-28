@@ -91,30 +91,6 @@ async function shareRoom() {
     }
 }
 
-function pasteAndSendMsg() {
-    navigator.clipboard
-        .readText()
-        .then((text) => {
-            const msg = sanitizeMsg(text);
-            document.getElementsByClassName('swal2-textarea').value = msg;
-            emitDcMsg(msg);
-        })
-        .catch((err) => {
-            popupMessage('error', 'Clipboard', err);
-        });
-}
-
-function copyToClipboard(text) {
-    navigator.clipboard
-        .writeText(text)
-        .then(() => {
-            popupMessage('toast', 'Clipboard', 'Message copied!', 'top-end');
-        })
-        .catch((err) => {
-            popupMessage('error', 'Clipboard', err);
-        });
-}
-
 function handleBodyEvents() {
     checkElements();
     document.body.onmousemove = () => {
@@ -143,34 +119,6 @@ function toggleClassElements(className, displayState) {
     }
 }
 
-function sanitizeMsg(txt) {
-    const text = filterXSS(txt);
-    if (text.trim().length == 0) return;
-    if (isHtml(text)) return sanitizeHtml(text);
-    return text;
-}
-
-function isHtml(str) {
-    const a = document.createElement('div');
-    a.innerHTML = str;
-    for (let c = a.childNodes, i = c.length; i--; ) {
-        if (c[i].nodeType == 1) return true;
-    }
-    return false;
-}
-
-function sanitizeHtml(input) {
-    const map = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;',
-        '/': '&#x2F;',
-    };
-    return input.replace(/[&<>"'/]/g, (m) => map[m]);
-}
-
 function startSessionTime() {
     const callStartTime = Date.now();
     setInterval(function printTime() {
@@ -190,6 +138,19 @@ function getTimeToString(time) {
     const formattedMM = mm.toString().padStart(2, '0');
     const formattedSS = ss.toString().padStart(2, '0');
     return `${formattedHH}:${formattedMM}:${formattedSS}`;
+}
+
+function getTime() {
+    const date = new Date();
+    return date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds();
+}
+
+function escapeSpecialChars(regex) {
+    return regex.replace(/([()[{*+.$^\\|?])/g, '\\$1');
+}
+
+function getLineBreaks(message) {
+    return (message.match(/\n/g) || []).length;
 }
 
 function elemDisplay(elem, show) {

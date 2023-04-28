@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.0.4
+ * @version 1.0.5
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -30,7 +30,6 @@ const hideMeBtn = document.getElementById('hideMeBtn');
 const audioBtn = document.getElementById('audioBtn');
 const videoBtn = document.getElementById('videoBtn');
 const swapCameraBtn = document.getElementById('swapCameraBtn');
-const sendMsgBtn = document.getElementById('sendMsgBtn');
 const settingsBtn = document.getElementById('settingsBtn');
 const screenShareBtn = document.getElementById('screenShareBtn');
 const homeButton = document.getElementById('homeButton');
@@ -41,6 +40,12 @@ const videoSource = document.getElementById('videoSource');
 const pushToTalkDiv = document.getElementById('pushToTalkDiv');
 const switchPushToTalk = document.getElementById('switchPushToTalk');
 const sessionTime = document.getElementById('sessionTime');
+const chat = document.getElementById('chat');
+const chatOpenBtn = document.getElementById('chatOpenBtn');
+const chatBody = document.getElementById('chatBody');
+const chatCloseBtn = document.getElementById('chatCloseBtn');
+const chatInput = document.getElementById('chatInput');
+const chatSendBtn = document.getElementById('chatSendBtn');
 
 const roomURL = window.location.origin + '/?room=' + roomId;
 
@@ -70,6 +75,19 @@ const className = {
 const swal = {
     background: '#202123',
     textColor: '#ffffff',
+};
+
+const chatInputEmoji = {
+    '<3': '\u2764\uFE0F',
+    '</3': '\uD83D\uDC94',
+    ':D': '\uD83D\uDE00',
+    ':)': '\uD83D\uDE03',
+    ';)': '\uD83D\uDE09',
+    ':(': '\uD83D\uDE12',
+    ':p': '\uD83D\uDE1B',
+    ';p': '\uD83D\uDE1C',
+    ":'(": '\uD83D\uDE22',
+    ':+1:': '\uD83D\uDC4D',
 };
 
 let userAgent;
@@ -403,6 +421,7 @@ function handleRemovePeer(config) {
         elemDisplay(waitingDivContainer, true);
         elemDisplay(buttonsBar, false);
         elemDisplay(settings, false);
+        elemDisplay(chat, false);
     }
 
     console.log('Peers count: ' + Object.keys(peerConnections).length);
@@ -654,9 +673,6 @@ function handleEvents() {
     settingsCloseBtn.onclick = () => {
         toggleSettings();
     };
-    sendMsgBtn.onclick = () => {
-        sendMessage();
-    };
     audioSource.onchange = (e) => {
         changeMicrophone(e.target.value);
     };
@@ -665,6 +681,8 @@ function handleEvents() {
     };
     if (isMobileDevice) {
         elemDisplay(pushToTalkDiv, false);
+        document.documentElement.style.setProperty('--chat-width', '100%');
+        document.documentElement.style.setProperty('--settings-width', '92%');
     } else {
         switchPushToTalk.onchange = (e) => {
             isPushToTalkActive = e.currentTarget.checked;
@@ -698,6 +716,28 @@ function handleEvents() {
             }
         };
     }
+    chatOpenBtn.onclick = () => {
+        toggleChat();
+    };
+    chatCloseBtn.onclick = () => {
+        toggleChat();
+    };
+    chatSendBtn.onclick = () => {
+        sendMessage();
+    };
+    chatInput.onkeydown = (e) => {
+        if (e.code === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            chatSendBtn.click();
+        }
+    };
+    chatInput.oninput = function () {
+        for (let i in chatInputEmoji) {
+            let regex = new RegExp(i.replace(/([()[{*+.$^\\|?])/g, '\\$1'), 'gim');
+            this.value = this.value.replace(regex, chatInputEmoji[i]);
+        }
+        checkLineBreaks();
+    };
     homeButton.onclick = () => {
         endCall();
     };
@@ -724,10 +764,11 @@ function toggleHideMe() {
 
 function toggleSettings() {
     if (settings.style.display == 'none' || settings.style.display == '') {
-        elemDisplay(settings, true);
-        animateCSS(settings, 'fadeInRight');
+            elemDisplay(chat, false);
+            elemDisplay(settings, true);
+            animateCSS(settings, 'fadeInRight');
     } else {
-        animateCSS(settings, 'fadeOutRight').then((msg) => {
+        animateCSS(settings, 'fadeOutRight').then((ok) => {
             elemDisplay(settings, false);
         });
     }
@@ -988,79 +1029,30 @@ function handleVideoZoom(videoMedia, videoAvatarImage) {
     };
 }
 
-function sendMessage() {
-    Swal.fire({
-        position: 'center',
-        background: swal.background,
-        color: swal.textColor,
-        input: 'textarea',
-        inputLabel: 'Send Message',
-        inputPlaceholder: 'Type your message here...',
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        showDenyButton: true,
-        showCancelButton: true,
-        cancelButtonColor: 'red',
-        denyButtonColor: 'green',
-        confirmButtonText: `Send`,
-        denyButtonText: `Paste and Send`,
-        cancelButtonText: `Close`,
-        showClass: {
-            popup: 'animate__animated animate__fadeInDown',
-        },
-        hideClass: {
-            popup: 'animate__animated animate__fadeOutUp',
-        },
-    }).then((result) => {
-        if (result.isDenied) pasteAndSendMsg();
-        if (result.isConfirmed) {
-            result.value = filterXSS(result.value);
-            emitDcMsg(result.value);
-        }
-    });
+function toggleChat() {
+    if (chat.style.display == 'none' || chat.style.display == '') {
+        elemDisplay(chat, true);
+        animateCSS(chat, 'fadeInRight');
+    } else {
+        animateCSS(chat, 'fadeOutRight').then((ok) => {
+            elemDisplay(chat, false);
+        });
+    }
 }
 
-function handleMessage(config) {
-    playSound('message');
-    config.peerName = filterXSS(config.peerName);
-    config.msg = filterXSS(config.msg);
-    const { peerName, msg } = config;
-    console.log('Receive msg: ' + msg);
-    Swal.fire({
-        position: 'center',
-        background: swal.background,
-        color: swal.textColor,
-        icon: 'info',
-        input: 'textarea',
-        inputLabel: `New message from ${peerName}`,
-        inputValue: msg,
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        showDenyButton: true,
-        showCancelButton: true,
-        cancelButtonColor: 'red',
-        denyButtonColor: 'green',
-        confirmButtonText: `Reply`,
-        denyButtonText: `Copy`,
-        cancelButtonText: `Close`,
-        showClass: {
-            popup: 'animate__animated animate__fadeInDown',
-        },
-        hideClass: {
-            popup: 'animate__animated animate__fadeOutUp',
-        },
-    }).then((result) => {
-        if (result.isDenied) copyToClipboard(msg);
-        if (result.isConfirmed) {
-            result.value = filterXSS(result.value);
-            emitDcMsg(result.value);
-        }
-    });
+function sendMessage() {
+    console.log(typeof chatInput.value);
+    if (!chatInput.value) return;
+    chatInput.value = filterXSS(chatInput.value);
+    emitDcMsg(chatInput.value);
+    chatInput.value = '';
+    checkLineBreaks();
 }
 
 function emitDcMsg(msg) {
     if (msg) {
         console.log('Send msg: ' + msg);
+        appendMessage(peerName, msg);
         Object.keys(dataChannels).map((peerId) =>
             dataChannels[peerId].send(
                 JSON.stringify({
@@ -1071,6 +1063,40 @@ function emitDcMsg(msg) {
                 }),
             ),
         );
+    }
+}
+
+function appendMessage(name, msg) {
+    const div = document.createElement('div');
+    const span = document.createElement('span');
+    const p = document.createElement('pre');
+    div.className = 'msg';
+    span.className = 'from';
+    span.innerText = name + ' ' + getTime();
+    p.className = 'text';
+    p.innerText = msg;
+    div.appendChild(span);
+    div.appendChild(p);
+    chatBody.appendChild(div);
+    chatBody.scrollTop += 500;
+}
+
+function handleMessage(config) {
+    playSound('message');
+    const name = filterXSS(config.peerName);
+    const msg = filterXSS(config.msg);
+    console.log('Receive msg: ' + msg);
+    if (chat.style.display == 'none' || chat.style.display == '') {
+        elemDisplay(chat, true);
+        animateCSS(chat, 'fadeInRight');
+    }
+    appendMessage(name, msg);
+}
+
+function checkLineBreaks() {
+    chatInput.style.height = '';
+    if (getLineBreaks(chatInput.value) > 0 || chatInput.value.length > 50) {
+        chatInput.style.height = '150px';
     }
 }
 

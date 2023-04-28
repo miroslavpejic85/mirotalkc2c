@@ -1,0 +1,121 @@
+.chat {
+    z-index: 9;
+    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: var(--chat-width);
+    height: 100%;
+    background: var(--chat-bg);
+    overflow: hidden;
+    border: var(--border);
+    border-radius: var(--border-radius) 0% 0%;
+}
+
+.chat .header,
+.chat .body {
+    padding: 5px;
+}
+.chat .header {
+    height: 30px;
+    background: var(--chat-bg);
+    border-bottom: var(--border);
+    border-radius: var(--border-radius) 0% 0%;
+}
+.chat .body {
+    margin-top: 0;
+    min-height: 85%;
+    max-height: 85%;
+    background: var(--chat-bg);
+    overflow: auto;
+}
+.chat .footer {
+    position: fixed;
+    bottom: 0px;
+    width: var(--chat-width);
+    background: var(--chat-bg);
+}
+
+.chat .header .title {
+    padding: 8px;
+    float: left;
+    font-weight: bold;
+    color: white;
+}
+.chat .header button {
+    padding: 5px;
+    float: right;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--text-color);
+    background: var(--chat-bg);
+}
+
+.chat .body .msg {
+    margin-top: 10px;
+}
+.chat .body .msg .from {
+    padding: 5px;
+    font-weight: bold;
+    color: var(--secondary-color);
+    border-bottom: 0.1px solid #439fff;
+}
+.chat .body .msg .text {
+    padding: 5px;
+    background: var(--chat-bg);
+    color: var(--text-color);
+    overflow: auto;
+    user-select: text;
+}
+
+.chat .footer textarea {
+    position: absolute;
+    padding: 10px;
+    bottom: 0;
+    left: 0;
+    height: 20px;
+    width: 93%;
+    color: var(--text-color);
+    background: var(--chat-bg);
+    border: var(--border);
+    border-radius: var(--border-radius) 0% 0%;
+    -webkit-transition: height 1s;
+    -moz-transition: height 1s;
+    -ms-transition: height 1s;
+    -o-transition: height 1s;
+    transition: height 1s;
+    resize: none;
+}
+.chat .footer textarea:focus {
+    border: 1px solid #439fff;
+}
+.chat .footer button {
+    position: absolute;
+    bottom: 13px;
+    right: 5px;
+    border: none;
+    float: right;
+    background: transparent;
+    color: #439fff;
+}
+.chat .footer button:hover {
+    color: var(--text-color);
+}
+
+.chat .body::-webkit-scrollbar,
+.chat .msg .text::-webkit-scrollbar,
+.chat .footer textarea::-webkit-scrollbar {
+    width: 5px;
+}
+
+.chat .body::-webkit-scrollbar-track,
+.chat .msg .text::-webkit-scrollbar-track,
+.chat .footer textarea::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.chat .body::-webkit-scrollbar-thumb,
+.chat .msg .text::-webkit-scrollbar-thumb,
+.chat .footer textarea::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+}
