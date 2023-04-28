@@ -38,6 +38,7 @@ const settingsCloseBtn = document.getElementById('settingsCloseBtn');
 const audioSource = document.getElementById('audioSource');
 const videoSource = document.getElementById('videoSource');
 const pushToTalkDiv = document.getElementById('pushToTalkDiv');
+const switchMaxVideoQuality = document.getElementById('switchMaxVideoQuality');
 const switchPushToTalk = document.getElementById('switchPushToTalk');
 const sessionTime = document.getElementById('sessionTime');
 const chat = document.getElementById('chat');
@@ -50,7 +51,7 @@ const chatSendBtn = document.getElementById('chatSendBtn');
 const roomURL = window.location.origin + '/?room=' + roomId;
 
 const config = {
-    forceToMaxVideoAndFps: false,
+    forceToMaxVideoAndFps: window.localStorage.forceToMaxVideoAndFps == 'true' || false,
 };
 
 const image = {
@@ -679,6 +680,22 @@ function handleEvents() {
     videoSource.onchange = (e) => {
         changeCamera(e.target.value);
     };
+    switchMaxVideoQuality.checked = config.forceToMaxVideoAndFps;
+    switchMaxVideoQuality.onchange = (e) => {
+        config.forceToMaxVideoAndFps = e.currentTarget.checked;
+        window.localStorage.forceToMaxVideoAndFps = config.forceToMaxVideoAndFps;
+        refreshVideoConstraints();
+        if (config.forceToMaxVideoAndFps) {
+            popupMessage(
+                'toast',
+                'Max video quality and fps',
+                'If Active, The video resolution will be forced up to 4k and 60fps! (High bandwidth required)',
+                'top',
+                6000,
+            );
+        }
+        playSound('switch');
+    };
     if (isMobileDevice) {
         elemDisplay(pushToTalkDiv, false);
         document.documentElement.style.setProperty('--chat-width', '100%');
@@ -764,9 +781,9 @@ function toggleHideMe() {
 
 function toggleSettings() {
     if (settings.style.display == 'none' || settings.style.display == '') {
-            elemDisplay(chat, false);
-            elemDisplay(settings, true);
-            animateCSS(settings, 'fadeInRight');
+        elemDisplay(chat, false);
+        elemDisplay(settings, true);
+        animateCSS(settings, 'fadeInRight');
     } else {
         animateCSS(settings, 'fadeOutRight').then((ok) => {
             elemDisplay(settings, false);
@@ -963,6 +980,20 @@ function setVideoButtons(active, e = false) {
     videoBtn.className = active ? className.videoOn : className.videoOff;
     initVideoBtn.className = active ? className.videoOn : className.videoOff;
     elemDisplay(myVideoAvatarImage, active ? false : true);
+}
+
+function refreshVideoConstraints() {
+    localMediaStream
+        .getVideoTracks()[0]
+        .applyConstraints(getVideoConstraints())
+        .then(() => {
+            logStreamSettingsInfo('refreshVideoConstraints', localMediaStream);
+            refreshMyVideoStreamToPeers(localMediaStream);
+        })
+        .catch((err) => {
+            console.error('refreshVideoConstraints', err);
+            userLog('error', 'Refresh video constraints: Ops, something going wrong!');
+        });
 }
 
 function refreshMyLocalVideoStream(stream) {
