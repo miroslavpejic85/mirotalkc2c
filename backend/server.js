@@ -49,14 +49,15 @@ const io = new Server({ maxHttpBufferSize: 1e7, transports: ['websocket'] }).lis
 
 const ngrokAuthToken = process.env.NGROK_AUTH_TOKEN || false;
 
-const stunServerUrl = process.env.STUN_SERVER_URL || 'stun:stun.l.google.com:19302';
+const stunServerUrl = process.env.STUN_SERVER_URL || 'stun:stun.l.google.com:19302'; // Mandatory
 const turnServerUrl = process.env.TURN_SERVER_URL;
 const turnServerUsername = process.env.TURN_SERVER_USERNAME;
 const turnServerCredential = process.env.TURN_SERVER_CREDENTIAL;
-const iceServers = [
-    { urls: stunServerUrl },
-    { urls: turnServerUrl, username: turnServerUsername, credential: turnServerCredential },
-];
+let iceServers = [{ urls: stunServerUrl }];
+if (turnServerUrl && turnServerUsername && turnServerCredential) {
+    // Highly recommended in case the direct peer to peer connection is not possible
+    iceServers.push({ urls: turnServerUrl, username: turnServerUsername, credential: turnServerCredential });
+}
 
 const redirectURL = process.env.REDIRECT_URL || false;
 
