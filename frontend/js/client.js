@@ -37,6 +37,7 @@ const settings = document.getElementById('settings');
 const settingsCloseBtn = document.getElementById('settingsCloseBtn');
 const audioSource = document.getElementById('audioSource');
 const videoSource = document.getElementById('videoSource');
+const maxVideoQualityDiv = document.getElementById('maxVideoQualityDiv');
 const pushToTalkDiv = document.getElementById('pushToTalkDiv');
 const switchMaxVideoQuality = document.getElementById('switchMaxVideoQuality');
 const switchPushToTalk = document.getElementById('switchPushToTalk');
@@ -697,6 +698,7 @@ function handleEvents() {
         playSound('switch');
     };
     if (isMobileDevice) {
+        elemDisplay(maxVideoQualityDiv, false);
         elemDisplay(pushToTalkDiv, false);
         document.documentElement.style.setProperty('--chat-width', '100%');
         document.documentElement.style.setProperty('--settings-width', '92%');
