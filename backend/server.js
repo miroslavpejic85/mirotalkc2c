@@ -42,8 +42,9 @@ if (isHttps) {
 } else {
     server = http.createServer(app);
 }
+const domain = process.env.HOST || 'localhost';
 
-const host = `http${isHttps ? 's' : ''}://localhost:${port}`;
+const host = `http${isHttps ? 's' : ''}://${domain}:${port}`;
 
 const io = new Server({ maxHttpBufferSize: 1e7, transports: ['websocket'] }).listen(server);
 
