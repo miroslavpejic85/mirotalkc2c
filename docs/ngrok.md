@@ -11,6 +11,7 @@ Edit the Ngrok part on `.env` file
 # 2. Get started for free
 # 3. Copy YourNgrokAuthToken: https://dashboard.ngrok.com/get-started/your-authtoken
 
+NGROK_ENABLED=true
 NGROK_AUTH_TOKEN=YourNgrokAuthToken
 ```
 
