@@ -47,19 +47,22 @@ const host = `http${isHttps ? 's' : ''}://localhost:${port}`;
 
 const io = new Server({ maxHttpBufferSize: 1e7, transports: ['websocket'] }).listen(server);
 
-const ngrokAuthToken = process.env.NGROK_AUTH_TOKEN || false;
+const ngrokEnabled = getEnvBoolean(process.env.NGROK_ENABLED);
+const ngrokAuthToken = process.env.NGROK_AUTH_TOKEN;
 
 let iceServers = [];
 const stunServerUrl = process.env.STUN_SERVER_URL;
 const turnServerUrl = process.env.TURN_SERVER_URL;
 const turnServerUsername = process.env.TURN_SERVER_USERNAME;
 const turnServerCredential = process.env.TURN_SERVER_CREDENTIAL;
-if (stunServerUrl) iceServers.push({ urls: stunServerUrl });
-if (turnServerUrl && turnServerUsername && turnServerCredential) {
+const stunServerEnabled = getEnvBoolean(process.env.STUN_SERVER_ENABLED);
+const turnServerEnabled = getEnvBoolean(process.env.TURN_SERVER_ENABLED);
+if (stunServerEnabled && stunServerUrl) iceServers.push({ urls: stunServerUrl });
+if (turnServerEnabled && turnServerUrl && turnServerUsername && turnServerCredential) {
     iceServers.push({ urls: turnServerUrl, username: turnServerUsername, credential: turnServerCredential });
 }
 
-const redirectURL = process.env.REDIRECT_URL || false;
+const redirectURL = getEnvBoolean(process.env.REDIRECT_URL);
 
 const frontendDir = path.join(__dirname, '../', 'frontend');
 const htmlClient = path.join(__dirname, '../', 'frontend/html/client.html');
@@ -99,6 +102,11 @@ function notFound(res) {
     res.send({ data: '404 not found' });
 }
 
+function getEnvBoolean(key, force_true_if_undefined = false) {
+    if (key == undefined && force_true_if_undefined) return true;
+    return key == 'true' ? true : false;
+}
+
 async function ngrokStart() {
     try {
         await ngrok.authtoken(ngrokAuthToken);
@@ -125,7 +133,7 @@ async function ngrokStart() {
 }
 
 server.listen(port, null, () => {
-    if (!isHttps && ngrokAuthToken) {
+    if (!isHttps && ngrokEnabled && ngrokAuthToken) {
         ngrokStart();
     } else {
         log.debug('settings', {
