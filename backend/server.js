@@ -63,7 +63,7 @@ if (turnServerEnabled && turnServerUrl && turnServerUsername && turnServerCreden
     iceServers.push({ urls: turnServerUrl, username: turnServerUsername, credential: turnServerCredential });
 }
 
-const redirectURL = getEnvBoolean(process.env.REDIRECT_URL);
+const redirectURL = process.env.REDIRECT_URL || false;
 
 const frontendDir = path.join(__dirname, '../', 'frontend');
 const htmlClient = path.join(__dirname, '../', 'frontend/html/client.html');
