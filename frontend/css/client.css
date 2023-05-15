@@ -277,6 +277,10 @@ video:fullscreen {
     object-fit: contain;
 }
 
+video::-webkit-media-controls {
+    display: none !important;
+}
+
 /*--------------------------------------------------------------
 # My settings
 --------------------------------------------------------------*/
