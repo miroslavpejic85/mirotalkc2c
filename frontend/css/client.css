@@ -55,6 +55,7 @@ body {
 
 #loadingDiv,
 #waitingDiv {
+    min-width: 300px;
     max-width: 300px;
     padding: 30px;
     border: var(--border);

@@ -62,6 +62,7 @@ function goOutFullscreen() {
 function copyRoom() {
     const tmpInput = document.createElement('input');
     document.body.appendChild(tmpInput);
+    tmpInput.style.display = 'none';
     tmpInput.value = roomURL;
     tmpInput.select();
     tmpInput.setSelectionRange(0, 99999);
