@@ -121,24 +121,22 @@ function toggleClassElements(className, displayState) {
 }
 
 function startSessionTime() {
-    const callStartTime = Date.now();
+    let sessionElapsedTime = 0;
     setInterval(function printTime() {
-        const callElapsedTime = Date.now() - callStartTime;
-        sessionTime.innerText = getTimeToString(callElapsedTime);
+        sessionElapsedTime++;
+        sessionTime.innerText = secondsToHms(sessionElapsedTime);
     }, 1000);
 }
 
-function getTimeToString(time) {
-    const diffInHrs = time / 3600000;
-    const hh = Math.floor(diffInHrs);
-    const diffInMin = (diffInHrs - hh) * 60;
-    const mm = Math.floor(diffInMin);
-    const diffInSec = (diffInMin - mm) * 60;
-    const ss = Math.floor(diffInSec);
-    const formattedHH = hh.toString().padStart(2, '0');
-    const formattedMM = mm.toString().padStart(2, '0');
-    const formattedSS = ss.toString().padStart(2, '0');
-    return `${formattedHH}:${formattedMM}:${formattedSS}`;
+function secondsToHms(d) {
+    d = Number(d);
+    let h = Math.floor(d / 3600);
+    let m = Math.floor((d % 3600) / 60);
+    let s = Math.floor((d % 3600) % 60);
+    let hDisplay = h > 0 ? h + 'h' : '';
+    let mDisplay = m > 0 ? m + 'm' : '';
+    let sDisplay = s > 0 ? s + 's' : '';
+    return hDisplay + ' ' + mDisplay + ' ' + sDisplay;
 }
 
 function getTime() {
