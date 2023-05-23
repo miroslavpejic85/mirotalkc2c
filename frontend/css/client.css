@@ -55,7 +55,7 @@ body {
 
 #loadingDiv,
 #waitingDiv {
-    width: 300px;
+    min-width: 290px;
     padding: 30px;
     border: var(--border);
     border-radius: var(--border-radius);
@@ -110,9 +110,11 @@ body {
 #buttonsBar {
     position: fixed;
     z-index: 6;
+    padding: 10px;
+    width: 100%;
     bottom: 0;
     display: none;
-    padding: 10px;
+    text-align: center;
     border-radius: 20px;
     background: transparent;
 }
@@ -318,6 +320,7 @@ video::-webkit-media-controls {
 
 #settings select {
     margin-top: 15px;
+    width: 100%;
     height: 40px;
     max-width: 280px;
     border-radius: 5px;
