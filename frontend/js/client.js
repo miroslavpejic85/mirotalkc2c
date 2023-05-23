@@ -701,7 +701,6 @@ function handleEvents() {
         elemDisplay(maxVideoQualityDiv, false);
         elemDisplay(pushToTalkDiv, false);
         document.documentElement.style.setProperty('--chat-width', '100%');
-        document.documentElement.style.setProperty('--settings-width', '92%');
     } else {
         switchPushToTalk.onchange = (e) => {
             isPushToTalkActive = e.currentTarget.checked;
