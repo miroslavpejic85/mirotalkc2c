@@ -16,6 +16,12 @@
 
 <hr />
 
+<p align="center">
+    For questions, discussions, help & support, join with us on <a href="https://discord.gg/rgGYfeYW3N">discord</a>
+</p>
+
+<hr />
+
 <details open>
 <summary>Quick start</summary>
 
@@ -86,15 +92,6 @@ To install your own [Stun](https://bloggeek.me/webrtcglossary/stun) and [Turn](h
 <br/>
 
 To self-hosting MiroTalk C2C, just follow [this steps](./docs/self-hosting.md).
-
-</details>
-
-<details open>
-<summary>Discussions</summary>
-
-<br/>
-
-Join with us on [Discord](https://discord.gg/rgGYfeYW3N), ask questions and post answers without opening issues.
 
 </details>
 
