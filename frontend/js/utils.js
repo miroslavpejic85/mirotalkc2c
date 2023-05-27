@@ -152,8 +152,12 @@ function getLineBreaks(message) {
     return (message.match(/\n/g) || []).length;
 }
 
-function elemDisplay(elem, show) {
-    elem.style.display = show ? 'block' : 'none';
+function elemDisplay(element, display, mode = 'block') {
+    element.style.display = display ? mode : 'none';
+}
+
+function elemDisable(element, disable) {
+    element.disabled = disable;
 }
 
 function animateCSS(element, animation, prefix = 'animate__') {

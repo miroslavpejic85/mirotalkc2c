@@ -37,6 +37,8 @@ const settings = document.getElementById('settings');
 const settingsCloseBtn = document.getElementById('settingsCloseBtn');
 const audioSource = document.getElementById('audioSource');
 const videoSource = document.getElementById('videoSource');
+const videoQualitySelect = document.getElementById('videoQualitySelect');
+const videoFpsSelect = document.getElementById('videoFpsSelect');
 const maxVideoQualityDiv = document.getElementById('maxVideoQualityDiv');
 const pushToTalkDiv = document.getElementById('pushToTalkDiv');
 const switchMaxVideoQuality = document.getElementById('switchMaxVideoQuality');
@@ -124,6 +126,9 @@ let myVideo;
 let myVideoWrap;
 let myVideoAvatarImage;
 let myAudioStatusIcon;
+
+let videoQualitySelectedIndex = 0;
+let videoFpsSelectedIndex = 0;
 
 let redirectURL = false;
 
@@ -681,6 +686,12 @@ function handleEvents() {
     videoSource.onchange = (e) => {
         changeCamera(e.target.value);
     };
+    videoQualitySelect.onchange = (e) => {
+        refreshVideoConstraints();
+    };
+    videoFpsSelect.onchange = (e) => {
+        refreshVideoConstraints();
+    };
     switchMaxVideoQuality.checked = config.forceToMaxVideoAndFps;
     switchMaxVideoQuality.onchange = (e) => {
         config.forceToMaxVideoAndFps = e.currentTarget.checked;
@@ -880,18 +891,69 @@ function getAudioConstraints() {
 
 function getVideoConstraints(deviceId = false) {
     let videoConstraints = true;
+    elemDisable(videoQualitySelect, config.forceToMaxVideoAndFps);
+    elemDisable(videoFpsSelect, config.forceToMaxVideoAndFps);
     if (config.forceToMaxVideoAndFps) {
+        videoQualitySelect.selectedIndex = 0;
+        videoFpsSelect.selectedIndex = 0;
         videoConstraints = {
             width: { ideal: 3840 },
             height: { ideal: 2160 },
             frameRate: { ideal: 60 },
         };
     } else {
-        videoConstraints = {
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-            frameRate: { ideal: 30 },
-        };
+        const videoQuality = videoQualitySelect.value;
+        const videoFrameRate = parseInt(videoFpsSelect.value);
+        switch (videoQuality) {
+            case 'default':
+                videoConstraints = {
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    frameRate: { ideal: videoFrameRate },
+                };
+                break;
+            case 'qvga':
+                videoConstraints = {
+                    width: { exact: 320 },
+                    height: { exact: 240 },
+                    frameRate: videoFrameRate,
+                };
+                break;
+            case 'vga':
+                videoConstraints = {
+                    width: { exact: 640 },
+                    height: { exact: 480 },
+                    frameRate: videoFrameRate,
+                };
+                break;
+            case 'hd':
+                videoConstraints = {
+                    width: { exact: 1280 },
+                    height: { exact: 720 },
+                    frameRate: videoFrameRate,
+                };
+            case 'fhd':
+                videoConstraints = {
+                    width: { exact: 1920 },
+                    height: { exact: 1080 },
+                    frameRate: videoFrameRate,
+                };
+                break;
+            case '2k':
+                videoConstraints = {
+                    width: { exact: 2560 },
+                    height: { exact: 1440 },
+                    frameRate: videoFrameRate,
+                };
+                break;
+            case '4k':
+                videoConstraints = {
+                    width: { exact: 3840 },
+                    height: { exact: 2160 },
+                    frameRate: videoFrameRate,
+                };
+                break;
+        }
     }
     if (deviceId) videoConstraints['deviceId'] = deviceId;
     return videoConstraints;
@@ -990,10 +1052,18 @@ function refreshVideoConstraints() {
         .then(() => {
             logStreamSettingsInfo('refreshVideoConstraints', localMediaStream);
             refreshMyVideoStreamToPeers(localMediaStream);
+            videoQualitySelectedIndex = videoQualitySelect.selectedIndex;
+            videoFpsSelectedIndex = videoFpsSelect.selectedIndex;
         })
         .catch((err) => {
+            videoQualitySelect.selectedIndex = videoQualitySelectedIndex;
+            videoFpsSelect.selectedIndex = videoFpsSelectedIndex;
             console.error('refreshVideoConstraints', err);
-            userLog('error', 'Refresh video constraints: Ops, something going wrong!');
+            popupMessage(
+                'warning',
+                'Video quality/fps',
+                "Your device doesn't support the selected video quality and fps, please select the another one.",
+            );
         });
 }
 
