@@ -4,15 +4,28 @@ const xss = require('xss');
 const Logs = require('./logs');
 const log = new Logs('xss');
 
-/**
- * Prevent XSS injection by client side
- *
- * @param {object} dataObject
- * @returns sanitized object
- */
 const checkXSS = (id, dataObject) => {
     try {
-        if (typeof dataObject === 'object' && Object.keys(dataObject).length > 0) {
+        if (Array.isArray(dataObject)) {
+            if (Object.keys(dataObject).length > 0 && typeof dataObject[0] === 'object') {
+                dataObject.forEach((obj) => {
+                    for (const key in obj) {
+                        if (obj.hasOwnProperty(key)) {
+                            let objectJson = objectToJSONString(obj[key]);
+                            if (objectJson) {
+                                let jsonString = xss(objectJson);
+                                let jsonObject = JSONStringToObject(jsonString);
+                                if (jsonObject) {
+                                    obj[key] = jsonObject;
+                                }
+                            }
+                        }
+                    }
+                });
+                log.debug('[' + id + '] XSS Array of Object sanitization done');
+                return dataObject;
+            }
+        } else if (typeof dataObject === 'object') {
             let objectJson = objectToJSONString(dataObject);
             if (objectJson) {
                 let jsonString = xss(objectJson);
@@ -22,15 +35,14 @@ const checkXSS = (id, dataObject) => {
                     return jsonObject;
                 }
             }
-        }
-        if (typeof dataObject === 'string' || dataObject instanceof String) {
+        } else if (typeof dataObject === 'string' || dataObject instanceof String) {
             log.debug('[' + id + '] XSS String sanitization done');
             return xss(dataObject);
         }
-        log.warn('[' + id + '] XSS not sanitized', dataObject);
+        log.debug('[' + id + '] XSS not sanitized', dataObject);
         return dataObject;
     } catch (error) {
-        log.error('[' + id + '] XSS error', { data: dataObject, error: error });
+        llog.debug('[' + id + '] XSS error', { data: dataObject, error: error });
         return dataObject;
     }
 };
