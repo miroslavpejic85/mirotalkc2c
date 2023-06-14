@@ -74,6 +74,7 @@ const className = {
     screenOff: 'fas fa-stop-circle',
     fullScreenOn: 'fas fa-expand',
     fullScreenOff: 'fas fa-compress',
+    pip: 'fas fa-images',
 };
 
 const swal = {
@@ -96,6 +97,7 @@ const chatInputEmoji = {
 
 let userAgent;
 let isWebRTCSupported = false;
+let isVideoPIPSupported = document.pictureInPictureEnabled;
 let isMobileDevice = false;
 let isTabletDevice = false;
 let isIPadDevice = false;
@@ -157,6 +159,7 @@ function initClient() {
     isTabletDevice = isTablet(userAgent);
     isIPadDevice = isIpad(userAgent);
     isDesktopDevice = isDesktop();
+    isVideoPIPSupported = !isMobileDevice && isVideoPIPSupported;
 
     console.log('Connecting to signaling server');
     signalingSocket = io({ transports: ['websocket'] });
@@ -516,10 +519,13 @@ function setLocalMedia(stream) {
     const myVideoFooter = document.createElement('div');
     const myVideoPeerName = document.createElement('h4');
     const myFullScreenBtn = document.createElement('button');
+    const myVideoPiPBtn = document.createElement('button');
     const myAudioStatusIcon = document.createElement('button');
     const myVideoAvatarImage = document.createElement('img');
     myFullScreenBtn.id = 'myFullScreen';
     myFullScreenBtn.className = className.fullScreenOn;
+    myVideoPiPBtn.id = 'myVideoPIP';
+    myVideoPiPBtn.className = className.pip;
     myVideoHeader.id = 'myVideoHeader';
     myVideoHeader.className = 'videoHeader animate__animated animate__fadeInDown animate__faster';
     myVideoFooter.id = 'myVideoFooter';
@@ -532,6 +538,7 @@ function setLocalMedia(stream) {
     myVideoAvatarImage.setAttribute('src', image.camOff);
     myVideoAvatarImage.className = 'videoAvatarImage';
     myVideoHeader.appendChild(myFullScreenBtn);
+    myVideoHeader.appendChild(myVideoPiPBtn);
     myVideoHeader.appendChild(myAudioStatusIcon);
     myVideoFooter.appendChild(myVideoPeerName);
     myLocalMedia.id = 'myVideo';
@@ -550,6 +557,7 @@ function setLocalMedia(stream) {
     document.body.appendChild(myVideoWrap);
     logStreamSettingsInfo('localMediaStream', localMediaStream);
     attachMediaStream(myLocalMedia, localMediaStream);
+    handlePictureInPicture(myVideoPiPBtn, myLocalMedia);
     handleFullScreen(myFullScreenBtn, myVideoWrap, myLocalMedia);
     startSessionTime();
 }
@@ -566,6 +574,7 @@ function setRemoteMedia(stream, peers, peerId) {
     const remoteVideoFooter = document.createElement('div');
     const remoteVideoPeerName = document.createElement('h4');
     const remoteFullScreenBtn = document.createElement('button');
+    const remoteVideoPiPBtn = document.createElement('button');
     const remoteAudioStatusIcon = document.createElement('button');
     const remoteVideoAvatarImage = document.createElement('img');
     remoteVideoHeader.id = peerId + '_remoteVideoHeader';
@@ -576,12 +585,15 @@ function setRemoteMedia(stream, peers, peerId) {
     remoteVideoPeerName.innerText = peerName;
     remoteFullScreenBtn.id = peerId + '_remoteFullScreen';
     remoteFullScreenBtn.className = className.fullScreenOn;
+    remoteVideoPiPBtn.id = '_remoteVideoPIP';
+    remoteVideoPiPBtn.className = className.pip;
     remoteAudioStatusIcon.id = peerId + '_remoteAudioStatus';
     remoteAudioStatusIcon.className = className.audioOn;
     remoteVideoAvatarImage.id = peerId + '_remoteVideoAvatar';
     remoteVideoAvatarImage.src = image.camOff;
     remoteVideoAvatarImage.className = 'videoAvatarImage';
     remoteVideoHeader.appendChild(remoteFullScreenBtn);
+    remoteVideoHeader.appendChild(remoteVideoPiPBtn);
     remoteVideoHeader.appendChild(remoteAudioStatusIcon);
     remoteVideoFooter.appendChild(remoteVideoPeerName);
     remoteMedia.id = peerId + '_remoteVideo';
@@ -598,6 +610,7 @@ function setRemoteMedia(stream, peers, peerId) {
     document.body.appendChild(remoteVideoWrap);
     attachMediaStream(remoteMedia, remoteMediaStream);
     handleFullScreen(remoteFullScreenBtn, remoteVideoWrap, remoteMedia);
+    handlePictureInPicture(remoteVideoPiPBtn, remoteMedia);
     handleVideoZoom(remoteMedia, remoteVideoAvatarImage);
     setPeerVideoStatus(peerId, peerVideo);
     setPeerAudioStatus(peerId, peerAudio);
@@ -1100,6 +1113,22 @@ function refreshMyLocalAudioStreamToPeers(stream) {
             .getSenders()
             .find((s) => (s.track ? s.track.kind === 'audio' : false));
         audioSender.replaceTrack(stream.getAudioTracks()[0]);
+    }
+}
+
+function handlePictureInPicture(pipBtn, videoMedia) {
+    if (isVideoPIPSupported) {
+        pipBtn.onclick = () => {
+            if (videoMedia.pictureInPictureElement) {
+                videoMedia.exitPictureInPicture();
+            } else if (document.pictureInPictureEnabled) {
+                videoMedia.requestPictureInPicture().catch((error) => {
+                    console.error('Failed to enter Picture-in-Picture mode:', error);
+                });
+            }
+        };
+    } else {
+        elemDisplay(pipBtn, false);
     }
 }
 
