@@ -916,7 +916,7 @@ function getVideoConstraints(deviceId = false) {
         };
     } else {
         const videoQuality = videoQualitySelect.value;
-        const videoFrameRate = parseInt(videoFpsSelect.value);
+        const videoFrameRate = videoFpsSelect.value == 'default' ? 30 : parseInt(videoFpsSelect.value);
         switch (videoQuality) {
             case 'default':
                 videoConstraints = {
