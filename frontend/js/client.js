@@ -109,6 +109,7 @@ let isAudioStreaming = true;
 let isScreenStreaming = false;
 let isPushToTalkActive = false;
 let isSpaceDown = false;
+let isMyVideoActiveBefore = false;
 let camera = 'user';
 let thisPeerId;
 let peerConnection;
@@ -844,6 +845,10 @@ async function toggleScreenSharing() {
     };
     let screenMediaPromise = null;
     try {
+        if (!isScreenStreaming) {
+            isMyVideoActiveBefore = localMediaStream.getVideoTracks()[0].enabled;
+            console.log('Is my video active before screen sharing: ' + isMyVideoActiveBefore);
+        }
         screenMediaPromise = isScreenStreaming
             ? await navigator.mediaDevices.getUserMedia({ video: true })
             : await navigator.mediaDevices.getDisplayMedia(constraints);
@@ -858,6 +863,7 @@ async function toggleScreenSharing() {
             myVideo.style.objectFit = isScreenStreaming ? 'contain' : 'cover';
             initScreenShareBtn.className = isScreenStreaming ? className.screenOff : className.screenOn;
             screenShareBtn.className = isScreenStreaming ? className.screenOff : className.screenOn;
+            if (!isScreenStreaming && isMyVideoActiveBefore) videoBtn.click();
         }
     } catch (err) {
         console.error('[Error] unable to share the screen', err);
