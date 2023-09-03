@@ -42,6 +42,6 @@
         "xss": "^1.0.14"
     },
     "devDependencies": {
-        "prettier": "3.0.1"
+        "prettier": "3.0.3"
     }
 }
