@@ -148,6 +148,10 @@ server.listen(port, null, () => {
     }
 });
 
+io.on('error', (error) => {
+    log.error('Socket.IO error:', error);
+});
+
 io.sockets.on('connect', (socket) => {
     log.debug('[' + socket.id + '] connection accepted');
     socket.channels = {};

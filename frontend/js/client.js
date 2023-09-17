@@ -166,6 +166,7 @@ function initClient() {
     signalingSocket = io({ transports: ['websocket'] });
 
     signalingSocket.on('connect', handleConnect);
+    signalingSocket.on('error', handleError);
     signalingSocket.on('serverInfo', handleServerInfo);
     signalingSocket.on('addPeer', handleAddPeer);
     signalingSocket.on('sessionDescription', handleSessionDescription);
@@ -193,6 +194,10 @@ function handleConnect() {
             joinToChannel();
         });
     }
+}
+
+function handleError(error) {
+    console.error('WebSocket connection error:', error);
 }
 
 function joinToChannel() {
