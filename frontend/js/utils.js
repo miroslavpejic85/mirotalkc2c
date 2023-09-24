@@ -35,7 +35,7 @@ function isDesktop() {
 
 function changeAspectRatio(aspectRatio) {
     const videoElements = document.querySelectorAll('video');
-    videoElements.forEach(video => {
+    videoElements.forEach((video) => {
         video.style.objectFit = aspectRatio ? 'contain' : 'cover';
     });
 }
