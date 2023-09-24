@@ -33,6 +33,13 @@ function isDesktop() {
     return !isMobileDevice && !isTabletDevice && !isIPadDevice;
 }
 
+function changeAspectRatio(aspectRatio) {
+    const videoElements = document.querySelectorAll('video');
+    videoElements.forEach(video => {
+        video.style.objectFit = aspectRatio ? 'contain' : 'cover';
+    });
+}
+
 function isFullScreen() {
     const elementFullScreen =
         document.fullscreenElement ||
