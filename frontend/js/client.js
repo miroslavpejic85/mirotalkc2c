@@ -658,8 +658,8 @@ function setRemoteMedia(stream, peers, peerId) {
     setPeerVideoStatus(peerId, peerVideo);
     setPeerAudioStatus(peerId, peerAudio);
     if (isMobileDevice && !isTabletDevice && !isIPadDevice) {
-        document.documentElement.style.setProperty('--my-video-wrap-width', '190px');
-        document.documentElement.style.setProperty('--my-video-wrap-height', '150px');
+        document.documentElement.style.setProperty('--my-video-wrap-width', '130px');
+        document.documentElement.style.setProperty('--my-video-wrap-height', 'auto');
     }
     if (peerVideo && peerScreen) setPeerScreenStatus(peerId, peerScreen);
 }
