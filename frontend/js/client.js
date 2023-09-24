@@ -227,6 +227,7 @@ function handleConnect() {
         joinToChannel();
     } else {
         setupLocalMedia(() => {
+            handleVideoWrapSize();
             getDocumentElementsById();
             handleEvents();
             showWaitingUser();
@@ -657,10 +658,6 @@ function setRemoteMedia(stream, peers, peerId) {
     handleVideoZoom(remoteMedia, remoteVideoAvatarImage);
     setPeerVideoStatus(peerId, peerVideo);
     setPeerAudioStatus(peerId, peerAudio);
-    if (isMobileDevice && !isTabletDevice && !isIPadDevice) {
-        document.documentElement.style.setProperty('--my-video-wrap-width', '130px');
-        document.documentElement.style.setProperty('--my-video-wrap-height', '200px'); // Safari
-    }
     if (peerVideo && peerScreen) setPeerScreenStatus(peerId, peerScreen);
 }
 
@@ -1209,6 +1206,13 @@ function handleVideoZoom(videoMedia, videoAvatarImage) {
         if (zoom < 1) zoom = 1;
         videoMedia.style.scale = zoom;
     };
+}
+
+function handleVideoWrapSize() {
+    if (isMobileDevice && !isTabletDevice && !isIPadDevice) {
+        document.documentElement.style.setProperty('--my-video-wrap-width', '130px');
+        document.documentElement.style.setProperty('--my-video-wrap-height', '205px'); // Safari
+    }
 }
 
 function toggleChat() {
