@@ -16,7 +16,7 @@
     --border: 0.1px solid #45494c;
     --border-radius: 1rem;
     --video-obj-fit: cover;
-    --my-video-wrap-width: auto;
+    --my-video-wrap-width: 360px; /* Safari */
     --my-video-wrap-height: 210px;
     --settings-width: 280px;
     --chat-width: 320px;
