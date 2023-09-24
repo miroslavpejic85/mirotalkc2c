@@ -42,6 +42,7 @@ const videoFpsSelect = document.getElementById('videoFpsSelect');
 const maxVideoQualityDiv = document.getElementById('maxVideoQualityDiv');
 const pushToTalkDiv = document.getElementById('pushToTalkDiv');
 const switchMaxVideoQuality = document.getElementById('switchMaxVideoQuality');
+const switchKeepAspectRatio = document.getElementById('switchKeepAspectRatio');
 const switchPushToTalk = document.getElementById('switchPushToTalk');
 const sessionTime = document.getElementById('sessionTime');
 const chat = document.getElementById('chat');
@@ -55,6 +56,7 @@ const roomURL = window.location.origin + '/?room=' + roomId;
 
 const config = {
     forceToMaxVideoAndFps: window.localStorage.forceToMaxVideoAndFps == 'true' || false,
+    keepAspectRatio: window.localStorage.keepAspectRatio == 'true' || false,
 };
 
 const image = {
@@ -587,7 +589,7 @@ function setLocalMedia(stream) {
     myLocalMedia.muted = true;
     myLocalMedia.volume = 0;
     myLocalMedia.controls = false;
-    myLocalMedia.style.objectFit = "contain";
+    myLocalMedia.style.objectFit = config.keepAspectRatio ? 'contain' : 'cover';
     myVideoWrap.id = 'myVideoWrap';
     myVideoWrap.className = 'myVideoWrap';
     myVideoWrap.appendChild(myVideoHeader);
@@ -640,7 +642,7 @@ function setRemoteMedia(stream, peers, peerId) {
     remoteMedia.playsInline = true;
     remoteMedia.autoplay = true;
     remoteMedia.controls = false;
-    remoteMedia.style.objectFit = "contain";
+    remoteMedia.style.objectFit = config.keepAspectRatio ? 'contain' : 'cover';
     peerMediaElements[peerId] = remoteMedia;
     remoteVideoWrap.id = peerId + '_remoteVideoWrap';
     remoteVideoWrap.className = 'remoteVideoWrap';
@@ -655,6 +657,10 @@ function setRemoteMedia(stream, peers, peerId) {
     handleVideoZoom(remoteMedia, remoteVideoAvatarImage);
     setPeerVideoStatus(peerId, peerVideo);
     setPeerAudioStatus(peerId, peerAudio);
+    if (isMobileDevice && !isTabletDevice && !isIPadDevice) {
+        document.documentElement.style.setProperty('--my-video-wrap-width', '190px');
+        document.documentElement.style.setProperty('--my-video-wrap-height', '150px');
+    }
     if (peerVideo && peerScreen) setPeerScreenStatus(peerId, peerScreen);
 }
 
@@ -756,6 +762,13 @@ function handleEvents() {
                 6000,
             );
         }
+        playSound('switch');
+    };
+    switchKeepAspectRatio.checked = config.keepAspectRatio;
+    switchKeepAspectRatio.onchange = (e) => {
+        config.keepAspectRatio = e.currentTarget.checked;
+        window.localStorage.keepAspectRatio = config.keepAspectRatio;
+        changeAspectRatio(config.keepAspectRatio);
         playSound('switch');
     };
     if (isMobileDevice) {
@@ -896,7 +909,7 @@ async function toggleScreenSharing() {
             setVideoStatus(isScreenStreaming);
             setScreenStatus(isScreenStreaming);
             myVideo.classList.toggle('mirror');
-            myVideo.style.objectFit = isScreenStreaming ? 'contain' : 'cover';
+            myVideo.style.objectFit = isScreenStreaming || config.keepAspectRatio ? 'contain' : 'cover';
             initScreenShareBtn.className = isScreenStreaming ? className.screenOff : className.screenOn;
             screenShareBtn.className = isScreenStreaming ? className.screenOff : className.screenOn;
             if (!isScreenStreaming && isMyVideoActiveBefore) videoBtn.click();
