@@ -44,6 +44,8 @@ const pushToTalkDiv = document.getElementById('pushToTalkDiv');
 const switchMaxVideoQuality = document.getElementById('switchMaxVideoQuality');
 const switchKeepAspectRatio = document.getElementById('switchKeepAspectRatio');
 const switchPushToTalk = document.getElementById('switchPushToTalk');
+const videoSenderCodecSelect = document.getElementById('videoSenderCodecSelect');
+const videoSenderMaxBitrateSelect = document.getElementById('videoSenderMaxBitrateSelect');
 const sessionTime = document.getElementById('sessionTime');
 const chat = document.getElementById('chat');
 const chatOpenBtn = document.getElementById('chatOpenBtn');
@@ -56,6 +58,8 @@ const roomURL = window.location.origin + '/?room=' + roomId;
 
 const config = {
     forceToMaxVideoAndFps: window.localStorage.forceToMaxVideoAndFps == 'true' || false,
+    videoSenderCodec: window.localStorage.videoSenderCodec || "default",
+    videoSenderMaxBitrate: window.localStorage.videoSenderMaxBitrate || "default",
     keepAspectRatio: window.localStorage.keepAspectRatio == 'true' || false,
 };
 
@@ -266,6 +270,27 @@ function handleServerInfo(config) {
     redirectURL = config.redirectURL;
 }
 
+function handleCodec(peerConnection) {
+    let videoTransceiver = peerConnection.getTransceivers().find((s) => (s.sender.track ? s.sender.track.kind === 'video' : false));
+    if (videoTransceiver) {
+        if (config.videoSenderCodec != "default") {
+            let supportedCodec = RTCRtpSender.getCapabilities("video").codecs;
+            let selectedCodec = config.videoSenderCodec.split("/").map((name) =>
+                supportedCodec.filter((codec) => codec.mimeType.includes(name))
+            ).flat();
+            videoTransceiver.setCodecPreferences(selectedCodec);
+            console.log("Codecs:", selectedCodec);
+        }
+
+        if (config.videoSenderMaxBitrate != "default") {
+            let videoSender = videoTransceiver.sender;
+            let videoParam = videoSender.getParameters();
+            videoParam.encodings[0].maxBitrate = config.videoSenderMaxBitrate * 1000 * 1000;
+            videoSender.setParameters(videoParam);
+        }
+    }
+}
+
 function handleAddPeer(config) {
     if (roomPeersCount > 2) {
         return roomIsBusy();
@@ -377,6 +402,7 @@ function handleAddTracks(peerId) {
 function handleRtcOffer(peerId) {
     peerConnections[peerId].onnegotiationneeded = () => {
         console.log('Creating RTC offer to', peerId);
+        handleCodec(peerConnections[peerId]);
         peerConnections[peerId]
             .createOffer()
             .then((localDescription) => {
@@ -410,6 +436,7 @@ function handleSessionDescription(config) {
             console.log('Set remote description done!');
             if (sessionDescription.type == 'offer') {
                 console.log('Creating answer');
+                handleCodec(peerConnections[peerId]);
                 peerConnections[peerId]
                     .createAnswer()
                     .then((localDescription) => {
@@ -762,6 +789,32 @@ function handleEvents() {
                 6000,
             );
         }
+        playSound('switch');
+    };
+    videoSenderCodecSelect.value = config.videoSenderCodec;
+    videoSenderCodecSelect.onchange = (e) => {
+        config.videoSenderCodec = e.target.value;
+        window.localStorage.videoSenderCodec = e.target.value;
+        popupMessage(
+            'toast',
+            'Video codec changed to ' + e.target.value,
+            'Please refresh for the setting to take effect',
+            'top',
+            6000,
+        );
+        playSound('switch');
+    };
+    videoSenderMaxBitrateSelect.value = config.videoSenderMaxBitrate;
+    videoSenderMaxBitrateSelect.onchange = (e) => {
+        config.videoSenderMaxBitrate = e.target.value;
+        window.localStorage.videoSenderMaxBitrate = e.target.value;
+        popupMessage(
+            'toast',
+            'Video max bitrate changed to ' + e.target.value,
+            'Please refresh for the setting to take effect',
+            'top',
+            6000,
+        );
         playSound('switch');
     };
     switchKeepAspectRatio.checked = config.keepAspectRatio;
