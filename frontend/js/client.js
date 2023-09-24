@@ -614,6 +614,7 @@ function setLocalMedia(stream) {
     myLocalMedia.muted = true;
     myLocalMedia.volume = 0;
     myLocalMedia.controls = false;
+    myLocalMedia.style.objectFit = "contain";
     myVideoWrap.id = 'myVideoWrap';
     myVideoWrap.className = 'myVideoWrap';
     myVideoWrap.appendChild(myVideoHeader);
@@ -666,6 +667,7 @@ function setRemoteMedia(stream, peers, peerId) {
     remoteMedia.playsInline = true;
     remoteMedia.autoplay = true;
     remoteMedia.controls = false;
+    remoteMedia.style.objectFit = "contain";
     peerMediaElements[peerId] = remoteMedia;
     remoteVideoWrap.id = peerId + '_remoteVideoWrap';
     remoteVideoWrap.className = 'remoteVideoWrap';
@@ -681,10 +683,6 @@ function setRemoteMedia(stream, peers, peerId) {
     setPeerVideoStatus(peerId, peerVideo);
     setPeerAudioStatus(peerId, peerAudio);
     if (peerVideo && peerScreen) setPeerScreenStatus(peerId, peerScreen);
-    if (isMobileDevice && !isTabletDevice && !isIPadDevice) {
-        document.documentElement.style.setProperty('--my-video-wrap-width', '190px');
-        document.documentElement.style.setProperty('--my-video-wrap-height', '150px');
-    }
 }
 
 function handleIncomingDataChannelMessage(config) {
