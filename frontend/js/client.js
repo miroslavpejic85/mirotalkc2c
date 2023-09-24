@@ -61,6 +61,8 @@ const config = {
     videoSenderCodec: window.localStorage.videoSenderCodec || "default",
     videoSenderMaxBitrate: window.localStorage.videoSenderMaxBitrate || "default",
     keepAspectRatio: window.localStorage.keepAspectRatio == 'true' || false,
+    videoSenderCodec: window.localStorage.videoSenderCodec || "default",
+    videoSenderMaxBitrate: window.localStorage.videoSenderMaxBitrate || "default",
 };
 
 const image = {
@@ -822,6 +824,32 @@ function handleEvents() {
         config.keepAspectRatio = e.currentTarget.checked;
         window.localStorage.keepAspectRatio = config.keepAspectRatio;
         changeAspectRatio(config.keepAspectRatio);
+        playSound('switch');
+    };
+    videoSenderCodecSelect.value = config.videoSenderCodec;
+    videoSenderCodecSelect.onchange = (e) => {
+        config.videoSenderCodec = e.target.value;
+        window.localStorage.videoSenderCodec = e.target.value;
+        popupMessage(
+            'toast',
+            'Video codec changed to ' + e.target.value,
+            'Please refresh for the setting to take effect',
+            'top',
+            6000,
+        );
+        playSound('switch');
+    };
+    videoSenderMaxBitrateSelect.value = config.videoSenderMaxBitrate;
+    videoSenderMaxBitrateSelect.onchange = (e) => {
+        config.videoSenderMaxBitrate = e.target.value;
+        window.localStorage.videoSenderMaxBitrate = e.target.value;
+        popupMessage(
+            'toast',
+            'Video max bitrate changed to ' + e.target.value,
+            'Please refresh for the setting to take effect',
+            'top',
+            6000,
+        );
         playSound('switch');
     };
     if (isMobileDevice) {
