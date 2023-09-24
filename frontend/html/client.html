@@ -81,9 +81,9 @@ Wait user to join.
 
         <div id="settings">
             <button id="settingsCloseBtn" class="fas fa-times"></button>
-            <label for="videoSource">📹 Camera</label>
+            <label for="videoSource"><i class="fas fa-video"></i> Camera</label>
             <select id="videoSource"></select>
-            <label>🎥 Video quality</label>
+            <label><i class="fas fa-image"></i> Video quality</label>
             <select id="videoQualitySelect">
                 <option value="default">Default</option>
                 <option value="qvga">QVGA</option>
@@ -93,7 +93,7 @@ Wait user to join.
                 <option value="2k">2K</option>
                 <option value="4k">4K</option>
             </select>
-            <label>🧭 Video frame rate</label>
+            <label><i class="fas fa-gauge"></i> Video frame rate</label>
             <select id="videoFpsSelect">
                 <option value="default">Default</option>
                 <option value="60">60 fps</option>
@@ -104,25 +104,33 @@ Wait user to join.
                 <option value="10">10 fps</option>
                 <option value="5">5 fps</option>
             </select>
-            <label for="audioSource">🎙️ Microphone</label>
+            <label for="audioSource"><i class="fas fa-microphone"></i> Microphone</label>
             <select id="audioSource"></select>
             <hr />
             <table id="settingsTable">
                 <tr id="maxVideoQualityDiv">
-                    <td><span>✨ Best quality</span></td>
+                    <td>
+                        <span> <i class="fas fa-star"></i> Best quality </span>
+                    </td>
                     <td><input id="switchMaxVideoQuality" class="toggle" type="checkbox" /></td>
                 </tr>
                 <tr id="aspectRatioDiv">
-                    <td><span>📌 Aspect ratio</span></td>
+                    <td>
+                        <span> <i class="fas fa-display"></i> Aspect ratio </span>
+                    </td>
                     <td><input id="switchKeepAspectRatio" class="toggle" type="checkbox" /></td>
                 </tr>
                 <tr id="pushToTalkDiv">
-                    <td><span>👆 Push to talk</span></td>
+                    <td>
+                        <span> <i class="fas fa-hand-pointer"></i> Push to talk </span>
+                    </td>
                     <td><input id="switchPushToTalk" class="toggle" type="checkbox" /></td>
                 </tr>
                 <tr>
-                    <td><span>⏱️ Session time</span></td>
-                    <td id="sessionTime">0s</td>
+                    <td>
+                        <span> <i class="fas fa-clock"></i> Session time </span>
+                    </td>
+                    <td><p id="sessionTime">0s</p></td>
                 </tr>
             </table>
             <hr />

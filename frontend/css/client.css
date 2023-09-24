@@ -312,10 +312,15 @@ video::-webkit-media-controls {
 }
 
 #settings label {
-    display: flex;
+    display: inline-block;
+    margin-right: 10px;
     margin-top: 15px;
     font-weight: bold;
     color: var(--text-color);
+}
+
+#settings label i {
+    margin-right: 5px;
 }
 
 #settings select {
@@ -344,13 +349,12 @@ video::-webkit-media-controls {
 }
 #settingsTable td,
 th {
-    border: var(--border);
-    text-align: center;
     padding: 10px;
-}
-#settingsTable tr td span {
-    display: block;
     text-align: left;
+    border: var(--border);
+}
+#settingsTable tr td span i {
+    margin-right: 5px;
 }
 
 /*--------------------------------------------------------------
