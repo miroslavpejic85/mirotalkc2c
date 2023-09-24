@@ -107,6 +107,22 @@ Wait user to join.
             <label for="audioSource">🎙️ Microphone</label>
             <select id="audioSource"></select>
             <hr />
+            <label>Video codec</label>
+            <select id="videoSenderCodecSelect">
+                <option value="default">Default</option>
+                <option value="AV1/VP9">AV1/VP9</option>
+                <option value="VP9/VP8">VP9/VP8</option>
+            </select>
+            <label>Video max bitrate (Mbps)</label>
+            <select id="videoSenderMaxBitrateSelect">
+                <option value="default">Default</option>
+                <option value="16">16</option>
+                <option value="8">8</option>
+                <option value="4">4</option>
+                <option value="2">2</option>
+                <option value="1">1</option>
+            </select>
+            <hr />
             <table id="settingsTable">
                 <tr id="maxVideoQualityDiv">
                     <td><span>✨ Best quality</span></td>
