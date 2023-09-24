@@ -659,7 +659,7 @@ function setRemoteMedia(stream, peers, peerId) {
     setPeerAudioStatus(peerId, peerAudio);
     if (isMobileDevice && !isTabletDevice && !isIPadDevice) {
         document.documentElement.style.setProperty('--my-video-wrap-width', '130px');
-        document.documentElement.style.setProperty('--my-video-wrap-height', 'auto');
+        document.documentElement.style.setProperty('--my-video-wrap-height', '200px'); // Safari
     }
     if (peerVideo && peerScreen) setPeerScreenStatus(peerId, peerScreen);
 }
