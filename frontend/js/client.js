@@ -32,7 +32,7 @@ const videoBtn = document.getElementById('videoBtn');
 const swapCameraBtn = document.getElementById('swapCameraBtn');
 const settingsBtn = document.getElementById('settingsBtn');
 const screenShareBtn = document.getElementById('screenShareBtn');
-const homeButton = document.getElementById('homeButton');
+const homeBtn = document.getElementById('homeBtn');
 const settings = document.getElementById('settings');
 const settingsCloseBtn = document.getElementById('settingsCloseBtn');
 const audioSource = document.getElementById('audioSource');
@@ -104,7 +104,6 @@ const chatInputEmoji = {
     ':P': '😜',
     '<(': '👎',
     '>:(': '😡',
-    ':/': '😕',
     ':S': '😟',
     ':X': '🤐',
     ';(': '😥',
@@ -174,6 +173,26 @@ let videoFpsSelectedIndex = 0;
 
 let redirectURL = false;
 
+const tooltips = [
+    { element: shareRoomBtn, text: 'Share room URL', position: 'top' },
+    { element: copyRoomBtn, text: 'Copy and share room URL', position: 'top' },
+    { element: initHideMeBtn, text: 'Hide myself', position: 'top' },
+    { element: initVideoBtn, text: 'Toggle video', position: 'top' },
+    { element: initAudioBtn, text: 'Toggle audio', position: 'top' },
+    { element: initScreenShareBtn, text: 'Toggle screen sharing', position: 'top' },
+    { element: initSettingsBtn, text: 'Toggle settings', position: 'top' },
+    { element: initHomeBtn, text: 'Go to home page', position: 'top' },
+    { element: hideMeBtn, text: 'Hide myself', position: 'top' },
+    { element: videoBtn, text: 'Toggle video', position: 'top' },
+    { element: audioBtn, text: 'Toggle audio', position: 'top' },
+    { element: swapCameraBtn, text: 'Swap camera', position: 'top' },
+    { element: screenShareBtn, text: 'Toggle screen sharing', position: 'top' },
+    { element: chatOpenBtn, text: 'Toggle chat', position: 'top' },
+    { element: settingsBtn, text: 'Toggle settings', position: 'top' },
+    { element: homeBtn, text: 'Go to home page', position: 'top' },
+    //...
+];
+
 function getDocumentElementsById() {
     myVideo = document.getElementById('myVideo');
     myVideoWrap = document.getElementById('myVideoWrap');
@@ -200,6 +219,10 @@ function initClient() {
     isIPadDevice = isIpad(userAgent);
     isDesktopDevice = isDesktop();
     isVideoPIPSupported = !isMobileDevice && isVideoPIPSupported;
+
+    tooltips.forEach(({ element, text, position }) => {
+        setTippy(element, text, position);
+    });
 
     console.log('Connecting to signaling server');
     signalingSocket = io({ transports: ['websocket'] });
@@ -602,6 +625,10 @@ function setLocalMedia(stream) {
     attachMediaStream(myLocalMedia, localMediaStream);
     handlePictureInPicture(myVideoPiPBtn, myLocalMedia);
     handleFullScreen(myFullScreenBtn, myVideoWrap, myLocalMedia);
+    setTippy(myFullScreenBtn, 'Toggle full screen', 'bottom');
+    setTippy(myVideoPiPBtn, 'Toggle picture in picture', 'bottom');
+    setTippy(myAudioStatusIcon, 'Audio status', 'bottom');
+    setTippy(myVideoPeerName, 'Username', 'top');
     startSessionTime();
 }
 
@@ -659,6 +686,10 @@ function setRemoteMedia(stream, peers, peerId) {
     setPeerVideoStatus(peerId, peerVideo);
     setPeerAudioStatus(peerId, peerAudio);
     if (peerVideo && peerScreen) setPeerScreenStatus(peerId, peerScreen);
+    setTippy(remoteFullScreenBtn, 'Toggle full screen', 'bottom');
+    setTippy(remoteVideoPiPBtn, 'Toggle picture in picture', 'bottom');
+    setTippy(remoteAudioStatusIcon, 'Audio status', 'bottom');
+    setTippy(remoteVideoPeerName, 'Username', 'top');
 }
 
 function handleIncomingDataChannelMessage(config) {
@@ -827,7 +858,7 @@ function handleEvents() {
         }
         checkLineBreaks();
     };
-    homeButton.onclick = () => {
+    homeBtn.onclick = () => {
         endCall();
     };
 }

@@ -33,6 +33,14 @@ function isDesktop() {
     return !isMobileDevice && !isTabletDevice && !isIPadDevice;
 }
 
+function setTippy(elem, content, placement) {
+    if (isMobileDevice) return;
+    tippy(elem, {
+        content: content,
+        placement: placement,
+    });
+}
+
 function changeAspectRatio(aspectRatio) {
     const videoElements = document.querySelectorAll('video');
     videoElements.forEach((video) => {
