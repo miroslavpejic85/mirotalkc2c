@@ -8,6 +8,7 @@ const roomId = filterXSS(new URLSearchParams(window.location.search).get('room')
 const roomIdIn = document.getElementById('roomIdInput');
 const userNameIn = document.getElementById('userNameInput');
 const joinBtn = document.getElementById('joinBtn');
+const supportBtn = document.getElementById('supportBtn');
 
 function initHome() {
     roomIdIn.value = roomId ? roomId : filterXSS(window.localStorage.room) || '';
@@ -20,5 +21,8 @@ function initHome() {
             window.localStorage.room = roomIdIn.value;
             window.localStorage.name = userNameIn.value;
         }
+    };
+    supportBtn.onclick = () => {
+        window.open('https://codecanyon.net/user/miroslavpejic85', '_blank');
     };
 }

@@ -21,10 +21,10 @@
         <link rel="apple-touch-icon" href="../images/favicon.png" />
         <link rel="icon" type="image/x-icon" href="../images/favicon.ico" />
         <link rel="stylesheet" href="../css/home.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
 
         <script async src="../js/umami.js"></script>
 
-        <script async defer src="https://buttons.github.io/buttons.js"></script>
         <script defer src="https://rawgit.com/leizongmin/js-xss/master/dist/xss.js"></script>
         <script defer src="../js/home.js"></script>
     </head>
@@ -35,16 +35,8 @@
             <label for="username">Username</label>
             <input id="userNameInput" type="text" name="name" maxlength="15" required />
             <button id="joinBtn">Join</button>
-            <div class="githubDiv">
-                <a
-                    class="github-button"
-                    href="https://github.com/sponsors/miroslavpejic85"
-                    data-color-scheme="no-preference: light; light: light; dark: dark;"
-                    data-icon="octicon-heart"
-                    data-size="large"
-                    aria-label="Sponsor @miroslavpejic85 on GitHub"
-                    >Support</a
-                >
+            <div class="supportDiv">
+                <button id="supportBtn"><i class="fas fa-heart"></i> Support</button>
             </div>
         </form>
     </body>

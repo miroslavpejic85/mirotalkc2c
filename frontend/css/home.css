@@ -86,7 +86,10 @@ button:hover {
         -1px -1px 0 0 rgb(255 255 255 / 75%);
 }
 
-.githubDiv {
+.supportDiv {
     position: relative;
     top: 20px;
+}
+#supportBtn i {
+    color: red;
 }
