@@ -58,8 +58,8 @@ const roomURL = window.location.origin + '/?room=' + roomId;
 
 const config = {
     forceToMaxVideoAndFps: window.localStorage.forceToMaxVideoAndFps == 'true' || false,
-    videoSenderCodec: window.localStorage.videoSenderCodec || "default",
-    videoSenderMaxBitrate: window.localStorage.videoSenderMaxBitrate || "default",
+    videoSenderCodec: window.localStorage.videoSenderCodec || 'default',
+    videoSenderMaxBitrate: window.localStorage.videoSenderMaxBitrate || 'default',
     keepAspectRatio: window.localStorage.keepAspectRatio == 'true' || false,
 };
 
@@ -235,6 +235,7 @@ function handleConnect() {
             handleEvents();
             showWaitingUser();
             joinToChannel();
+            refreshCodecAndBitrate();
         });
     }
 }
@@ -270,24 +271,54 @@ function handleServerInfo(config) {
     redirectURL = config.redirectURL;
 }
 
-function handleCodec(peerConnection) {
-    let videoTransceiver = peerConnection.getTransceivers().find((s) => (s.sender.track ? s.sender.track.kind === 'video' : false));
-    if (videoTransceiver) {
-        if (config.videoSenderCodec != "default") {
-            let supportedCodec = RTCRtpSender.getCapabilities("video").codecs;
-            let selectedCodec = config.videoSenderCodec.split("/").map((name) =>
-                supportedCodec.filter((codec) => codec.mimeType.includes(name))
-            ).flat();
-            videoTransceiver.setCodecPreferences(selectedCodec);
-            console.log("Codecs:", selectedCodec);
+async function refreshCodecAndBitrate() {
+    try {
+        if (!thereIsPeerConnections()) return;
+        for (let peerId in peerConnections) {
+            let videoSelectCodecChanged = false;
+            let videoSenderMaxBitrateChanged = false;
+            let videoTransceiver = peerConnections[peerId]
+                .getTransceivers()
+                .find((s) => s.sender.track && s.sender.track.kind === 'video');
+            if (videoTransceiver) {
+                // Get the sender's parameters
+                const videoSender = videoTransceiver.sender;
+                const videoParameters = await videoSender.getParameters();
+                // Update codec in real time
+                if (config.videoSenderCodec !== 'default') {
+                    const senderCapabilities = RTCRtpSender.getCapabilities(videoSender.track.kind);
+                    const selectedCodec = senderCapabilities.codecs.find((codec) =>
+                        codec.mimeType.includes(config.videoSenderCodec),
+                    );
+                    if (selectedCodec) {
+                        await videoSender.replaceTrack(videoSender.track.clone(), {
+                            codec: selectedCodec,
+                        });
+                        console.log(`Codec changed for ${peerId} to:`, selectedCodec);
+                        videoSelectCodecChanged = true;
+                    }
+                }
+                // Update max bitrate in real time
+                if (config.videoSenderMaxBitrate !== 'default') {
+                    videoParameters.encodings[0].maxBitrate = config.videoSenderMaxBitrate * 1000000;
+                    await videoSender.setParameters(videoParameters);
+                    console.log(`Max bitrate changed for ${peerId} to:`, config.videoSenderMaxBitrate, 'Mbps');
+                    videoSenderMaxBitrateChanged = true;
+                }
+            }
+            // Popup message
+            if (videoSelectCodecChanged || videoSenderMaxBitrateChanged) {
+                popupMessage(
+                    'toast',
+                    'Video Codec and max bitrate',
+                    `Video codec changed to ${config.videoSenderCodec} and max bitrate to ${config.videoSenderMaxBitrate} Mbps`,
+                    'top',
+                );
+            }
         }
-
-        if (config.videoSenderMaxBitrate != "default") {
-            let videoSender = videoTransceiver.sender;
-            let videoParam = videoSender.getParameters();
-            videoParam.encodings[0].maxBitrate = config.videoSenderMaxBitrate * 1000 * 1000;
-            videoSender.setParameters(videoParam);
-        }
+    } catch (error) {
+        console.error('Error in refreshCodecAndBitrate:', error);
+        popupMessage('error', 'Refresh Codec And Bitrate Error', error.message);
     }
 }
 
@@ -320,6 +351,7 @@ function handleAddPeer(config) {
     }
     if (thereIsPeerConnections()) {
         elemDisplay(waitingDivContainer, false);
+        refreshCodecAndBitrate();
     }
     handleBodyEvents();
     playSound('join');
@@ -402,7 +434,6 @@ function handleAddTracks(peerId) {
 function handleRtcOffer(peerId) {
     peerConnections[peerId].onnegotiationneeded = () => {
         console.log('Creating RTC offer to', peerId);
-        handleCodec(peerConnections[peerId]);
         peerConnections[peerId]
             .createOffer()
             .then((localDescription) => {
@@ -436,7 +467,6 @@ function handleSessionDescription(config) {
             console.log('Set remote description done!');
             if (sessionDescription.type == 'offer') {
                 console.log('Creating answer');
-                handleCodec(peerConnections[peerId]);
                 peerConnections[peerId]
                     .createAnswer()
                     .then((localDescription) => {
@@ -768,6 +798,7 @@ function handleEvents() {
     };
     videoSource.onchange = (e) => {
         changeCamera(e.target.value);
+        refreshCodecAndBitrate();
     };
     videoQualitySelect.onchange = (e) => {
         refreshVideoConstraints();
@@ -795,26 +826,14 @@ function handleEvents() {
     videoSenderCodecSelect.onchange = (e) => {
         config.videoSenderCodec = e.target.value;
         window.localStorage.videoSenderCodec = e.target.value;
-        popupMessage(
-            'toast',
-            'Video codec changed to ' + e.target.value,
-            'Please refresh for the setting to take effect',
-            'top',
-            6000,
-        );
+        refreshCodecAndBitrate();
         playSound('switch');
     };
     videoSenderMaxBitrateSelect.value = config.videoSenderMaxBitrate;
     videoSenderMaxBitrateSelect.onchange = (e) => {
         config.videoSenderMaxBitrate = e.target.value;
         window.localStorage.videoSenderMaxBitrate = e.target.value;
-        popupMessage(
-            'toast',
-            'Video max bitrate changed to ' + e.target.value,
-            'Please refresh for the setting to take effect',
-            'top',
-            6000,
-        );
+        refreshCodecAndBitrate();
         playSound('switch');
     };
     switchKeepAspectRatio.checked = config.keepAspectRatio;
