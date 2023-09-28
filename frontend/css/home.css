@@ -90,6 +90,10 @@ button:hover {
     position: relative;
     top: 20px;
 }
+#supportBtn {
+    width: 90px;
+    font-size: 12px;
+}
 #supportBtn i {
     color: red;
 }

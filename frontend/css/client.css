@@ -299,7 +299,7 @@ video::-webkit-media-controls {
     padding: 20px;
     border: var(--border);
     border-radius: var(--border-radius) 0% 0%;
-    overflow: hidden;
+    overflow: auto;
 }
 
 #settings button {
@@ -554,6 +554,29 @@ button {
 hr {
     margin-top: 25px;
     border: 1px solid grey;
+}
+
+/*--------------------------------------------------------------
+# Webkit-Scrollbar Styles
+--------------------------------------------------------------*/
+
+::-webkit-scrollbar {
+    background: #1a1b1f;
+    width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #45494c;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #45494c;
+}
+
+::-webkit-scrollbar-track:hover {
+    background-color: #000000;
 }
 
 /*
