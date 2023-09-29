@@ -290,6 +290,7 @@ async function refreshCodec() {
         if (!thereIsPeerConnections()) return;
         for (let peerId in peerConnections) {
             let peerConnection = peerConnections[peerId];
+            handleRtcOffer(peerId);
             peerConnection.restartIce();
         }
     } catch (error) {
