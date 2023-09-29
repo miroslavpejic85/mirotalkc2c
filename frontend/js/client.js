@@ -235,7 +235,7 @@ function handleConnect() {
             handleEvents();
             showWaitingUser();
             joinToChannel();
-            refreshCodecAndBitrate();
+            refreshBitrate();
         });
     }
 }
@@ -271,12 +271,37 @@ function handleServerInfo(config) {
     redirectURL = config.redirectURL;
 }
 
-async function refreshCodecAndBitrate() {
+function handleCodec(peerConnection) {
+    let videoTransceiver = peerConnection.getTransceivers().find((s) => (s.sender.track ? s.sender.track.kind === 'video' : false));
+    if (videoTransceiver) {
+        if (config.videoSenderCodec != "default") {
+            let supportedCodec = RTCRtpSender.getCapabilities("video").codecs;
+            let selectedCodec = config.videoSenderCodec.split("/").map((name) =>
+                supportedCodec.filter((codec) => codec.mimeType.includes(name))
+            ).flat();
+            videoTransceiver.setCodecPreferences(selectedCodec);
+            console.log("Codecs:", selectedCodec);
+        }
+    }
+}
+
+async function refreshCodec() {
     try {
         if (!thereIsPeerConnections()) return;
         for (let peerId in peerConnections) {
-            let videoSelectCodecChanged = false;
-            let videoSenderMaxBitrateChanged = false;
+            let peerConnection = peerConnections[peerId];
+            peerConnection.restartIce();
+        }
+    } catch (error) {
+        console.error('Error in refreshCodecAndBitrate:', error);
+        popupMessage('error', 'Refresh Codec And Bitrate Error', error.message);
+    }
+}
+
+async function refreshBitrate() {
+    try {
+        if (!thereIsPeerConnections()) return;
+        for (let peerId in peerConnections) {
             let videoTransceiver = peerConnections[peerId]
                 .getTransceivers()
                 .find((s) => s.sender.track && s.sender.track.kind === 'video');
@@ -284,36 +309,18 @@ async function refreshCodecAndBitrate() {
                 // Get the sender's parameters
                 const videoSender = videoTransceiver.sender;
                 const videoParameters = await videoSender.getParameters();
-                // Update codec in real time
-                if (config.videoSenderCodec !== 'default') {
-                    const senderCapabilities = RTCRtpSender.getCapabilities(videoSender.track.kind);
-                    const selectedCodec = senderCapabilities.codecs.find((codec) =>
-                        codec.mimeType.includes(config.videoSenderCodec),
-                    );
-                    if (selectedCodec) {
-                        await videoSender.replaceTrack(videoSender.track.clone(), {
-                            codec: selectedCodec,
-                        });
-                        console.log(`Codec changed for ${peerId} to:`, selectedCodec);
-                        videoSelectCodecChanged = true;
-                    }
-                }
                 // Update max bitrate in real time
                 if (config.videoSenderMaxBitrate !== 'default') {
                     videoParameters.encodings[0].maxBitrate = config.videoSenderMaxBitrate * 1000000;
                     await videoSender.setParameters(videoParameters);
                     console.log(`Max bitrate changed for ${peerId} to:`, config.videoSenderMaxBitrate, 'Mbps');
-                    videoSenderMaxBitrateChanged = true;
+                    popupMessage(
+                        'toast',
+                        'Max bitrate',
+                        `Max bitrate to ${config.videoSenderMaxBitrate} Mbps`,
+                        'top',
+                    );
                 }
-            }
-            // Popup message
-            if (videoSelectCodecChanged || videoSenderMaxBitrateChanged) {
-                popupMessage(
-                    'toast',
-                    'Video Codec and max bitrate',
-                    `Video codec changed to ${config.videoSenderCodec} and max bitrate to ${config.videoSenderMaxBitrate} Mbps`,
-                    'top',
-                );
             }
         }
     } catch (error) {
@@ -351,7 +358,7 @@ function handleAddPeer(config) {
     }
     if (thereIsPeerConnections()) {
         elemDisplay(waitingDivContainer, false);
-        refreshCodecAndBitrate();
+        refreshBitrate();
     }
     handleBodyEvents();
     playSound('join');
@@ -434,6 +441,7 @@ function handleAddTracks(peerId) {
 function handleRtcOffer(peerId) {
     peerConnections[peerId].onnegotiationneeded = () => {
         console.log('Creating RTC offer to', peerId);
+        handleCodec(peerConnections[peerId]);
         peerConnections[peerId]
             .createOffer()
             .then((localDescription) => {
@@ -467,6 +475,7 @@ function handleSessionDescription(config) {
             console.log('Set remote description done!');
             if (sessionDescription.type == 'offer') {
                 console.log('Creating answer');
+                handleCodec(peerConnections[peerId]);
                 peerConnections[peerId]
                     .createAnswer()
                     .then((localDescription) => {
@@ -798,7 +807,7 @@ function handleEvents() {
     };
     videoSource.onchange = (e) => {
         changeCamera(e.target.value);
-        refreshCodecAndBitrate();
+        refreshBitrate();
     };
     videoQualitySelect.onchange = (e) => {
         refreshVideoConstraints();
@@ -826,14 +835,14 @@ function handleEvents() {
     videoSenderCodecSelect.onchange = (e) => {
         config.videoSenderCodec = e.target.value;
         window.localStorage.videoSenderCodec = e.target.value;
-        refreshCodecAndBitrate();
+        refreshCodec();
         playSound('switch');
     };
     videoSenderMaxBitrateSelect.value = config.videoSenderMaxBitrate;
     videoSenderMaxBitrateSelect.onchange = (e) => {
         config.videoSenderMaxBitrate = e.target.value;
         window.localStorage.videoSenderMaxBitrate = e.target.value;
-        refreshCodecAndBitrate();
+        refreshBitrate();
         playSound('switch');
     };
     switchKeepAspectRatio.checked = config.keepAspectRatio;
