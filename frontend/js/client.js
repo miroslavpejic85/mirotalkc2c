@@ -185,9 +185,8 @@ function getDocumentElementsById() {
     myAudioStatusIcon = document.getElementById('myAudioStatusIcon');
 }
 
-function thereIsPeerConnections() {
-    if (Object.keys(peerConnections).length === 0) return false;
-    return true;
+function thereArePeerConnections() {
+    return Object.keys(peerConnections).length > 0;
 }
 
 function initClient() {
@@ -271,62 +270,90 @@ function handleServerInfo(config) {
     redirectURL = config.redirectURL;
 }
 
+function resetCodec() {
+    config.videoSenderCodec = 'default';
+    window.localStorage.videoSenderCodec = 'default';
+    videoSenderCodecSelect.selectedIndex = 0;
+    popupMessage('warning', 'Video codec', 'Not supported by this browser', 'top', 6000);
+}
+
+function resetMaxBitRate() {
+    config.videoSenderMaxBitrate = 'default';
+    window.localStorage.videoSenderMaxBitrate = 'default';
+    videoSenderMaxBitrateSelect.selectedIndex = 0;
+    popupMessage('warning', 'Video max bitrate', 'Not supported by this browser', 'top', 6000);
+}
+
 function handleCodec(peerConnection) {
-    let videoTransceiver = peerConnection.getTransceivers().find((s) => (s.sender.track ? s.sender.track.kind === 'video' : false));
-    if (videoTransceiver) {
-        if (config.videoSenderCodec != "default") {
-            let supportedCodec = RTCRtpSender.getCapabilities("video").codecs;
-            let selectedCodec = config.videoSenderCodec.split("/").map((name) =>
-                supportedCodec.filter((codec) => codec.mimeType.includes(name))
-            ).flat();
+    if (config.videoSenderCodec === 'default') return;
+
+    try {
+        const videoTransceiver = peerConnection
+            .getTransceivers()
+            .find((s) => (s.sender.track ? s.sender.track.kind === 'video' : false));
+
+        if (videoTransceiver && videoTransceiver.setCodecPreferences) {
+            const supportedCodec = RTCRtpSender.getCapabilities('video').codecs;
+            const selectedCodec = config.videoSenderCodec
+                .split('/')
+                .map((name) => supportedCodec.filter((codec) => codec.mimeType.includes(name)))
+                .flat();
             videoTransceiver.setCodecPreferences(selectedCodec);
-            console.log("Codecs:", selectedCodec);
+            console.log('Codecs:', selectedCodec);
+        } else {
+            resetCodec();
         }
+    } catch (error) {
+        console.error('Error in handleCodec:', error);
+        resetCodec();
     }
 }
 
 async function refreshCodec() {
+    if (!thereArePeerConnections()) return;
     try {
-        if (!thereIsPeerConnections()) return;
-        for (let peerId in peerConnections) {
-            let peerConnection = peerConnections[peerId];
+        for (const peerId in peerConnections) {
+            const peerConnection = peerConnections[peerId];
             handleRtcOffer(peerId);
-            peerConnection.restartIce();
+            try {
+                await peerConnection.restartIce();
+            } catch (iceError) {
+                console.error(`Error in restartIce for ${peerId}:`, iceError);
+                resetCodec();
+            }
         }
     } catch (error) {
-        console.error('Error in refreshCodecAndBitrate:', error);
-        popupMessage('error', 'Refresh Codec And Bitrate Error', error.message);
+        console.error('Error in refreshCodec:', error);
+        resetCodec();
     }
 }
 
 async function refreshBitrate() {
+    if (!thereArePeerConnections() || config.videoSenderMaxBitrate === 'default') return;
     try {
-        if (!thereIsPeerConnections()) return;
-        for (let peerId in peerConnections) {
-            let videoTransceiver = peerConnections[peerId]
+        for (const peerId in peerConnections) {
+            const peerConnection = peerConnections[peerId];
+            const videoTransceiver = peerConnection
                 .getTransceivers()
-                .find((s) => s.sender.track && s.sender.track.kind === 'video');
+                .find((transceiver) => transceiver.sender.track && transceiver.sender.track.kind === 'video');
             if (videoTransceiver) {
-                // Get the sender's parameters
                 const videoSender = videoTransceiver.sender;
                 const videoParameters = await videoSender.getParameters();
-                // Update max bitrate in real time
-                if (config.videoSenderMaxBitrate !== 'default') {
-                    videoParameters.encodings[0].maxBitrate = config.videoSenderMaxBitrate * 1000000;
+                if (videoParameters?.encodings?.[0]?.maxBitrate !== undefined) {
+                    const newMaxBitrate = parseInt(config.videoSenderMaxBitrate) * 1000000;
+                    videoParameters.encodings[0].maxBitrate = newMaxBitrate;
                     await videoSender.setParameters(videoParameters);
-                    console.log(`Max bitrate changed for ${peerId} to:`, config.videoSenderMaxBitrate, 'Mbps');
-                    popupMessage(
-                        'toast',
-                        'Max bitrate',
-                        `Max bitrate to ${config.videoSenderMaxBitrate} Mbps`,
-                        'top',
-                    );
+                    console.log(`Max bitrate changed for ${peerId} to ${config.videoSenderMaxBitrate} Mbps`, {
+                        encodings: videoParameters.encodings[0],
+                    });
+                } else {
+                    resetMaxBitRate();
                 }
             }
         }
     } catch (error) {
-        console.error('Error in refreshCodecAndBitrate:', error);
-        popupMessage('error', 'Refresh Codec And Bitrate Error', error.message);
+        console.error('Error in refreshBitrate:', error);
+        resetMaxBitRate();
     }
 }
 
@@ -357,7 +384,7 @@ function handleAddPeer(config) {
     if (shouldCreateOffer) {
         handleRtcOffer(peerId);
     }
-    if (thereIsPeerConnections()) {
+    if (thereArePeerConnections()) {
         elemDisplay(waitingDivContainer, false);
         refreshBitrate();
     }
@@ -535,7 +562,7 @@ function handleRemovePeer(config) {
     delete peerConnections[peerId];
     delete peerMediaElements[peerId];
 
-    if (!thereIsPeerConnections()) {
+    if (!thereArePeerConnections()) {
         elemDisplay(waitingDivContainer, true);
         elemDisplay(buttonsBar, false);
         elemDisplay(settings, false);
@@ -1222,7 +1249,7 @@ function refreshMyLocalVideoStream(stream) {
 }
 
 function refreshMyVideoStreamToPeers(stream) {
-    if (!thereIsPeerConnections()) return;
+    if (!thereArePeerConnections()) return;
     for (let peerId in peerConnections) {
         let videoSender = peerConnections[peerId]
             .getSenders()
@@ -1240,7 +1267,7 @@ function refreshMyLocalAudioStream(stream) {
 }
 
 function refreshMyLocalAudioStreamToPeers(stream) {
-    if (!thereIsPeerConnections()) return;
+    if (!thereArePeerConnections()) return;
     for (let peerId in peerConnections) {
         let audioSender = peerConnections[peerId]
             .getSenders()
