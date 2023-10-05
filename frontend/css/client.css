@@ -47,7 +47,7 @@ body {
 
 #waitingDivContainer {
     position: absolute;
-    z-index: 7;
+    z-index: 0;
     display: none;
     width: 100%;
     height: 100%;
@@ -289,7 +289,7 @@ video::-webkit-media-controls {
 
 #settings {
     position: absolute;
-    z-index: 8;
+    z-index: 7;
     top: 0px;
     right: 0px;
     display: none;
@@ -581,6 +581,7 @@ hr {
 
 /*
 z-index:
+    0 waitingDivContainer
     1 video avatar img
     2 videoHeader
         - full screen mode
@@ -592,7 +593,6 @@ z-index:
     4 myVideoContainer
     5 remoteVideoContainer
     6 main buttons
-    7 waitingDivContainer
-    8 settings
-    9 chat
+    7 settings
+    8 chat
 */

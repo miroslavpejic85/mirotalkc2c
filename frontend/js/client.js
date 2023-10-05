@@ -1212,8 +1212,10 @@ function handlePictureInPicture(pipBtn, videoMedia) {
     if (isVideoPIPSupported) {
         pipBtn.onclick = () => {
             if (videoMedia.pictureInPictureElement) {
-                videoMedia.exitPictureInPicture();
-            } else if (document.pictureInPictureEnabled) {
+                videoMedia.exitPictureInPicture().catch((error) => {
+                    console.error('Failed to exit Picture-in-Picture mode:', error);
+                });
+            } else if (!videoMedia.disablePictureInPicture && document.pictureInPictureEnabled) {
                 videoMedia.requestPictureInPicture().catch((error) => {
                     console.error('Failed to enter Picture-in-Picture mode:', error);
                 });
@@ -1224,11 +1226,11 @@ function handlePictureInPicture(pipBtn, videoMedia) {
     }
 }
 
-function handleVideoRotate(rotateBtn, videoWrap) {
+function handleVideoRotate(rotateBtn, videoMedia) {
     let currentRotation = 0;
     rotateBtn.onclick = () => {
         currentRotation += 90;
-        videoWrap.style.transform = `rotate(${currentRotation}deg)`;
+        videoMedia.style.transform = `rotate(${currentRotation}deg)`;
     };
 }
 
