@@ -166,6 +166,7 @@ body {
     height: var(--my-video-wrap-height);
     border: var(--border);
     border-radius: var(--border-radius);
+    overflow: hidden;
 }
 
 .remoteVideoWrap {
@@ -173,6 +174,7 @@ body {
     width: 100vw;
     height: 100vh;
     float: left;
+    overflow: hidden;
 }
 
 .videoHeader {
@@ -194,10 +196,8 @@ body {
 .videoHeader button {
     display: inline;
     border: none;
-    margin-right: 3px;
     background: transparent;
     color: var(--text-color);
-    font-size: 1rem;
 }
 
 .videoFooter {

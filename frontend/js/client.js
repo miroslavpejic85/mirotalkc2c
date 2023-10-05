@@ -77,6 +77,7 @@ const className = {
     fullScreenOn: 'fas fa-expand',
     fullScreenOff: 'fas fa-compress',
     pip: 'fas fa-images',
+    rotate: 'fas fa-rotate-right',
 };
 
 const swal = {
@@ -585,12 +586,15 @@ function setLocalMedia(stream) {
     const myVideoPeerName = document.createElement('h4');
     const myFullScreenBtn = document.createElement('button');
     const myVideoPiPBtn = document.createElement('button');
+    const myVideoRotateBtn = document.createElement('button');
     const myAudioStatusIcon = document.createElement('button');
     const myVideoAvatarImage = document.createElement('img');
     myFullScreenBtn.id = 'myFullScreen';
     myFullScreenBtn.className = className.fullScreenOn;
     myVideoPiPBtn.id = 'myVideoPIP';
     myVideoPiPBtn.className = className.pip;
+    myVideoRotateBtn.id = 'myVideoRotate';
+    myVideoRotateBtn.className = className.rotate;
     myVideoHeader.id = 'myVideoHeader';
     myVideoHeader.className = 'videoHeader animate__animated animate__fadeInDown animate__faster';
     myVideoFooter.id = 'myVideoFooter';
@@ -604,6 +608,7 @@ function setLocalMedia(stream) {
     myVideoAvatarImage.className = 'videoAvatarImage';
     myVideoHeader.appendChild(myFullScreenBtn);
     myVideoHeader.appendChild(myVideoPiPBtn);
+    myVideoHeader.appendChild(myVideoRotateBtn);
     myVideoHeader.appendChild(myAudioStatusIcon);
     myVideoFooter.appendChild(myVideoPeerName);
     myLocalMedia.id = 'myVideo';
@@ -624,9 +629,11 @@ function setLocalMedia(stream) {
     logStreamSettingsInfo('localMediaStream', localMediaStream);
     attachMediaStream(myLocalMedia, localMediaStream);
     handlePictureInPicture(myVideoPiPBtn, myLocalMedia);
+    handleVideoRotate(myVideoRotateBtn, myLocalMedia);
     handleFullScreen(myFullScreenBtn, myVideoWrap, myLocalMedia);
     setTippy(myFullScreenBtn, 'Toggle full screen', 'bottom');
     setTippy(myVideoPiPBtn, 'Toggle picture in picture', 'bottom');
+    setTippy(myVideoRotateBtn, 'Rotate video', 'bottom');
     setTippy(myAudioStatusIcon, 'Audio status', 'bottom');
     setTippy(myVideoPeerName, 'Username', 'top');
     startSessionTime();
@@ -645,6 +652,7 @@ function setRemoteMedia(stream, peers, peerId) {
     const remoteVideoPeerName = document.createElement('h4');
     const remoteFullScreenBtn = document.createElement('button');
     const remoteVideoPiPBtn = document.createElement('button');
+    const remoteVideoRotateBtn = document.createElement('button');
     const remoteAudioStatusIcon = document.createElement('button');
     const remoteVideoAvatarImage = document.createElement('img');
     remoteVideoHeader.id = peerId + '_remoteVideoHeader';
@@ -657,6 +665,8 @@ function setRemoteMedia(stream, peers, peerId) {
     remoteFullScreenBtn.className = className.fullScreenOn;
     remoteVideoPiPBtn.id = '_remoteVideoPIP';
     remoteVideoPiPBtn.className = className.pip;
+    remoteVideoRotateBtn.id = '_remoteVideoRotate';
+    remoteVideoRotateBtn.className = className.rotate;
     remoteAudioStatusIcon.id = peerId + '_remoteAudioStatus';
     remoteAudioStatusIcon.className = className.audioOn;
     remoteVideoAvatarImage.id = peerId + '_remoteVideoAvatar';
@@ -664,6 +674,7 @@ function setRemoteMedia(stream, peers, peerId) {
     remoteVideoAvatarImage.className = 'videoAvatarImage';
     remoteVideoHeader.appendChild(remoteFullScreenBtn);
     remoteVideoHeader.appendChild(remoteVideoPiPBtn);
+    remoteVideoHeader.appendChild(remoteVideoRotateBtn);
     remoteVideoHeader.appendChild(remoteAudioStatusIcon);
     remoteVideoFooter.appendChild(remoteVideoPeerName);
     remoteMedia.id = peerId + '_remoteVideo';
@@ -682,12 +693,14 @@ function setRemoteMedia(stream, peers, peerId) {
     attachMediaStream(remoteMedia, remoteMediaStream);
     handleFullScreen(remoteFullScreenBtn, remoteVideoWrap, remoteMedia);
     handlePictureInPicture(remoteVideoPiPBtn, remoteMedia);
+    handleVideoRotate(remoteVideoRotateBtn, remoteMedia);
     handleVideoZoom(remoteMedia, remoteVideoAvatarImage);
     setPeerVideoStatus(peerId, peerVideo);
     setPeerAudioStatus(peerId, peerAudio);
     if (peerVideo && peerScreen) setPeerScreenStatus(peerId, peerScreen);
     setTippy(remoteFullScreenBtn, 'Toggle full screen', 'bottom');
     setTippy(remoteVideoPiPBtn, 'Toggle picture in picture', 'bottom');
+    setTippy(remoteVideoRotateBtn, 'Rotate video', 'bottom');
     setTippy(remoteAudioStatusIcon, 'Audio status', 'bottom');
     setTippy(remoteVideoPeerName, 'Username', 'top');
 }
@@ -1209,6 +1222,14 @@ function handlePictureInPicture(pipBtn, videoMedia) {
     } else {
         elemDisplay(pipBtn, false);
     }
+}
+
+function handleVideoRotate(rotateBtn, videoWrap) {
+    let currentRotation = 0;
+    rotateBtn.onclick = () => {
+        currentRotation += 90;
+        videoWrap.style.transform = `rotate(${currentRotation}deg)`;
+    };
 }
 
 function handleFullScreen(fullScreenBtn, videoWrap, videoMedia) {
