@@ -350,7 +350,7 @@ async function refreshCodec() {
 }
 
 async function refreshBitrate() {
-    if (!thereArePeerConnections() || config.videoSenderMaxBitrate === 'default') return;
+    if (!thereArePeerConnections()) return;
     try {
         for (const peerId in peerConnections) {
             const peerConnection = peerConnections[peerId];
@@ -361,7 +361,8 @@ async function refreshBitrate() {
                 const videoSender = videoTransceiver.sender;
                 const videoParameters = await videoSender.getParameters();
                 const newMaxBitrate = parseInt(config.videoSenderMaxBitrate) * 1000000;
-                videoParameters.encodings[0].maxBitrate = newMaxBitrate;
+                if (config.videoSenderMaxBitrate != 'default') videoParameters.encodings[0].maxBitrate = newMaxBitrate;
+                else if (videoParameters.encodings[0].hasOwnProperty("maxBitrate")) delete videoParameters.encodings[0].maxBitrate;
                 await videoSender.setParameters(videoParameters);
                 console.log(`Max bitrate changed for ${peerId} to ${config.videoSenderMaxBitrate} Mbps`, {
                     encodings: videoParameters.encodings[0],
@@ -371,6 +372,9 @@ async function refreshBitrate() {
     } catch (error) {
         console.error('Error in refreshBitrate:', error);
         resetMaxBitRate();
+        // Use a full reconnect
+        signalingSocket.disconnect();
+        signalingSocket.connect();
     }
 }
 
