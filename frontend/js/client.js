@@ -284,17 +284,14 @@ function resetMaxBitRate() {
     popupMessage('warning', 'Video max bitrate', 'One of the callers does not support the selected Max bitrate.', 'top', 6000);
 }
 
-async function getVideoState(peerConnection) {
+function getVideoState(peerConnection) {
     const videoTransceiver = peerConnection
         .getTransceivers()
         .find((s) => (s.sender.track ? s.sender.track.kind === 'video' : false));
-    if (!videoTransceiver) return [false, false];
+    if (!videoTransceiver) return [True, True];
 
-    const sendStat = await videoTransceiver.sender.getStats();
-    const sendState = Array.from(sendStat.entries()).some(obj => obj[1]["type"] == 'codec');
-
-    const recvStat = await videoTransceiver.receiver.getStats();
-    const recvState = Array.from(recvStat.entries()).some(obj => obj[1]["type"] == 'codec');
+    const sendState = videoTransceiver.sender.track.muted;
+    const recvState = videoTransceiver.receiver.track.muted;
 
     return [sendState, recvState];
 }
@@ -330,14 +327,14 @@ async function refreshCodec() {
     try {
         for (const peerId in peerConnections) {
             const peerConnection = peerConnections[peerId];
-            const state1 = await getVideoState(peerConnection);
+            const state1 = getVideoState(peerConnection);
 
             handleRtcOffer(peerId);
             await peerConnection.restartIce();
 
             // Wait and check check video stats
-            await new Promise(r => setTimeout(r, 1000));
-            const state2 = await getVideoState(peerConnection);
+            await new Promise(r => setTimeout(r, 2000));
+            const state2 = getVideoState(peerConnection);
             if (!(state1[0]==state2[0] && state1[1]==state2[1])) throw new Error("Video stopped after changing codec");
         }
     } catch (error) {
