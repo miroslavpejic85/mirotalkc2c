@@ -274,14 +274,31 @@ function resetCodec() {
     config.videoSenderCodec = 'default';
     window.localStorage.videoSenderCodec = 'default';
     videoSenderCodecSelect.selectedIndex = 0;
-    popupMessage('warning', 'Video codec', 'Not supported by this browser', 'top', 6000);
+    popupMessage('warning', 'Video codec', 'One of the callers does not support the selected codec.', 'top', 6000);
 }
 
 function resetMaxBitRate() {
     config.videoSenderMaxBitrate = 'default';
     window.localStorage.videoSenderMaxBitrate = 'default';
     videoSenderMaxBitrateSelect.selectedIndex = 0;
-    popupMessage('warning', 'Video max bitrate', 'Not supported by this browser', 'top', 6000);
+    popupMessage('warning', 'Video max bitrate', 'One of the callers does not support the selected Max bitrate.', 'top', 6000);
+}
+
+async function checkConnection(peerConnection) {
+    const videoTransceiver = peerConnection
+        .getTransceivers()
+        .find((s) => (s.sender.track ? s.sender.track.kind === 'video' : false));
+    if (!videoTransceiver) return false;
+
+    const sendStat = await videoTransceiver.sender.getStats();
+    const sendState = sendStat.entries().some(obj => obj[1]["type"] == 'codec');
+    if (!sendState) return false;
+
+    const recvStat = await videoTransceiver.receiver.getStats();
+    const recvState = recvStat.entries().some(obj => obj[1]["type"] == 'codec');
+    if (!recvState) return false;
+
+    return true;
 }
 
 function handleCodec(peerConnection) {
@@ -292,16 +309,17 @@ function handleCodec(peerConnection) {
             .getTransceivers()
             .find((s) => (s.sender.track ? s.sender.track.kind === 'video' : false));
 
-        if (videoTransceiver && videoTransceiver.setCodecPreferences) {
+        if (!videoTransceiver) throw new Error("Video Transceiver not found");
+
+        if (videoTransceiver.setCodecPreferences) {
             const supportedCodec = RTCRtpSender.getCapabilities('video').codecs;
             const selectedCodec = config.videoSenderCodec
                 .split('/')
                 .map((name) => supportedCodec.filter((codec) => codec.mimeType.includes(name)))
                 .flat();
+            if (selectedCodec.length == 0) throw new Error("This browser does not support the selected codec");
             videoTransceiver.setCodecPreferences(selectedCodec);
             console.log('Codecs:', selectedCodec);
-        } else {
-            resetCodec();
         }
     } catch (error) {
         console.error('Error in handleCodec:', error);
@@ -321,10 +339,19 @@ async function refreshCodec() {
                 console.error(`Error in restartIce for ${peerId}:`, iceError);
                 resetCodec();
             }
+            // Wait and check check video stats
+            await new Promise(r => setTimeout(r, 100));
+            const state = await checkConnection(peerConnection);
+            if(!state){
+                throw new Error("Video stopped after changing codec");
+            }
         }
     } catch (error) {
         console.error('Error in refreshCodec:', error);
         resetCodec();
+        // A full reconnect is required to restore codec problems
+        signalingSocket.disconnect();
+        signalingSocket.connect();
     }
 }
 
@@ -339,16 +366,12 @@ async function refreshBitrate() {
             if (videoTransceiver) {
                 const videoSender = videoTransceiver.sender;
                 const videoParameters = await videoSender.getParameters();
-                if (videoParameters?.encodings?.[0]?.maxBitrate !== undefined) {
-                    const newMaxBitrate = parseInt(config.videoSenderMaxBitrate) * 1000000;
-                    videoParameters.encodings[0].maxBitrate = newMaxBitrate;
-                    await videoSender.setParameters(videoParameters);
-                    console.log(`Max bitrate changed for ${peerId} to ${config.videoSenderMaxBitrate} Mbps`, {
-                        encodings: videoParameters.encodings[0],
-                    });
-                } else {
-                    resetMaxBitRate();
-                }
+                const newMaxBitrate = parseInt(config.videoSenderMaxBitrate) * 1000000;
+                videoParameters.encodings[0].maxBitrate = newMaxBitrate;
+                await videoSender.setParameters(videoParameters);
+                console.log(`Max bitrate changed for ${peerId} to ${config.videoSenderMaxBitrate} Mbps`, {
+                    encodings: videoParameters.encodings[0],
+                });
             }
         }
     } catch (error) {
