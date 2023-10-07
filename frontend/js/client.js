@@ -291,10 +291,10 @@ async function getVideoState(peerConnection) {
     if (!videoTransceiver) return [false, false];
 
     const sendStat = await videoTransceiver.sender.getStats();
-    const sendState = sendStat.entries().some(obj => obj[1]["type"] == 'codec');
+    const sendState = Array.from(sendStat.entries()).some(obj => obj[1]["type"] == 'codec');
 
     const recvStat = await videoTransceiver.receiver.getStats();
-    const recvState = recvStat.entries().some(obj => obj[1]["type"] == 'codec');
+    const recvState = Array.from(recvStat.entries()).some(obj => obj[1]["type"] == 'codec');
 
     return [sendState, recvState];
 }
