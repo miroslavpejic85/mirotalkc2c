@@ -284,21 +284,19 @@ function resetMaxBitRate() {
     popupMessage('warning', 'Video max bitrate', 'One of the callers does not support the selected Max bitrate.', 'top', 6000);
 }
 
-async function checkConnection(peerConnection) {
+async function getVideoState(peerConnection) {
     const videoTransceiver = peerConnection
         .getTransceivers()
         .find((s) => (s.sender.track ? s.sender.track.kind === 'video' : false));
-    if (!videoTransceiver) return false;
+    if (!videoTransceiver) return [false, false];
 
     const sendStat = await videoTransceiver.sender.getStats();
     const sendState = sendStat.entries().some(obj => obj[1]["type"] == 'codec');
-    if (!sendState) return false;
 
     const recvStat = await videoTransceiver.receiver.getStats();
     const recvState = recvStat.entries().some(obj => obj[1]["type"] == 'codec');
-    if (!recvState) return false;
 
-    return true;
+    return [sendState, recvState];
 }
 
 function handleCodec(peerConnection) {
@@ -332,24 +330,20 @@ async function refreshCodec() {
     try {
         for (const peerId in peerConnections) {
             const peerConnection = peerConnections[peerId];
+            const state1 = await getVideoState(peerConnection);
+
             handleRtcOffer(peerId);
-            try {
-                await peerConnection.restartIce();
-            } catch (iceError) {
-                console.error(`Error in restartIce for ${peerId}:`, iceError);
-                resetCodec();
-            }
+            await peerConnection.restartIce();
+
             // Wait and check check video stats
-            await new Promise(r => setTimeout(r, 100));
-            const state = await checkConnection(peerConnection);
-            if(!state){
-                throw new Error("Video stopped after changing codec");
-            }
+            await new Promise(r => setTimeout(r, 1000));
+            const state2 = await getVideoState(peerConnection);
+            if (!(state1[0]==state2[0] && state1[1]==state2[1])) throw new Error("Video stopped after changing codec");
         }
     } catch (error) {
         console.error('Error in refreshCodec:', error);
         resetCodec();
-        // A full reconnect is required to restore codec problems
+        // Use a full reconnect
         signalingSocket.disconnect();
         signalingSocket.connect();
     }
