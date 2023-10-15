@@ -4,7 +4,7 @@
 
 https://docs.mirotalk.com/ngrok/ngrok/
 
-#### How to exposing MiroTalk P2P with Ngrok?
+#### How to exposing MiroTalk C2C with Ngrok?
 
 https://docs.mirotalk.com/mirotalk-c2c/ngrok/
 
