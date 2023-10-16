@@ -1,4 +1,6 @@
-# <p align="center">MiroTalk C2C</p>
+<h1 align="center">MiroTalk C2C</h1>
+
+<br />
 
 <p align="center">Free WebRTC Real-Time Cam-2-Cam Video Calls & Screen Sharing, End-to-End Encrypted, to embed in any website with a <a href="https://github.com/miroslavpejic85/mirotalkc2c/issues/2#issuecomment-1340587150" target="_blank">simple iframe.</a></p>
 
