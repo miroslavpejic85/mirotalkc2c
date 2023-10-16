@@ -27,7 +27,7 @@
 
 <br/>
 
--   Install [NodeJs](https://nodejs.org/en/blog/release/v18.16.0).
+Install [NodeJs](https://nodejs.org/en/blog/release/v18.16.0).
 
 ```bash
 # Copy .env.template in .env and edit it if needed
@@ -38,7 +38,7 @@ $ npm install
 $ npm start
 ```
 
--   Open [http://localhost:8080](http://localhost:8080) in your browser.
+Open [http://localhost:8080](http://localhost:8080) in your browser.
 
 </details>
 
@@ -49,8 +49,9 @@ $ npm start
 
 ![docker](./frontend/images/docker.png)
 
--   Repository: [Docker hub](https://hub.docker.com/r/mirotalk/c2c)
--   Install [docker](https://docs.docker.com/engine/install/) and [docker-compose](https://docs.docker.com/compose/install/).
+Repository: [Docker hub](https://hub.docker.com/r/mirotalk/c2c)
+
+Install [docker](https://docs.docker.com/engine/install/) and [docker-compose](https://docs.docker.com/compose/install/).
 
 ```bash
 # Copy .env.template in .env and edit it if needed
@@ -63,7 +64,7 @@ $ docker pull mirotalk/c2c:latest
 $ docker-compose up
 ```
 
--   Open [http://localhost:8080](http://localhost:8080) in your browser.
+Open [http://localhost:8080](http://localhost:8080) in your browser.
 
 </details>
 
@@ -87,7 +88,7 @@ Install your own [Stun & Turn](https://docs.mirotalk.com/coturn/stun-turn/) by f
 
 </details>
 
-<details>
+<details open>
 <summary>Self-Hosting</summary>
 
 <br/>
@@ -118,23 +119,25 @@ To obtain a [MiroTalk C2C license](https://docs.mirotalk.com/license/licensing-o
 
 </details>
 
----
+<br/>
 
-<details>
-<summary>MiroTalk P2P</summary>
-
-<br>
-
-Try also [MiroTalk P2P](https://github.com/miroslavpejic85/mirotalk) `peer to peer` real-time video conferences, optimized for small groups. Unlimited time, unlimited rooms each having 5-8 participants.
-
-</details>
+## Diving into Additional MiroTalk Projects:
 
 <details>
 <summary>MiroTalk SFU</summary>
 
 <br>
 
-Try also [MiroTalk SFU](https://github.com/miroslavpejic85/mirotalksfu) `selective forwarding unit` real-time video conferences, optimized for large groups. Unlimited time, unlimited rooms each having 8+ participants.
+Try also [MiroTalk SFU](https://github.com/miroslavpejic85/mirotalksfu) `selective forwarding unit` real-time video conferences, optimized for large groups. `Unlimited time, unlimited concurrent rooms` each having 8+ participants, up to ~ 100 per single CPU.
+
+</details>
+
+<details>
+<summary>MiroTalk P2P</summary>
+
+<br/>
+
+Try also [MiroTalk P2P](https://github.com/miroslavpejic85/mirotalk) `peer to peer` real-time video conferences, optimized for small groups. `Unlimited time, unlimited concurrent rooms` each having 5-8 participants.
 
 </details>
 
@@ -143,7 +146,7 @@ Try also [MiroTalk SFU](https://github.com/miroslavpejic85/mirotalksfu) `selecti
 
 <br>
 
-Try also [MiroTalk BRO](https://github.com/miroslavpejic85/mirotalkbro) live broadcasting.
+Try also [MiroTalk BRO](https://github.com/miroslavpejic85/mirotalkbro) `Live broadcast` (peer to peer) live video, audio and screen stream to all connected users (viewers). `Unlimited time, unlimited concurrent rooms` each having a broadcast and many viewers.
 
 </details>
 
@@ -152,7 +155,7 @@ Try also [MiroTalk BRO](https://github.com/miroslavpejic85/mirotalkbro) live bro
 
 <br>
 
-Try also [MiroTalk WEB](https://github.com/miroslavpejic85/mirotalkwebrtc) rooms scheduler.
+Try also [MiroTalk WEB](https://github.com/miroslavpejic85/mirotalkwebrtc) a platform that allows for the management of an `unlimited number of users`. Each user must register with their email, username, and password, after which they gain access to their `personal dashboard`. Within the dashboard, users can `manage their rooms and schedule meetings` using the desired version of MiroTalk on a specified date and time. Invitations to these meetings can be sent via email, shared through the web browser, or sent via SMS.
 
 </details>
 
