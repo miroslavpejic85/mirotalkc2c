@@ -76,7 +76,9 @@ Open [http://localhost:8080](http://localhost:8080) in your browser.
 <br>
 
 -   `Ngrok/HTTPS:` You can start a video conference directly from your local PC and make it accessible from any device outside your network by following [these instructions](docs/ngrok.md), or expose it directly on [HTTPS](backend/ssl/README.md).
+
 -   `Stun/Turn:` Install your own [Stun & Turn](https://docs.mirotalk.com/coturn/stun-turn/) by following [this instructions](./docs/coturn.md).
+
 -   `Self-hosting:` For `self-hosting MiroTalk C2C` on your own dedicated server, please refer to [this comprehensive guide](docs/self-hosting.md). It will provide you with all the necessary instructions to get your MiroTalk C2C instance up and running smoothly.
 
 </details>
