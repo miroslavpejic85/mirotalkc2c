@@ -90,6 +90,9 @@ button:hover {
     position: relative;
     top: 20px;
 }
+.supportDiv p {
+    font-size: small;
+}
 #supportBtn {
     width: 120px;
     font-size: 12px;
