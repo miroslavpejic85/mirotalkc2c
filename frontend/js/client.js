@@ -357,9 +357,14 @@ async function refreshBitrate() {
             if (videoTransceiver) {
                 const videoSender = videoTransceiver.sender;
                 const videoParameters = await videoSender.getParameters();
-                const newMaxBitrate = parseInt(config.videoSenderMaxBitrate) * 1000000;
-                if (config.videoSenderMaxBitrate != 'default') videoParameters.encodings[0].maxBitrate = newMaxBitrate;
-                else if (videoParameters.encodings[0].hasOwnProperty("maxBitrate")) delete videoParameters.encodings[0].maxBitrate;
+                if (config.videoSenderMaxBitrate === 'default'){
+                    if (videoParameters.encodings[0].hasOwnProperty("maxBitrate")) {
+                        delete videoParameters.encodings[0].maxBitrate;
+                    }
+                } else {
+                    const newMaxBitrate = parseInt(config.videoSenderMaxBitrate) * 1000000;
+                    videoParameters.encodings[0].maxBitrate = newMaxBitrate;
+                }
                 await videoSender.setParameters(videoParameters);
                 console.log(`Max bitrate changed for ${peerId} to ${config.videoSenderMaxBitrate} Mbps`, {
                     encodings: videoParameters.encodings[0],
