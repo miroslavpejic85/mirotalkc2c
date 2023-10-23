@@ -694,7 +694,7 @@ function setRemoteMedia(stream, peers, peerId) {
     handleFullScreen(remoteFullScreenBtn, remoteVideoWrap, remoteMedia);
     handlePictureInPicture(remoteVideoPiPBtn, remoteMedia);
     handleVideoRotate(remoteVideoRotateBtn, remoteMedia);
-    handleVideoZoom(remoteMedia, remoteVideoAvatarImage);
+    handleVideoZoom(remoteMedia, remoteVideoWrap, remoteVideoAvatarImage);
     setPeerVideoStatus(peerId, peerVideo);
     setPeerAudioStatus(peerId, peerAudio);
     if (peerVideo && peerScreen) setPeerScreenStatus(peerId, peerScreen);
@@ -1249,17 +1249,61 @@ function handleFullScreen(fullScreenBtn, videoWrap, videoMedia) {
     };
 }
 
-function handleVideoZoom(videoMedia, videoAvatarImage) {
+function handleVideoZoom(videoMedia, videoWrap, videoAvatarImage) {
+    const zoom_center_mode = false;
+    const zoom_in_factor = 1.1;
+    const zoom_out_factor = 0.9;
+    const max_zoom = 15;
+    const min_zoom = 1;
+
     let zoom = 1;
 
-    videoMedia.onwheel = (e) => {
-        e.preventDefault();
-        if (videoAvatarImage.style.display == 'block') return;
-        let delta = e.wheelDelta ? e.wheelDelta : -e.deltaY;
-        delta > 0 ? (zoom *= 1.2) : (zoom /= 1.2);
-        if (zoom < 1) zoom = 1;
-        videoMedia.style.scale = zoom;
-    };
+    if (!isMobileDevice) {
+        if (zoom_center_mode) {
+            videoMedia.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                if (isVideoOf()) return;
+                const delta = e.wheelDelta ? e.wheelDelta : -e.deltaY;
+                const zoomDirection = e.deltaY > 0 ? 'zoom-out' : 'zoom-in';
+                delta > 0 ? (zoom *= 1.2) : (zoom /= 1.2);
+                zoom = Math.max(min_zoom, Math.min(max_zoom, zoom));
+                videoMedia.style.transform = `scale(${zoom})`;
+                videoMedia.style.cursor = zoom === 1 ? 'pointer' : zoomDirection;
+            });
+        } else {
+            videoMedia.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                if (isVideoOf()) return;
+                const rect = videoWrap.getBoundingClientRect();
+                const cursorX = e.clientX - rect.left;
+                const cursorY = e.clientY - rect.top;
+                const zoomDirection = e.deltaY > 0 ? 'zoom-out' : 'zoom-in';
+                const scaleFactor = zoomDirection === 'zoom-out' ? zoom_out_factor : zoom_in_factor;
+                zoom *= scaleFactor;
+                zoom = Math.max(min_zoom, Math.min(max_zoom, zoom));
+                videoMedia.style.transformOrigin = `${cursorX}px ${cursorY}px`;
+                videoMedia.style.transform = `scale(${zoom})`;
+                videoMedia.style.cursor = zoom === 1 ? 'pointer' : zoomDirection;
+            });
+            videoWrap.addEventListener('mouseleave', () => {
+                videoMedia.style.cursor = 'pointer';
+            });
+            videoMedia.addEventListener('mouseleave', () => {
+                videoMedia.style.cursor = 'pointer';
+            });
+        }
+    }
+    function isVideoOf() {
+        return videoAvatarImage.style.display == 'block';
+    }
+}
+
+function resetVideoZoom() {
+    const videoElements = document.querySelectorAll('video');
+    videoElements.forEach((video) => {
+        video.style.transform = '';
+        video.style.transformOrigin = 'center';
+    });
 }
 
 function handleVideoWrapSize() {
@@ -1383,3 +1427,12 @@ function setPeerScreenStatus(peerId, active) {
     peerVideo.style.objectFit = active ? 'contain' : 'cover';
     elemDisplay(peerVideoAvatarImage, active ? false : true);
 }
+
+window.addEventListener(
+    'load',
+    function (event) {
+        resetVideoZoom();
+        window.onresize = resetVideoZoom;
+    },
+    false,
+);
