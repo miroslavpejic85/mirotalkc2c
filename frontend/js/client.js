@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.0.6
+ * @version 1.0.7
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -151,7 +151,6 @@ let isSpaceDown = false;
 let isMyVideoActiveBefore = false;
 let camera = 'user';
 let thisPeerId;
-let peerConnection;
 let signalingSocket;
 let localMediaStream;
 let remoteMediaStream;
@@ -161,9 +160,6 @@ let peerConnections = {};
 let peerMediaElements = {};
 let dataChannels = {};
 
-let audioDevices = [];
-let videoDevices = [];
-
 let myVideo;
 let myVideoWrap;
 let myVideoAvatarImage;
@@ -172,6 +168,7 @@ let myAudioStatusIcon;
 let videoQualitySelectedIndex = 0;
 let videoFpsSelectedIndex = 0;
 
+let surveyURL = false;
 let redirectURL = false;
 
 const tooltips = [
@@ -289,8 +286,10 @@ function joinToChannel() {
 }
 
 function handleServerInfo(config) {
+    console.log('Server info', config);
     roomPeersCount = config.roomPeersCount;
     redirectURL = config.redirectURL;
+    surveyURL = config.surveyURL;
 }
 
 function handleAddPeer(config) {
@@ -308,7 +307,7 @@ function handleAddPeer(config) {
     elemDisplay(buttonsBar, true);
     animateCSS(buttonsBar, 'fadeInUp');
 
-    peerConnection = new RTCPeerConnection({ iceServers: iceServers });
+    const peerConnection = new RTCPeerConnection({ iceServers: iceServers });
     peerConnections[peerId] = peerConnection;
 
     handlePeersConnectionStatus(peerId);
@@ -555,8 +554,8 @@ function setupLocalMedia(callback, errorBack) {
 
 function enumerateDevices() {
     navigator.mediaDevices.enumerateDevices().then((devices) => {
-        videoDevices = devices.filter((device) => device.kind === 'videoinput' && device.deviceId !== 'default');
-        audioDevices = devices.filter((device) => device.kind === 'audioinput' && device.deviceId !== 'default');
+        const videoDevices = devices.filter((device) => device.kind === 'videoinput' && device.deviceId !== 'default');
+        const audioDevices = devices.filter((device) => device.kind === 'audioinput' && device.deviceId !== 'default');
         console.log('Devices', {
             audioDevices: audioDevices,
             videoDevices: videoDevices,
@@ -1077,7 +1076,11 @@ function getVideoConstraints(deviceId = false) {
 
 function endCall() {
     signalingSocket.disconnect();
-    giveMeFeedback();
+    if (surveyURL) {
+        giveMeFeedback();
+    } else {
+        redirectOnLeave();
+    }
 }
 
 function giveMeFeedback() {
@@ -1095,11 +1098,19 @@ function giveMeFeedback() {
         hideClass: { popup: 'animate__animated animate__fadeOutUp' },
     }).then((result) => {
         if (result.isConfirmed) {
-            redirectURL ? openURL(redirectURL) : openURL('/');
+            redirectToSurvey();
         } else {
-            openURL('/');
+            redirectOnLeave();
         }
     });
+}
+
+function redirectToSurvey() {
+    surveyURL ? openURL(surveyURL) : openURL('/');
+}
+
+function redirectOnLeave() {
+    redirectURL ? openURL(redirectURL) : openURL('/');
 }
 
 function attachMediaStream(element, stream) {

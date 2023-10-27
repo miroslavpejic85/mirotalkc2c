@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.0.6
+ * @version 1.0.7
  */
 
 require('dotenv').config();
@@ -63,6 +63,7 @@ if (turnServerEnabled && turnServerUrl && turnServerUsername && turnServerCreden
     iceServers.push({ urls: turnServerUrl, username: turnServerUsername, credential: turnServerCredential });
 }
 
+const surveyURL = process.env.SURVEY_URL || false;
 const redirectURL = process.env.REDIRECT_URL || false;
 
 const frontendDir = path.join(__dirname, '../', 'frontend');
@@ -143,6 +144,7 @@ server.listen(port, null, () => {
             room: host + queryRoom,
             join: host + queryJoin,
             redirectURL: redirectURL,
+            surveyURL: surveyURL,
             nodeVersion: process.versions.node,
         });
     }
@@ -182,6 +184,7 @@ io.sockets.on('connect', (socket) => {
         sendToPeer(socket.id, sockets, 'serverInfo', {
             roomPeersCount: Object.keys(peers[channel]).length,
             redirectURL: redirectURL,
+            surveyURL: surveyURL,
         });
     });
 
