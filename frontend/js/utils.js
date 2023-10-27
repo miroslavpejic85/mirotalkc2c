@@ -33,12 +33,50 @@ function isDesktop() {
     return !isMobileDevice && !isTabletDevice && !isIPadDevice;
 }
 
-function setTippy(elem, content, placement) {
+function logStreamSettingsInfo(name, stream) {
+    if (hasVideoTrack(stream)) {
+        console.log(name, {
+            video: {
+                label: stream.getVideoTracks()[0].label,
+                settings: stream.getVideoTracks()[0].getSettings(),
+            },
+        });
+    }
+    if (hasAudioTrack(stream)) {
+        console.log(name, {
+            audio: {
+                label: stream.getAudioTracks()[0].label,
+                settings: stream.getAudioTracks()[0].getSettings(),
+            },
+        });
+    }
+}
+
+function hasAudioTrack(mediaStream) {
+    if (!mediaStream) return false;
+    const audioTracks = mediaStream.getAudioTracks();
+    return audioTracks.length > 0;
+}
+
+function hasVideoTrack(mediaStream) {
+    if (!mediaStream) return false;
+    const videoTracks = mediaStream.getVideoTracks();
+    return videoTracks.length > 0;
+}
+
+function setTippy(element, content, placement) {
     if (isMobileDevice) return;
-    tippy(elem, {
-        content: content,
-        placement: placement,
-    });
+    if (element) {
+        if (element._tippy) {
+            element._tippy.destroy();
+        }
+        tippy(element, {
+            content: content,
+            placement: placement,
+        });
+    } else {
+        console.warn('setTippy element not found with content', content);
+    }
 }
 
 function changeAspectRatio(aspectRatio) {
@@ -189,7 +227,7 @@ function animateCSS(element, animation, prefix = 'animate__') {
 }
 
 function makeRoomQR() {
-    let qr = new QRious({
+    const qr = new QRious({
         element: document.getElementById('qrRoom'),
         value: roomURL,
     });
@@ -199,8 +237,8 @@ function makeRoomQR() {
 }
 
 async function playSound(name) {
-    let sound = '../sounds/' + name + '.mp3';
-    let audioToPlay = new Audio(sound);
+    const sound = '../sounds/' + name + '.mp3';
+    const audioToPlay = new Audio(sound);
     try {
         audioToPlay.volume = 0.5;
         await audioToPlay.play();

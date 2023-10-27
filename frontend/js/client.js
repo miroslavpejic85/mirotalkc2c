@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.0.5
+ * @version 1.0.6
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -214,6 +214,7 @@ function initClient() {
     if (!isWebRTCSupported) {
         return popupMessage('warning', 'WebRTC', 'This browser seems not supported WebRTC!');
     }
+
     userAgent = navigator.userAgent.toLowerCase();
     isMobileDevice = isMobile(userAgent);
     isTabletDevice = isTablet(userAgent);
@@ -251,6 +252,7 @@ function handleConnect() {
         joinToChannel();
     } else {
         setupLocalMedia(() => {
+            enumerateDevices();
             handleVideoWrapSize();
             getDocumentElementsById();
             handleEvents();
@@ -522,24 +524,6 @@ function setupLocalMedia(callback, errorBack) {
         .then((stream) => {
             setLocalMedia(stream);
             if (callback) callback();
-            navigator.mediaDevices.enumerateDevices().then((devices) => {
-                videoDevices = devices.filter(
-                    (device) => device.kind === 'videoinput' && device.deviceId !== 'default',
-                );
-                audioDevices = devices.filter(
-                    (device) => device.kind === 'audioinput' && device.deviceId !== 'default',
-                );
-                console.log('Devices', {
-                    audioDevices: audioDevices,
-                    videoDevices: videoDevices,
-                });
-                audioDevices.forEach((device) => {
-                    addChild(audioSource, device);
-                });
-                videoDevices.forEach((device) => {
-                    addChild(videoSource, device);
-                });
-            });
         })
         .catch((err) => {
             playSound('error');
@@ -551,7 +535,7 @@ function setupLocalMedia(callback, errorBack) {
                     `
                     <p>Meet needs access to the camera and microphone.</p>
                     <p>Click the locked camera and microphone icon in your browser's address bar, before to join room.</p> 
-                    <p style="color: red">${err.toString()}</p>
+                    <p style="color: red">${err}</p>
                     `,
                 );
             } else {
@@ -561,12 +545,35 @@ function setupLocalMedia(callback, errorBack) {
                     `
                     <p>Meet needs access to the camera and microphone.</p>
                     <p>Make sure is not used by another app</p> 
-                    <p style="color: red">${err.toString()}</p>
+                    <p style="color: red">${err}</p>
                     `,
                 );
             }
             if (errorBack) errorBack();
         });
+}
+
+function enumerateDevices() {
+    navigator.mediaDevices.enumerateDevices().then((devices) => {
+        videoDevices = devices.filter((device) => device.kind === 'videoinput' && device.deviceId !== 'default');
+        audioDevices = devices.filter((device) => device.kind === 'audioinput' && device.deviceId !== 'default');
+        console.log('Devices', {
+            audioDevices: audioDevices,
+            videoDevices: videoDevices,
+        });
+        audioDevices.forEach((device) => {
+            addChild(audioSource, device);
+        });
+        videoDevices
+            .forEach((device) => {
+                addChild(videoSource, device);
+            })
+            .catch((err) => {
+                playSound('error');
+                console.error('[Error] enumerate devices audio/video', err);
+                popupMessage('error', 'Enumerate Devices', 'Unable to enumerate devices ' + err);
+            });
+    });
 }
 
 function addChild(source, device) {
@@ -924,7 +931,7 @@ function swapCamera() {
         })
         .catch((err) => {
             console.error('[Error] to swapping camera', err);
-            popupMessage('error', 'Swap camera', 'Error to swapping the camera ' + err.toString());
+            popupMessage('error', 'Swap camera', 'Error to swapping the camera ' + err);
         });
 }
 
@@ -957,7 +964,7 @@ async function toggleScreenSharing() {
         }
     } catch (err) {
         console.error('[Error] unable to share the screen', err);
-        popupMessage('error', 'Screen sharing', 'Unable to share the screen ' + err.toString());
+        popupMessage('error', 'Screen sharing', 'Unable to share the screen ' + err);
     }
 }
 
@@ -975,7 +982,7 @@ function changeCamera(deviceId) {
         })
         .catch((err) => {
             console.error('[Error] changeCamera', err);
-            popupMessage('error', 'Change camera', 'Error while swapping camera' + err.tostring());
+            popupMessage('error', 'Change camera', 'Error while swapping camera' + err);
         });
 }
 
@@ -990,7 +997,7 @@ function changeMicrophone(deviceId) {
         })
         .catch((err) => {
             console.error('[Error] changeMicrophone', err);
-            popupMessage('error', 'Change microphone', 'Error while swapping microphone' + err.toString());
+            popupMessage('error', 'Change microphone', 'Error while swapping microphone' + err);
         });
 }
 
@@ -1098,19 +1105,6 @@ function giveMeFeedback() {
 function attachMediaStream(element, stream) {
     element.srcObject = stream;
     console.log('Success, media stream attached');
-}
-
-function logStreamSettingsInfo(name, stream) {
-    console.log(name, {
-        video: {
-            label: stream.getVideoTracks()[0].label,
-            settings: stream.getVideoTracks()[0].getSettings(),
-        },
-        audio: {
-            label: stream.getAudioTracks()[0].label,
-            settings: stream.getAudioTracks()[0].getSettings(),
-        },
-    });
 }
 
 function setAudioStatus(active = true, e = false) {
