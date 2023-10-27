@@ -553,26 +553,31 @@ function setupLocalMedia(callback, errorBack) {
 }
 
 function enumerateDevices() {
-    navigator.mediaDevices.enumerateDevices().then((devices) => {
-        const videoDevices = devices.filter((device) => device.kind === 'videoinput' && device.deviceId !== 'default');
-        const audioDevices = devices.filter((device) => device.kind === 'audioinput' && device.deviceId !== 'default');
-        console.log('Devices', {
-            audioDevices: audioDevices,
-            videoDevices: videoDevices,
-        });
-        audioDevices.forEach((device) => {
-            addChild(audioSource, device);
-        });
-        videoDevices
-            .forEach((device) => {
-                addChild(videoSource, device);
-            })
-            .catch((err) => {
-                playSound('error');
-                console.error('[Error] enumerate devices audio/video', err);
-                popupMessage('error', 'Enumerate Devices', 'Unable to enumerate devices ' + err);
+    navigator.mediaDevices
+        .enumerateDevices()
+        .then((devices) => {
+            const videoDevices = devices.filter(
+                (device) => device.kind === 'videoinput' && device.deviceId !== 'default',
+            );
+            const audioDevices = devices.filter(
+                (device) => device.kind === 'audioinput' && device.deviceId !== 'default',
+            );
+            console.log('Devices', {
+                audioDevices: audioDevices,
+                videoDevices: videoDevices,
             });
-    });
+            audioDevices.forEach((device) => {
+                addChild(audioSource, device);
+            });
+            videoDevices.forEach((device) => {
+                addChild(videoSource, device);
+            });
+        })
+        .catch((err) => {
+            playSound('error');
+            console.error('[Error] enumerate devices audio/video', err);
+            popupMessage('error', 'Enumerate Devices', 'Unable to enumerate devices ' + err);
+        });
 }
 
 function addChild(source, device) {
