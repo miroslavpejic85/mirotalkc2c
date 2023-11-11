@@ -33,6 +33,7 @@
 --------------------------------------------------------------*/
 html,
 body {
+    top: 0 !important;
     overflow: hidden;
     width: 100%;
     height: 100%;
@@ -433,6 +434,22 @@ th {
 
 .toggle:checked:before {
     left: 32px;
+}
+
+/*--------------------------------------------------------------
+# Google Translate
+--------------------------------------------------------------*/
+
+.skiptranslate iframe,
+.goog-te-banner-frame.skiptranslate {
+    display: none !important;
+    position: absolute !important;
+    top: -10000px !important;
+}
+
+#google_translate_element select {
+    background: var(--secondary-color) !important;
+    color: var(--text-color) !important;
 }
 
 /*--------------------------------------------------------------
