@@ -71,9 +71,9 @@ const frontendDir = path.join(__dirname, '../', 'frontend');
 const htmlClient = path.join(__dirname, '../', 'frontend/html/client.html');
 const htmlHome = path.join(__dirname, '../', 'frontend/html/home.html');
 
-let channels = {};
-let sockets = {};
-let peers = {};
+const channels = {};
+const sockets = {};
+const peers = {};
 
 app.use(cors());
 app.use(compression());
