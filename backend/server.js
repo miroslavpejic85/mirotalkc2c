@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.0.8
+ * @version 1.0.81
  */
 
 require('dotenv').config();
@@ -30,6 +30,7 @@ const isHttps = process.env.HTTPS == 'true';
 const port = process.env.PORT || 8080;
 const queryJoin = '/join?room=test&name=test';
 const queryRoom = '/?room=test';
+const packageJson = require('../package.json');
 
 let server;
 if (isHttps) {
@@ -51,7 +52,7 @@ const io = new Server({ maxHttpBufferSize: 1e7, transports: ['websocket'] }).lis
 const ngrokEnabled = getEnvBoolean(process.env.NGROK_ENABLED);
 const ngrokAuthToken = process.env.NGROK_AUTH_TOKEN;
 
-let iceServers = [];
+const iceServers = [];
 const stunServerUrl = process.env.STUN_SERVER_URL;
 const turnServerUrl = process.env.TURN_SERVER_URL;
 const turnServerUsername = process.env.TURN_SERVER_USERNAME;
@@ -127,6 +128,7 @@ async function ngrokStart() {
             ngrokJoin: tunnelHttps + queryJoin,
             redirectURL: redirectURL,
             nodeVersion: process.versions.node,
+            app_version: packageJson.version,
         });
     } catch (err) {
         log.warn('[Error] ngrokStart', err);
@@ -146,6 +148,7 @@ server.listen(port, null, () => {
             redirectURL: redirectURL,
             surveyURL: surveyURL,
             nodeVersion: process.versions.node,
+            app_version: packageJson.version,
         });
     }
 });

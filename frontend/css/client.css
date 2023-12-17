@@ -573,29 +573,6 @@ hr {
     border: 1px solid grey;
 }
 
-/*--------------------------------------------------------------
-# Webkit-Scrollbar Styles
---------------------------------------------------------------*/
-
-::-webkit-scrollbar {
-    background: #1a1b1f;
-    width: 10px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #45494c;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background-color: #45494c;
-}
-
-::-webkit-scrollbar-track:hover {
-    background-color: #000000;
-}
-
 /*
 z-index:
     0 waitingDivContainer
