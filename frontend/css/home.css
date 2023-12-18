@@ -92,6 +92,7 @@ button:hover {
 }
 .supportDiv p {
     font-size: small;
+    color: #bbbbbb;
 }
 #supportBtn {
     width: 120px;
