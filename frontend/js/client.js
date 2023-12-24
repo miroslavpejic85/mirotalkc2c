@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.0.82
+ * @version 1.0.90
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -54,10 +54,11 @@ const chatSendBtn = document.getElementById('chatSendBtn');
 
 const roomURL = window.location.origin + '/?room=' + roomId;
 
-const config = {
-    forceToMaxVideoAndFps: window.localStorage.forceToMaxVideoAndFps == 'true' || false,
-    keepAspectRatio: window.localStorage.keepAspectRatio == 'true' || false,
-};
+const LS = new LocalStorage();
+
+const localStorageConfig = LS.getConfig() || LS.C2C_CONFIG;
+
+console.log('Local Storage Config', localStorageConfig);
 
 const image = {
     camOff: '../images/camOff.png',
@@ -248,11 +249,12 @@ function handleConnect() {
     if (localMediaStream) {
         joinToChannel();
     } else {
-        setupLocalMedia(() => {
-            enumerateDevices();
+        setupLocalMedia(async () => {
+            await enumerateDevices();
             handleVideoWrapSize();
             getDocumentElementsById();
             handleEvents();
+            loadLocalStorageConfig();
             showWaitingUser();
             joinToChannel();
         });
@@ -481,6 +483,8 @@ function handleDisconnect() {
     peerConnections = {};
     peerMediaElements = {};
     dataChannels = {};
+
+    saveLocalStorageConfig();
 }
 
 function handleRemovePeer(config) {
@@ -512,8 +516,11 @@ function setupLocalMedia(callback, errorBack) {
     }
     console.log('Requesting access to local audio/video inputs');
 
-    const audioConstraints = getAudioConstraints();
-    const videoConstraints = getVideoConstraints();
+    const audioDeviceId = localStorageConfig.audio.devices.select.id || audioSource.value;
+    const videoDeviceId = localStorageConfig.video.devices.select.id || videoSource.value;
+
+    const audioConstraints = getAudioConstraints(audioDeviceId);
+    const videoConstraints = getVideoConstraints(videoDeviceId);
 
     navigator.mediaDevices
         .getUserMedia({
@@ -552,8 +559,8 @@ function setupLocalMedia(callback, errorBack) {
         });
 }
 
-function enumerateDevices() {
-    navigator.mediaDevices
+async function enumerateDevices() {
+    await navigator.mediaDevices
         .enumerateDevices()
         .then((devices) => {
             const videoDevices = devices.filter(
@@ -566,11 +573,13 @@ function enumerateDevices() {
                 audioDevices: audioDevices,
                 videoDevices: videoDevices,
             });
-            audioDevices.forEach((device) => {
-                addChild(audioSource, device);
+            audioDevices.forEach(async (device) => {
+                await addChild(audioSource, device);
+                LS.DEVICES_COUNT.audio++;
             });
-            videoDevices.forEach((device) => {
-                addChild(videoSource, device);
+            videoDevices.forEach(async (device) => {
+                await addChild(videoSource, device);
+                LS.DEVICES_COUNT.video++;
             });
         })
         .catch((err) => {
@@ -580,7 +589,7 @@ function enumerateDevices() {
         });
 }
 
-function addChild(source, device) {
+async function addChild(source, device) {
     const option = document.createElement('option');
     option.value = device.deviceId;
     option.text = device.label;
@@ -629,7 +638,7 @@ function setLocalMedia(stream) {
     myLocalMedia.muted = true;
     myLocalMedia.volume = 0;
     myLocalMedia.controls = false;
-    myLocalMedia.style.objectFit = config.keepAspectRatio ? 'contain' : 'cover';
+    myLocalMedia.style.objectFit = localStorageConfig.video.settings.aspect_ratio ? 'contain' : 'cover';
     myVideoWrap.id = 'myVideoWrap';
     myVideoWrap.className = 'myVideoWrap';
     myVideoWrap.appendChild(myVideoHeader);
@@ -692,7 +701,7 @@ function setRemoteMedia(stream, peers, peerId) {
     remoteMedia.playsInline = true;
     remoteMedia.autoplay = true;
     remoteMedia.controls = false;
-    remoteMedia.style.objectFit = config.keepAspectRatio ? 'contain' : 'cover';
+    remoteMedia.style.objectFit = localStorageConfig.video.settings.aspect_ratio ? 'contain' : 'cover';
     peerMediaElements[peerId] = remoteMedia;
     remoteVideoWrap.id = peerId + '_remoteVideoWrap';
     remoteVideoWrap.className = 'remoteVideoWrap';
@@ -789,9 +798,14 @@ function handleEvents() {
         toggleSettings();
     };
     audioSource.onchange = (e) => {
+        setLocalStorageAudioConfig(e.target);
+        saveLocalStorageConfig();
         changeMicrophone(e.target.value);
     };
     videoSource.onchange = (e) => {
+        resetVideoConstraints();
+        setLocalStorageCameraConfig(e.target);
+        saveLocalStorageConfig();
         changeCamera(e.target.value);
     };
     videoQualitySelect.onchange = (e) => {
@@ -800,12 +814,12 @@ function handleEvents() {
     videoFpsSelect.onchange = (e) => {
         refreshVideoConstraints();
     };
-    switchMaxVideoQuality.checked = config.forceToMaxVideoAndFps;
+    //switchMaxVideoQuality.checked = localStorageConfig.video.settings.best_quality;
     switchMaxVideoQuality.onchange = (e) => {
-        config.forceToMaxVideoAndFps = e.currentTarget.checked;
-        window.localStorage.forceToMaxVideoAndFps = config.forceToMaxVideoAndFps;
+        localStorageConfig.video.settings.best_quality = e.currentTarget.checked;
+        saveLocalStorageConfig();
         refreshVideoConstraints();
-        if (config.forceToMaxVideoAndFps) {
+        if (localStorageConfig.video.settings.best_quality) {
             popupMessage(
                 'toast',
                 'Max video quality and fps',
@@ -816,11 +830,11 @@ function handleEvents() {
         }
         playSound('switch');
     };
-    switchKeepAspectRatio.checked = config.keepAspectRatio;
+    //switchKeepAspectRatio.checked = localStorageConfig.video.settings.aspect_ratio;
     switchKeepAspectRatio.onchange = (e) => {
-        config.keepAspectRatio = e.currentTarget.checked;
-        window.localStorage.keepAspectRatio = config.keepAspectRatio;
-        changeAspectRatio(config.keepAspectRatio);
+        localStorageConfig.video.settings.aspect_ratio = e.currentTarget.checked;
+        saveLocalStorageConfig();
+        changeAspectRatio(localStorageConfig.video.settings.aspect_ratio);
         playSound('switch');
     };
     if (isMobileDevice) {
@@ -904,6 +918,8 @@ function toggleHideMe() {
             elemDisplay(myVideoWrap, false);
         });
     }
+    localStorageConfig.video.init.hide = !isVideoWrapHidden;
+    saveLocalStorageConfig();
 }
 
 function toggleSettings() {
@@ -961,7 +977,8 @@ async function toggleScreenSharing() {
             setVideoStatus(isScreenStreaming);
             setScreenStatus(isScreenStreaming);
             myVideo.classList.toggle('mirror');
-            myVideo.style.objectFit = isScreenStreaming || config.keepAspectRatio ? 'contain' : 'cover';
+            myVideo.style.objectFit =
+                isScreenStreaming || localStorageConfig.video.settings.aspect_ratio ? 'contain' : 'cover';
             initScreenShareBtn.className = isScreenStreaming ? className.screenOff : className.screenOn;
             screenShareBtn.className = isScreenStreaming ? className.screenOff : className.screenOn;
             if (!isScreenStreaming && isMyVideoActiveBefore) videoBtn.click();
@@ -972,8 +989,9 @@ async function toggleScreenSharing() {
     }
 }
 
-function changeCamera(deviceId) {
+function changeCamera(deviceId = false) {
     const videoConstraints = getVideoConstraints(deviceId);
+
     navigator.mediaDevices
         .getUserMedia({
             video: videoConstraints,
@@ -990,9 +1008,11 @@ function changeCamera(deviceId) {
         });
 }
 
-function changeMicrophone(deviceId) {
+function changeMicrophone(deviceId = false) {
+    const audioConstraints = getAudioConstraints(deviceId);
+
     navigator.mediaDevices
-        .getUserMedia({ audio: { deviceId: deviceId } })
+        .getUserMedia({ audio: audioConstraints })
         .then((micStream) => {
             localMediaStream.getAudioTracks()[0].stop();
             refreshMyLocalAudioStream(micStream);
@@ -1005,17 +1025,17 @@ function changeMicrophone(deviceId) {
         });
 }
 
-function getAudioConstraints() {
+function getAudioConstraints(deviceId = false) {
+    if (deviceId) return { deviceId: deviceId };
     return true;
 }
 
 function getVideoConstraints(deviceId = false) {
     let videoConstraints = true;
-    elemDisable(videoQualitySelect, config.forceToMaxVideoAndFps);
-    elemDisable(videoFpsSelect, config.forceToMaxVideoAndFps);
-    if (config.forceToMaxVideoAndFps) {
-        videoQualitySelect.selectedIndex = 0;
-        videoFpsSelect.selectedIndex = 0;
+    elemDisable(videoQualitySelect, localStorageConfig.video.settings.best_quality);
+    elemDisable(videoFpsSelect, localStorageConfig.video.settings.best_quality);
+    if (localStorageConfig.video.settings.best_quality) {
+        resetVideoConstraints();
         videoConstraints = {
             width: { ideal: 3840 },
             height: { ideal: 2160 },
@@ -1079,7 +1099,44 @@ function getVideoConstraints(deviceId = false) {
     return videoConstraints;
 }
 
+function setLocalStorageCameraConfig(target) {
+    localStorageConfig.video.devices.select.index = target.selectedIndex;
+    localStorageConfig.video.devices.select.label = target.options[target.selectedIndex].text;
+    localStorageConfig.video.devices.select.id = target.value;
+}
+
+function setLocalStorageAudioConfig(target) {
+    localStorageConfig.audio.devices.select.index = target.selectedIndex;
+    localStorageConfig.audio.devices.select.label = target.options[target.selectedIndex].text;
+    localStorageConfig.audio.devices.select.id = target.value;
+}
+
+function saveLocalStorageConfig() {
+    localStorageConfig.video.devices.count = LS.DEVICES_COUNT.video;
+    localStorageConfig.audio.devices.count = LS.DEVICES_COUNT.audio;
+    LS.setConfig(localStorageConfig);
+}
+
+function loadLocalStorageConfig() {
+    videoSource.selectedIndex = localStorageConfig.video.devices.select.index;
+    videoQualitySelect.selectedIndex = localStorageConfig.video.settings.quality_index;
+    videoFpsSelect.selectedIndex = localStorageConfig.video.settings.fps_index;
+    audioSource.selectedIndex = localStorageConfig.audio.devices.select.index;
+    switchMaxVideoQuality.checked = localStorageConfig.video.settings.best_quality;
+    switchKeepAspectRatio.checked = localStorageConfig.video.settings.aspect_ratio;
+    if (localStorageConfig.video.init.hide) initHideMeBtn.click();
+    if (!localStorageConfig.video.init.active) initVideoBtn.click();
+    if (!localStorageConfig.audio.init.active) initAudioBtn.click();
+    if (
+        !localStorageConfig.video.settings.best_quality &&
+        (localStorageConfig.video.settings.quality_index || localStorageConfig.video.settings.fps_index) !== 0
+    ) {
+        refreshVideoConstraints();
+    }
+}
+
 function endCall() {
+    saveLocalStorageConfig();
     signalingSocket.disconnect();
     if (surveyURL) {
         giveMeFeedback();
@@ -1128,6 +1185,8 @@ function setAudioStatus(active = true, e = false) {
     isAudioStreaming = active;
     setAudioButtons(active, e);
     emitPeerStatus('audio', active);
+    localStorageConfig.audio.init.active = active;
+    saveLocalStorageConfig();
 }
 
 function setVideoStatus(active = true, e = false) {
@@ -1135,6 +1194,8 @@ function setVideoStatus(active = true, e = false) {
     isVideoStreaming = active;
     setVideoButtons(active, e);
     emitPeerStatus('video', active);
+    localStorageConfig.video.init.active = active;
+    saveLocalStorageConfig();
 }
 
 function setScreenStatus(active = false, e = false) {
@@ -1160,19 +1221,33 @@ function setVideoButtons(active, e = false) {
     elemDisplay(myVideoAvatarImage, active ? false : true);
 }
 
+function resetVideoConstraints() {
+    videoQualitySelect.selectedIndex = 0;
+    videoFpsSelect.selectedIndex = 0;
+    localStorageConfig.video.settings.quality_index = 0;
+    localStorageConfig.video.settings.fps_index = 0;
+    saveLocalStorageConfig();
+}
+
 function refreshVideoConstraints() {
     localMediaStream
         .getVideoTracks()[0]
-        .applyConstraints(getVideoConstraints())
+        .applyConstraints(getVideoConstraints(videoSource.value))
         .then(() => {
             logStreamSettingsInfo('refreshVideoConstraints', localMediaStream);
             refreshMyVideoStreamToPeers(localMediaStream);
             videoQualitySelectedIndex = videoQualitySelect.selectedIndex;
             videoFpsSelectedIndex = videoFpsSelect.selectedIndex;
+            localStorageConfig.video.settings.quality_index = videoQualitySelectedIndex;
+            localStorageConfig.video.settings.fps_index = videoFpsSelectedIndex;
+            saveLocalStorageConfig();
         })
         .catch((err) => {
             videoQualitySelect.selectedIndex = videoQualitySelectedIndex;
             videoFpsSelect.selectedIndex = videoFpsSelectedIndex;
+            localStorageConfig.video.settings.quality_index = videoQualitySelectedIndex;
+            localStorageConfig.video.settings.fps_index = videoFpsSelectedIndex;
+            saveLocalStorageConfig();
             console.error('refreshVideoConstraints', err);
             popupMessage(
                 'warning',
@@ -1196,7 +1271,7 @@ function refreshMyVideoStreamToPeers(stream) {
         let videoSender = peerConnections[peerId]
             .getSenders()
             .find((s) => (s.track ? s.track.kind === 'video' : false));
-        videoSender.replaceTrack(stream.getVideoTracks()[0]);
+        if (videoSender) videoSender.replaceTrack(stream.getVideoTracks()[0]);
     }
 }
 
@@ -1214,7 +1289,7 @@ function refreshMyLocalAudioStreamToPeers(stream) {
         let audioSender = peerConnections[peerId]
             .getSenders()
             .find((s) => (s.track ? s.track.kind === 'audio' : false));
-        audioSender.replaceTrack(stream.getAudioTracks()[0]);
+        if (audioSender) audioSender.replaceTrack(stream.getAudioTracks()[0]);
     }
 }
 
@@ -1427,7 +1502,7 @@ function setPeerVideoStatus(peerId, active) {
 function setPeerAudioStatus(peerId, active) {
     console.log(`Remote PeerId ${peerId} audio status`, active);
     const peerAudioStatus = document.getElementById(peerId + '_remoteAudioStatus');
-    peerAudioStatus.className = active ? className.audioOn : className.audioOff;
+    if (peerAudioStatus) peerAudioStatus.className = active ? className.audioOn : className.audioOff;
 }
 
 function setPeerScreenStatus(peerId, active) {
@@ -1446,3 +1521,9 @@ window.addEventListener(
     },
     false,
 );
+
+window.onbeforeunload = confirmExit;
+function confirmExit(e) {
+    console.log('onbeforeunload', e);
+    saveLocalStorageConfig();
+}

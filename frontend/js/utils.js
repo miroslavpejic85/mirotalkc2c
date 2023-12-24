@@ -206,11 +206,11 @@ function getLineBreaks(message) {
 }
 
 function elemDisplay(element, display, mode = 'block') {
-    element.style.display = display ? mode : 'none';
+    if (element) element.style.display = display ? mode : 'none';
 }
 
 function elemDisable(element, disable) {
-    element.disabled = disable;
+    if (element) element.disabled = disable;
 }
 
 function animateCSS(element, animation, prefix = 'animate__') {
