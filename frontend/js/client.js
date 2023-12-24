@@ -1320,6 +1320,10 @@ function handleVideoRotate(rotateBtn, videoMedia) {
 }
 
 function handleFullScreen(fullScreenBtn, videoWrap, videoMedia) {
+    if (!isFullScreenSupported()) {
+        return elemDisplay(fullScreenBtn, false);
+    }
+
     fullScreenBtn.onclick = () => {
         if (isFullScreen()) {
             goOutFullscreen();

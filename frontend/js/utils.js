@@ -97,6 +97,15 @@ function isFullScreen() {
     return true;
 }
 
+function isFullScreenSupported() {
+    return (
+        document.fullscreenEnabled ||
+        document.webkitFullscreenEnabled ||
+        document.mozFullScreenEnabled ||
+        document.msFullscreenEnabled
+    );
+}
+
 function goInFullscreen(element) {
     if (element.requestFullscreen) element.requestFullscreen();
     else if (element.mozRequestFullScreen) element.mozRequestFullScreen();
