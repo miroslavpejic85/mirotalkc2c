@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.0.90
+ * @version 1.0.91
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -75,6 +75,7 @@ const className = {
     videoOff: 'fas fa-video-slash',
     screenOn: 'fas fa-desktop',
     screenOff: 'fas fa-stop-circle',
+    draggable: 'fas fa-up-down-left-right',
     fullScreenOn: 'fas fa-expand',
     fullScreenOff: 'fas fa-compress',
     pip: 'fas fa-images',
@@ -604,11 +605,15 @@ function setLocalMedia(stream) {
     const myVideoHeader = document.createElement('div');
     const myVideoFooter = document.createElement('div');
     const myVideoPeerName = document.createElement('h4');
+    const myVideoDraggableBtn = document.createElement('button');
     const myFullScreenBtn = document.createElement('button');
     const myVideoPiPBtn = document.createElement('button');
     const myVideoRotateBtn = document.createElement('button');
     const myAudioStatusIcon = document.createElement('button');
     const myVideoAvatarImage = document.createElement('img');
+    myVideoDraggableBtn.id = 'myVideoDraggable';
+    myVideoDraggableBtn.className = className.draggable;
+    myVideoDraggableBtn.style.cursor = 'move';
     myFullScreenBtn.id = 'myFullScreen';
     myFullScreenBtn.className = className.fullScreenOn;
     myVideoPiPBtn.id = 'myVideoPIP';
@@ -626,6 +631,7 @@ function setLocalMedia(stream) {
     myVideoAvatarImage.id = 'myVideoAvatarImage';
     myVideoAvatarImage.setAttribute('src', image.camOff);
     myVideoAvatarImage.className = 'videoAvatarImage';
+    if (!isMobileDevice) myVideoHeader.appendChild(myVideoDraggableBtn);
     myVideoHeader.appendChild(myFullScreenBtn);
     myVideoHeader.appendChild(myVideoPiPBtn);
     myVideoHeader.appendChild(myVideoRotateBtn);
@@ -657,6 +663,9 @@ function setLocalMedia(stream) {
     setTippy(myAudioStatusIcon, 'Audio status', 'bottom');
     setTippy(myVideoPeerName, 'Username', 'top');
     startSessionTime();
+    if (!isMobileDevice) {
+        makeDraggable(myVideoWrap, myVideoDraggableBtn);
+    }
 }
 
 function setRemoteMedia(stream, peers, peerId) {
