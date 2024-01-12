@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.0.92
+ * @version 1.0.93
  */
 
 require('dotenv').config();
@@ -177,7 +177,11 @@ io.sockets.on('connect', (socket) => {
 
         peers[channel][socket.id] = config.peerInfo;
 
-        log.debug('connected peers grp by roomId', peers);
+        const activeRooms = getActiveRooms();
+
+        log.info('[Join] - active rooms and peers count', activeRooms);
+
+        log.debug('[Join] - connected peers grp by roomId', peers);
 
         addPeerTo(channel);
 
@@ -283,7 +287,12 @@ io.sockets.on('connect', (socket) => {
         if (Object.keys(peers[channel]).length == 0) {
             delete peers[channel];
         }
-        log.debug('connected peers grp by roomId', peers);
+
+        const activeRooms = getActiveRooms();
+
+        log.info('[RemovePeer] - active rooms and peers count', activeRooms);
+
+        log.debug('[RemovePeer] - connected peers grp by roomId', peers);
 
         for (let id in channels[channel]) {
             await channels[channel][id].emit('removePeer', { peerId: socket.id });
@@ -304,5 +313,19 @@ io.sockets.on('connect', (socket) => {
         if (peerId in sockets) {
             await sockets[peerId].emit(msg, config);
         }
+    }
+
+    function getActiveRooms() {
+        const roomPeersArray = [];
+        for (const roomId in peers) {
+            if (peers.hasOwnProperty(roomId)) {
+                const peersCount = Object.keys(peers[roomId]).length;
+                roomPeersArray.push({
+                    roomId: roomId,
+                    peersCount: peersCount,
+                });
+            }
+        }
+        return roomPeersArray;
     }
 });
