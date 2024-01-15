@@ -1,6 +1,6 @@
 {
     "name": "mirotalkc2c",
-    "version": "1.0.93",
+    "version": "1.0.94",
     "description": "A free WebRTC Cam-2-Cam browser-based video calls",
     "main": "server.js",
     "scripts": {
@@ -28,12 +28,15 @@
         "webrtc",
         "socket.io",
         "ngrok",
-        "video"
+        "video",
+        "audio",
+        "cam2cam"
     ],
     "author": "Miroslav Pejic",
     "license": "AGPL-3.0",
     "homepage": "https://github.com/miroslavpejic85/mirotalkc2c",
     "dependencies": {
+        "colors": "^1.4.0",
         "compression": "^1.7.4",
         "cors": "^2.8.5",
         "dotenv": "^16.3.1",
@@ -44,6 +47,6 @@
     },
     "devDependencies": {
         "nodemon": "^3.0.2",
-        "prettier": "3.1.1"
+        "prettier": "3.2.2"
     }
 }
