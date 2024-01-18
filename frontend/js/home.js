@@ -8,6 +8,7 @@ const roomId = filterXSS(new URLSearchParams(window.location.search).get('room')
 const roomIdIn = document.getElementById('roomIdInput');
 const userNameIn = document.getElementById('userNameInput');
 const joinBtn = document.getElementById('joinBtn');
+const supportDiv = document.getElementById('supportDiv');
 const supportBtn = document.getElementById('supportBtn');
 
 function initHome() {
@@ -25,4 +26,16 @@ function initHome() {
     supportBtn.onclick = () => {
         window.open('https://codecanyon.net/user/miroslavpejic85', '_blank');
     };
+
+    hideElements();
+}
+
+function hideElements() {
+    return true;
+    elementDisplay(supportDiv, false);
+    //...
+}
+
+function elementDisplay(elem, display) {
+    elem.style.display = display ? 'block' : 'none';
 }
