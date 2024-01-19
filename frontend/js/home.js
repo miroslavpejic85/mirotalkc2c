@@ -11,6 +11,11 @@ const joinBtn = document.getElementById('joinBtn');
 const supportDiv = document.getElementById('supportDiv');
 const supportBtn = document.getElementById('supportBtn');
 
+const config = {
+    support: true,
+    //...
+};
+
 function initHome() {
     roomIdIn.value = roomId ? roomId : filterXSS(window.localStorage.room) || '';
     userNameIn.value = filterXSS(window.localStorage.name) || '';
@@ -27,12 +32,7 @@ function initHome() {
         window.open('https://codecanyon.net/user/miroslavpejic85', '_blank');
     };
 
-    hideElements();
-}
-
-function hideElements() {
-    return true;
-    elementDisplay(supportDiv, false);
+    !config.support && elementDisplay(supportDiv, false);
     //...
 }
 
