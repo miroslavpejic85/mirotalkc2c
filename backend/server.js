@@ -86,8 +86,8 @@ const peers = {};
 
 app.use(cors());
 app.use(compression());
+app.use(express.json()); // Api parse body data as json
 app.use(express.static(frontendDir));
-app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(apiBasePath + '/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument)); // api docs
 
