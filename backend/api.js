@@ -3,10 +3,10 @@
 const { v4: uuidV4 } = require('uuid');
 
 module.exports = class ServerApi {
-    constructor(host = null, authorization = null, api_key_secret = null) {
+    constructor(host = null, authorization = null, apiKeySecret = null) {
         this._host = host;
         this._authorization = authorization;
-        this._api_key_secret = api_key_secret;
+        this._api_key_secret = apiKeySecret;
     }
 
     isAuthorized() {

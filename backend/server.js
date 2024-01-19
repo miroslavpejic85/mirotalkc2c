@@ -28,7 +28,7 @@ const logs = require('./logs');
 const log = new logs('server');
 const isHttps = process.env.HTTPS == 'true';
 const port = process.env.PORT || 8080;
-const serverApi = require('./api');
+const ServerApi = require('./api');
 const yamlJS = require('yamljs');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = yamlJS.load(path.join(__dirname + '/api/swagger.yaml'));
@@ -52,7 +52,7 @@ const domain = process.env.HOST || 'localhost';
 
 const host = `http${isHttps ? 's' : ''}://${domain}:${port}`;
 
-const apiAuthKey = process.env.API_KEY_SECRET || 'mirotalkc2c_default_secret';
+const apiKeySecret = process.env.API_KEY_SECRET || 'mirotalkc2c_default_secret';
 const apiBasePath = '/api/v1'; // api endpoint path
 const apiDocs = host + apiBasePath + '/docs'; // api docs
 
@@ -151,7 +151,7 @@ app.get('*', (req, res) => {
 app.post([`${apiBasePath}/meeting`], (req, res) => {
     const host = req.headers.host;
     const authorization = req.headers.authorization;
-    const api = new serverApi(host, authorization, apiAuthKey);
+    const api = new ServerApi(host, authorization, apiKeySecret);
     if (!api.isAuthorized()) {
         log.debug('MiroTalk get meeting - Unauthorized', {
             header: req.headers,
@@ -173,7 +173,7 @@ app.post([`${apiBasePath}/meeting`], (req, res) => {
 app.post([`${apiBasePath}/join`], (req, res) => {
     const host = req.headers.host;
     const authorization = req.headers.authorization;
-    const api = new serverApi(host, authorization, apiAuthKey);
+    const api = new ServerApi(host, authorization, apiKeySecret);
     if (!api.isAuthorized()) {
         log.debug('MiroTalk get join - Unauthorized', {
             header: req.headers,
@@ -218,6 +218,7 @@ async function ngrokStart() {
             ngrokRoom: tunnelHttps + queryRoom,
             ngrokJoin: tunnelHttps + queryJoin,
             apiDocs: apiDocs,
+            apiKeySecret: apiKeySecret,
             redirectURL: redirectURL,
             nodeVersion: process.versions.node,
             app_version: packageJson.version,
@@ -238,6 +239,7 @@ server.listen(port, null, () => {
             room: host + queryRoom,
             join: host + queryJoin,
             apiDocs: apiDocs,
+            apiKeySecret: apiKeySecret,
             redirectURL: redirectURL,
             surveyURL: surveyURL,
             nodeVersion: process.versions.node,
