@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.0.95
+ * @version 1.1.01
  */
 
 require('dotenv').config();
@@ -28,6 +28,11 @@ const logs = require('./logs');
 const log = new logs('server');
 const isHttps = process.env.HTTPS == 'true';
 const port = process.env.PORT || 8080;
+const serverApi = require('./api');
+const yamlJS = require('yamljs');
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = yamlJS.load(path.join(__dirname + '/api/swagger.yaml'));
+const bodyParser = require('body-parser');
 const queryJoin = '/join?room=test&name=test';
 const queryRoom = '/?room=test';
 const packageJson = require('../package.json');
@@ -46,6 +51,10 @@ if (isHttps) {
 const domain = process.env.HOST || 'localhost';
 
 const host = `http${isHttps ? 's' : ''}://${domain}:${port}`;
+
+const apiAuthKey = process.env.API_KEY_SECRET || 'mirotalkc2c_default_secret';
+const apiBasePath = '/api/v1'; // api endpoint path
+const apiDocs = host + apiBasePath + '/docs'; // api docs
 
 const io = new Server({ maxHttpBufferSize: 1e7, transports: ['websocket'] }).listen(server);
 
@@ -78,6 +87,44 @@ const peers = {};
 app.use(cors());
 app.use(compression());
 app.use(express.static(frontendDir));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(apiBasePath + '/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument)); // api docs
+
+// Logs requests
+app.use((req, res, next) => {
+    log.debug('New request:', {
+        body: req.body,
+        method: req.method,
+        path: req.originalUrl,
+    });
+    next();
+});
+
+app.post('*', function (next) {
+    next();
+});
+
+app.get('*', function (next) {
+    next();
+});
+
+app.use((err, req, res, next) => {
+    if (err instanceof SyntaxError || err.status === 400 || 'body' in err) {
+        log.error('Request Error', {
+            header: req.headers,
+            body: req.body,
+            error: err.message,
+        });
+        return res.status(400).send({ status: 404, message: err.message }); // Bad request
+    }
+    if (req.path.substr(-1) === '/' && req.path.length > 1) {
+        let query = req.url.slice(req.path.length);
+        res.redirect(301, req.path.slice(0, -1) + query);
+    } else {
+        next();
+    }
+});
 
 app.get('/', (req, res) => {
     return res.sendFile(htmlHome);
@@ -98,6 +145,50 @@ app.get('/join/', (req, res) => {
 
 app.get('*', (req, res) => {
     return notFound(res);
+});
+
+// API request meeting room endpoint
+app.post([`${apiBasePath}/meeting`], (req, res) => {
+    const host = req.headers.host;
+    const authorization = req.headers.authorization;
+    const api = new serverApi(host, authorization, apiAuthKey);
+    if (!api.isAuthorized()) {
+        log.debug('MiroTalk get meeting - Unauthorized', {
+            header: req.headers,
+            body: req.body,
+        });
+        return res.status(403).json({ error: 'Unauthorized!' });
+    }
+    const meetingURL = api.getMeetingURL();
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ meeting: meetingURL }));
+    log.debug('MiroTalk get meeting - Authorized', {
+        header: req.headers,
+        body: req.body,
+        meeting: meetingURL,
+    });
+});
+
+// API request join room endpoint
+app.post([`${apiBasePath}/join`], (req, res) => {
+    const host = req.headers.host;
+    const authorization = req.headers.authorization;
+    const api = new serverApi(host, authorization, apiAuthKey);
+    if (!api.isAuthorized()) {
+        log.debug('MiroTalk get join - Unauthorized', {
+            header: req.headers,
+            body: req.body,
+        });
+        return res.status(403).json({ error: 'Unauthorized!' });
+    }
+    const joinURL = api.getJoinURL(req.body);
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ join: joinURL }));
+    log.debug('MiroTalk get join - Authorized', {
+        header: req.headers,
+        body: req.body,
+        join: joinURL,
+    });
 });
 
 function notFound(res) {
@@ -126,6 +217,7 @@ async function ngrokStart() {
             ngrokHome: tunnelHttps,
             ngrokRoom: tunnelHttps + queryRoom,
             ngrokJoin: tunnelHttps + queryJoin,
+            apiDocs: apiDocs,
             redirectURL: redirectURL,
             nodeVersion: process.versions.node,
             app_version: packageJson.version,
@@ -145,6 +237,7 @@ server.listen(port, null, () => {
             home: host,
             room: host + queryRoom,
             join: host + queryJoin,
+            apiDocs: apiDocs,
             redirectURL: redirectURL,
             surveyURL: surveyURL,
             nodeVersion: process.versions.node,

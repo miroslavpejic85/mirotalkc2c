@@ -81,6 +81,17 @@ Open [http://localhost:8080](http://localhost:8080) in your browser.
 
 -   `Self-hosting:` For `self-hosting MiroTalk C2C` on your own dedicated server, please refer to [this comprehensive guide](docs/self-hosting.md). It will provide you with all the necessary instructions to get your MiroTalk C2C instance up and running smoothly.
 
+-   `Rest API:` The [API documentation](https://docs.mirotalk.com/mirotalk-c2c/api/) uses [swagger](https://swagger.io/) at http://localhost:8080/api/v1/docs or check it on live [here](https://c2c.mirotalk.com/api/v1/docs).
+
+    ```bash
+    # The response will give you a entrypoint / Room URL for your meeting.
+    $ curl -X POST "http://localhost:8080/api/v1/meeting" -H "authorization: mirotalkc2c_default_secret" -H "Content-Type: application/json"
+    $ curl -X POST "https://c2c.mirotalk.com/api/v1/meeting" -H "authorization: mirotalkc2c_default_secret" -H "Content-Type: application/json"
+    # The response will give you a entrypoint / URL for the direct join to the meeting.
+    $ curl -X POST "http://localhost:8080/api/v1/join" -H "authorization: mirotalkc2c_default_secret" -H "Content-Type: application/json" --data '{"room":"test","name":"mirotalkc2c"}'
+    $ curl -X POST "https://c2c.mirotalk.com/api/v1/join" -H "authorization: mirotalkc2c_default_secret" -H "Content-Type: application/json" --data '{"room":"test","name":"mirotalkc2c"}'
+    ```
+
 </details>
 
 <details open>
