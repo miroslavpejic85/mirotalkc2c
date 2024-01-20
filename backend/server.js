@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.01
+ * @version 1.1.02
  */
 
 require('dotenv').config();
@@ -32,7 +32,6 @@ const ServerApi = require('./api');
 const yamlJS = require('yamljs');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = yamlJS.load(path.join(__dirname + '/api/swagger.yaml'));
-const bodyParser = require('body-parser');
 const queryJoin = '/join?room=test&name=test';
 const queryRoom = '/?room=test';
 const packageJson = require('../package.json');
@@ -88,7 +87,6 @@ app.use(cors());
 app.use(compression());
 app.use(express.json()); // Api parse body data as json
 app.use(express.static(frontendDir));
-app.use(bodyParser.urlencoded({ extended: true }));
 app.use(apiBasePath + '/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument)); // api docs
 
 // Logs requests
