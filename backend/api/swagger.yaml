@@ -49,8 +49,10 @@ paths:
                       properties:
                           room:
                               type: string
+                              default: 'test'
                           name:
                               type: string
+                              default: 'mirotalkc2c'
             consumes:
                 - 'application/json'
             produces:
