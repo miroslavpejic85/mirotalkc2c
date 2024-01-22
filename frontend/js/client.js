@@ -1052,13 +1052,17 @@ function getVideoConstraints(deviceId = false) {
     } else {
         const videoQuality = videoQualitySelect.value;
         const videoFrameRate = videoFpsSelect.value == 'default' ? 30 : parseInt(videoFpsSelect.value, 10);
+
+        videoFpsSelect.disabled = false;
+
         switch (videoQuality) {
             case 'default':
                 videoConstraints = {
                     width: { ideal: 1280 },
                     height: { ideal: 720 },
-                    frameRate: { ideal: videoFrameRate },
                 };
+                videoFpsSelect.disabled = true;
+                videoFpsSelect.selectedIndex = 0;
                 break;
             case 'qvga':
                 videoConstraints = {
