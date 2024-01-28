@@ -86,18 +86,20 @@ button:hover {
         -1px -1px 0 0 rgb(255 255 255 / 75%);
 }
 
-.supportDiv {
-    position: relative;
-    top: 20px;
-}
-.supportDiv p {
-    font-size: small;
-    color: #bbbbbb;
-}
 #supportBtn {
-    width: 120px;
-    font-size: 12px;
+    padding: 0px;
+    margin-top: 40px;
+    width: 100%;
+    color: var(--text-color);
+    background-color: transparent;
+    font-size: 0.7em;
+    font-weight: bold;
+    text-align: left;
+    border-radius: 5px;
+    transition: 0.2s ease-in;
+    cursor: pointer;
 }
-#supportBtn i {
-    color: red;
+#supportBtn:hover {
+    transform: scale(0.9);
+    box-shadow: none;
 }
