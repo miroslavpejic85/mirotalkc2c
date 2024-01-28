@@ -90,7 +90,7 @@ button:hover {
     padding: 0px;
     margin-top: 40px;
     width: 100%;
-    color: var(--text-color);
+    color: #bbbbbb;
     background-color: transparent;
     font-size: 0.7em;
     font-weight: bold;
