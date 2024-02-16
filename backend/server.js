@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.04
+ * @version 1.1.05
  */
 
 require('dotenv').config();
@@ -147,8 +147,7 @@ app.get('*', (req, res) => {
 
 // API request meeting room endpoint
 app.post([`${apiBasePath}/meeting`], (req, res) => {
-    const host = req.headers.host;
-    const authorization = req.headers.authorization;
+    const { host, authorization } = req.headers;
     const api = new ServerApi(host, authorization, apiKeySecret);
     if (!api.isAuthorized()) {
         log.debug('MiroTalk get meeting - Unauthorized', {
@@ -158,8 +157,7 @@ app.post([`${apiBasePath}/meeting`], (req, res) => {
         return res.status(403).json({ error: 'Unauthorized!' });
     }
     const meetingURL = api.getMeetingURL();
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ meeting: meetingURL }));
+    res.json({ meeting: meetingURL });
     log.debug('MiroTalk get meeting - Authorized', {
         header: req.headers,
         body: req.body,
@@ -169,8 +167,7 @@ app.post([`${apiBasePath}/meeting`], (req, res) => {
 
 // API request join room endpoint
 app.post([`${apiBasePath}/join`], (req, res) => {
-    const host = req.headers.host;
-    const authorization = req.headers.authorization;
+    const { host, authorization } = req.headers;
     const api = new ServerApi(host, authorization, apiKeySecret);
     if (!api.isAuthorized()) {
         log.debug('MiroTalk get join - Unauthorized', {
@@ -180,8 +177,7 @@ app.post([`${apiBasePath}/join`], (req, res) => {
         return res.status(403).json({ error: 'Unauthorized!' });
     }
     const joinURL = api.getJoinURL(req.body);
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ join: joinURL }));
+    res.json({ join: joinURL });
     log.debug('MiroTalk get join - Authorized', {
         header: req.headers,
         body: req.body,
@@ -190,8 +186,7 @@ app.post([`${apiBasePath}/join`], (req, res) => {
 });
 
 function notFound(res) {
-    res.setHeader('Content-Type', 'application/json');
-    res.send({ data: '404 not found' });
+    res.json({ data: '404 not found' });
 }
 
 function getEnvBoolean(key, force_true_if_undefined = false) {
@@ -204,11 +199,8 @@ async function ngrokStart() {
         await ngrok.authtoken(ngrokAuthToken);
         await ngrok.connect(port);
         const api = ngrok.getApi();
-        // const data = JSON.parse(await api.get('api/tunnels')); // v3
-        const data = await api.listTunnels(); // v4
-        const pu0 = data.tunnels[0].public_url;
-        const pu1 = data.tunnels[1].public_url;
-        const tunnelHttps = pu0.startsWith('https') ? pu0 : pu1;
+        const list = await api.listTunnels();
+        const tunnelHttps = list.tunnels[0].public_url;
         log.debug('settings', {
             ngrokAuthToken: ngrokAuthToken,
             iceServers: iceServers,
