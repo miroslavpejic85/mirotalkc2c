@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.05
+ * @version 1.1.06
  */
 
 require('dotenv').config();
@@ -55,7 +55,30 @@ const apiKeySecret = process.env.API_KEY_SECRET || 'mirotalkc2c_default_secret';
 const apiBasePath = '/api/v1'; // api endpoint path
 const apiDocs = host + apiBasePath + '/docs'; // api docs
 
-const io = new Server({ maxHttpBufferSize: 1e7, transports: ['websocket'] }).listen(server);
+// Cors
+let corsOrigin;
+if (process.env.CORS_ORIGIN && process.env.CORS_ORIGIN !== '*') {
+    try {
+        corsOrigin = JSON.parse(process.env.CORS_ORIGIN);
+    } catch (error) {
+        // If parsing fails, handle the error accordingly
+        log.error('Error parsing CORS_ORIGIN:', error.message);
+        corsOrigin = '*'; // or set to a default value
+    }
+} else {
+    corsOrigin = '*';
+}
+
+const corsOptions = {
+    origin: corsOrigin,
+    methods: process.env.CORS_METHOD ? JSON.parse(process.env.CORS_METHODS) : ['GET', 'POST'],
+};
+
+const io = new Server({
+    maxHttpBufferSize: 1e7,
+    transports: ['websocket'],
+    cors: corsOptions,
+}).listen(server);
 
 const ngrokEnabled = getEnvBoolean(process.env.NGROK_ENABLED);
 const ngrokAuthToken = process.env.NGROK_AUTH_TOKEN;
@@ -83,7 +106,7 @@ const channels = {};
 const sockets = {};
 const peers = {};
 
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(compression());
 app.use(express.json()); // Api parse body data as json
 app.use(express.static(frontendDir));
@@ -204,6 +227,7 @@ async function ngrokStart() {
         log.debug('settings', {
             ngrokAuthToken: ngrokAuthToken,
             iceServers: iceServers,
+            cors: corsOptions,
             ngrokHome: tunnelHttps,
             ngrokRoom: tunnelHttps + queryRoom,
             ngrokJoin: tunnelHttps + queryJoin,
@@ -225,6 +249,7 @@ server.listen(port, null, () => {
     } else {
         log.debug('settings', {
             iceServers: iceServers,
+            cors: corsOptions,
             home: host,
             room: host + queryRoom,
             join: host + queryJoin,
