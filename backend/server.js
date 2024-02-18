@@ -67,7 +67,6 @@ if (cors_origin && cors_origin !== '*') {
         corsOrigin = JSON.parse(cors_origin);
     } catch (error) {
         log.error('Error parsing CORS_ORIGIN', error.message);
-        corsOrigin = '*';
     }
 }
 
@@ -76,7 +75,6 @@ if (cors_methods && cors_methods !== '') {
         corsMethods = JSON.parse(cors_methods);
     } catch (error) {
         log.error('Error parsing CORS_METHODS', error.message);
-        corsMethods = ['GET', 'POST'];
     }
 }
 
