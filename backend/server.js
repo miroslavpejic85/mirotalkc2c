@@ -56,8 +56,6 @@ const apiBasePath = '/api/v1'; // api endpoint path
 const apiDocs = host + apiBasePath + '/docs'; // api docs
 
 // Cors
-// Cors
-
 const cors_origin = process.env.CORS_ORIGIN;
 const cors_methods = process.env.CORS_METHODS;
 
