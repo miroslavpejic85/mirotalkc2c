@@ -365,16 +365,6 @@ function handleOnIceCandidate(peerId) {
                 candidate: event.candidate.candidate,
             },
         });
-        // Check if this is an ICE candidate for a relayed connection
-        if (event.candidate.candidate.indexOf('relay') !== -1) {
-            popupMessage(
-                'toast',
-                'TURN relay',
-                'WebRTC traffic is relayed through a TURN server due to restrictive NAT or firewall configurations',
-                'top-end',
-                6000,
-            );
-        }
     };
 }
 
