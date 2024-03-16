@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.09
+ * @version 1.1.10
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -63,6 +63,7 @@ console.log('Local Storage Config', localStorageConfig);
 const image = {
     camOff: '../images/camOff.png',
     feedback: '../images/feedback.png',
+    forbidden: '../images/forbidden.png',
 };
 
 const className = {
@@ -532,29 +533,8 @@ function setupLocalMedia(callback, errorBack) {
             if (callback) callback();
         })
         .catch((err) => {
-            playSound('error');
             console.error('[Error] access denied for audio/video', err);
-            if (err.name == 'NotAllowedError') {
-                popupMessage(
-                    'warning',
-                    'GetUserMedia',
-                    `
-                    <p>Meet needs access to the camera and microphone.</p>
-                    <p>Click the locked camera and microphone icon in your browser's address bar, before to join room.</p> 
-                    <p style="color: red">${err}</p>
-                    `,
-                );
-            } else {
-                popupMessage(
-                    'warning',
-                    'GetUserMedia',
-                    `
-                    <p>Meet needs access to the camera and microphone.</p>
-                    <p>Make sure is not used by another app</p> 
-                    <p style="color: red">${err}</p>
-                    `,
-                );
-            }
+            handleMediaError('audio/video', err);
             if (errorBack) errorBack();
         });
 }

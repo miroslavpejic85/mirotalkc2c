@@ -33,6 +33,51 @@ function isDesktop() {
     return !isMobileDevice && !isTabletDevice && !isIPadDevice;
 }
 
+function handleMediaError(mediaType, err) {
+    playSound('error');
+
+    let errMessage = err;
+
+    switch (err.name) {
+        case 'NotFoundError':
+        case 'DevicesNotFoundError':
+            errMessage = 'Required track is missing';
+            break;
+        case 'NotReadableError':
+        case 'TrackStartError':
+            errMessage = 'Already in use';
+            break;
+        case 'OverconstrainedError':
+        case 'ConstraintNotSatisfiedError':
+            errMessage = 'Constraints cannot be satisfied by available devices';
+            break;
+        case 'NotAllowedError':
+        case 'PermissionDeniedError':
+            errMessage = 'Permission denied in browser';
+            break;
+        case 'TypeError':
+            errMessage = 'Empty constraints object';
+            break;
+        default:
+            break;
+    }
+
+    const $html = `
+        <ul style="text-align: left">
+            <li>Media type: ${mediaType}</li>
+            <li>Error name: ${err.name}</li>
+            <li>Error message: <p style="color: red">${errMessage}<p></li>
+            <li>Common: <a href="https://blog.addpipe.com/common-getusermedia-errors" target="_blank">getUserMedia errors</a></li>
+        </ul>
+    `;
+
+    popupHtmlMessage(null, image.forbidden, 'Access denied', $html, 'center', '/');
+
+    throw new Error(
+        `Access denied for ${mediaType} device [${err.name}]: ${errMessage} check the common getUserMedia errors: https://blog.addpipe.com/common-getusermedia-errors/`,
+    );
+}
+
 function logStreamSettingsInfo(name, stream) {
     if (hasVideoTrack(stream)) {
         console.log(name, {

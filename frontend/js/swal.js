@@ -48,3 +48,21 @@ function popupMessage(icon, title, message, position = 'center', timer = 3000) {
             alert(message);
     }
 }
+
+function popupHtmlMessage(icon, imageUrl, title, html, position, redirectURL = false) {
+    Swal.fire({
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        position: position,
+        icon: icon,
+        imageUrl: imageUrl,
+        title: title,
+        html: html,
+        showClass: { popup: 'animate__animated animate__fadeInDown' },
+        hideClass: { popup: 'animate__animated animate__fadeOutUp' },
+    }).then((result) => {
+        if (result.isConfirmed && redirectURL) {
+            openURL(redirectURL);
+        }
+    });
+}
