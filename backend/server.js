@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.13
+ * @version 1.1.14
  */
 
 require('dotenv').config();
@@ -35,6 +35,9 @@ const swaggerDocument = yamlJS.load(path.join(__dirname + '/api/swagger.yaml'));
 const queryJoin = '/join?room=test&name=test';
 const queryRoom = '/?room=test';
 const packageJson = require('../package.json');
+
+// Email alerts and notifications
+const nodemailer = require('./lib/nodemailer');
 
 let server;
 
@@ -320,11 +323,25 @@ io.sockets.on('connect', (socket) => {
         channels[channel][socket.id] = socket;
         socket.channels[channel] = channel;
 
+        const peerCounts = Object.keys(peers[channel]).length;
+
         sendToPeer(socket.id, sockets, 'serverInfo', {
-            roomPeersCount: Object.keys(peers[channel]).length,
+            roomPeersCount: peerCounts,
             redirectURL: redirectURL,
             surveyURL: surveyURL,
         });
+
+        // SCENARIO: Notify when the first user join room and is awaiting assistance...
+        if (peerCounts === 1) {
+            const { peerName, osName, osVersion, browserName, browserVersion } = config.peerInfo;
+            nodemailer.sendEmailAlert('join', {
+                room_id: channel,
+                peer_name: peerName,
+                domain: socket.handshake.headers.host.split(':')[0],
+                os: osName ? `${osName} ${osVersion}` : '',
+                browser: browserName ? `${browserName} ${browserVersion}` : '',
+            }); // .env EMAIL_ALERT=true
+        }
     });
 
     socket.on('relaySDP', (config) => {
