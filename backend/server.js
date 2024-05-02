@@ -9,11 +9,12 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.14
+ * @version 1.1.15
  */
 
 require('dotenv').config();
 
+const { auth, requiresAuth } = require('express-openid-connect');
 const { Server } = require('socket.io');
 const http = require('http');
 const https = require('https');
@@ -123,6 +124,36 @@ if (turnServerEnabled && turnServerUrl && turnServerUsername && turnServerCreden
 const surveyURL = process.env.SURVEY_URL || false;
 const redirectURL = process.env.REDIRECT_URL || false;
 
+const OIDC = {
+    enabled: process.env.OIDC_ENABLED ? getEnvBoolean(process.env.OIDC_ENABLED) : false,
+    config: {
+        issuerBaseURL: process.env.OIDC_ISSUER_BASE_URL,
+        clientID: process.env.OIDC_CLIENT_ID,
+        clientSecret: process.env.OIDC_CLIENT_SECRET,
+        baseURL: process.env.OIDC_BASE_URL,
+        secret: process.env.SESSION_SECRET,
+        authorizationParams: {
+            response_type: 'code',
+            scope: 'openid profile email',
+        },
+        authRequired: false,
+        auth0Logout: true,
+        routes: {
+            callback: '/auth/callback',
+            login: false,
+            logout: '/logout',
+        },
+    },
+};
+
+const OIDCAuth = function (req, res, next) {
+    if (OIDC.enabled) {
+        requiresAuth()(req, res, next);
+    } else {
+        next();
+    }
+};
+
 const frontendDir = path.join(__dirname, '../', 'frontend');
 const htmlClient = path.join(__dirname, '../', 'frontend/html/client.html');
 const htmlHome = path.join(__dirname, '../', 'frontend/html/home.html');
@@ -172,11 +203,37 @@ app.use((err, req, res, next) => {
     }
 });
 
-app.get('/', (req, res) => {
+// OpenID Connect
+if (OIDC.enabled) {
+    try {
+        app.use(auth(OIDC.config));
+    } catch (err) {
+        log.error(err);
+        process.exit(1);
+    }
+}
+
+app.get('/profile', OIDCAuth, (req, res) => {
+    if (OIDC.enabled) {
+        return res.json(req.oidc.user); // Send user information as JSON
+    }
+    res.sendFile(views.notFound);
+});
+
+app.get('/auth/callback', (req, res, next) => {
+    next(); // Let express-openid-connect handle this route
+});
+
+app.get('/logout', (req, res) => {
+    if (OIDC.enabled) req.logout();
+    res.redirect('/'); // Redirect to the home page after logout
+});
+
+app.get('/', OIDCAuth, (req, res) => {
     return res.sendFile(htmlHome);
 });
 
-app.get('/join/', (req, res) => {
+app.get('/join/', OIDCAuth, (req, res) => {
     if (Object.keys(req.query).length > 0) {
         //http://localhost:3000/join?room=test&name=test
         log.debug('[' + req.headers.host + ']' + ' request query', req.query);
@@ -273,6 +330,7 @@ server.listen(port, null, () => {
         ngrokStart();
     } else {
         log.debug('settings', {
+            oidc: OIDC.enabled ? OIDC : false,
             iceServers: iceServers,
             cors: corsOptions,
             home: host,
