@@ -217,7 +217,7 @@ app.get('/profile', OIDCAuth, (req, res) => {
     if (OIDC.enabled) {
         return res.json(req.oidc.user); // Send user information as JSON
     }
-    res.sendFile(views.notFound);
+    res.sendFile(htmlHome);
 });
 
 app.get('/auth/callback', (req, res, next) => {
