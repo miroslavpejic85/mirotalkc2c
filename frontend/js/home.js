@@ -15,6 +15,10 @@ const config = {
     //...
 };
 
+document.addEventListener('DOMContentLoaded', function () {
+    initHome();
+});
+
 function initHome() {
     roomIdIn.value = roomId ? roomId : filterXSS(window.localStorage.room) || '';
     userNameIn.value = filterXSS(window.localStorage.name) || '';
