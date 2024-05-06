@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.16
+ * @version 1.1.17
  */
 
 require('dotenv').config();
@@ -136,7 +136,7 @@ const OIDC = {
             response_type: 'code',
             scope: 'openid profile email',
         },
-        authRequired: false,
+        authRequired: process.env.OIDC_AUTH_REQUIRED ? getEnvBoolean(process.env.OIDC_AUTH_REQUIRED) : false,
         auth0Logout: true,
         routes: {
             callback: '/auth/callback',
