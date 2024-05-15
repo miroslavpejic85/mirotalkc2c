@@ -338,6 +338,26 @@ function makeRoomQR() {
     });
 }
 
+function setPeerVideoAvatarImgName(elem, peerName) {
+    if (elem && isValidEmail(peerName)) {
+        elem.setAttribute('src', genGravatar(peerName));
+    }
+}
+
+function genGravatar(email, size = false) {
+    const hash = md5(email.toLowerCase().trim());
+    const gravatarURL = `https://www.gravatar.com/avatar/${hash}` + (size ? `?s=${size}` : '?s=250') + '?d=404';
+    return gravatarURL;
+    function md5(input) {
+        return CryptoJS.MD5(input).toString();
+    }
+}
+
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
 async function playSound(name) {
     const sound = '../sounds/' + name + '.mp3';
     const audioToPlay = new Audio(sound);

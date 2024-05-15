@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.19
+ * @version 1.1.20
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -651,6 +651,7 @@ function setLocalMedia(stream) {
     handlePictureInPicture(myVideoPiPBtn, myLocalMedia);
     handleVideoRotate(myVideoRotateBtn, myLocalMedia);
     handleFullScreen(myFullScreenBtn, myVideoWrap, myLocalMedia);
+    setPeerVideoAvatarImgName(myVideoAvatarImage, peerName);
     setTippy(myFullScreenBtn, 'Toggle full screen', 'bottom');
     setTippy(myVideoPiPBtn, 'Toggle picture in picture', 'bottom');
     setTippy(myVideoRotateBtn, 'Rotate video', 'bottom');
@@ -720,6 +721,7 @@ function setRemoteMedia(stream, peers, peerId) {
     handleVideoZoom(remoteMedia, remoteVideoWrap, remoteVideoAvatarImage);
     setPeerVideoStatus(peerId, peerVideo);
     setPeerAudioStatus(peerId, peerAudio);
+    setPeerVideoAvatarImgName(remoteVideoAvatarImage, peerName);
     if (peerVideo && peerScreen) setPeerScreenStatus(peerId, peerScreen);
     setTippy(remoteFullScreenBtn, 'Toggle full screen', 'bottom');
     setTippy(remoteVideoPiPBtn, 'Toggle picture in picture', 'bottom');
