@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.20
+ * @version 1.1.21
  */
 
 require('dotenv').config();
@@ -25,14 +25,15 @@ const checkXSS = require('./xss.js');
 const path = require('path');
 const ngrok = require('ngrok');
 const app = express();
+const fs = require('fs');
 const logs = require('./logs');
 const log = new logs('server');
 const isHttps = process.env.HTTPS == 'true';
 const port = process.env.PORT || 8080;
 const ServerApi = require('./api');
-const yamlJS = require('yamljs');
+const yaml = require('js-yaml');
 const swaggerUi = require('swagger-ui-express');
-const swaggerDocument = yamlJS.load(path.join(__dirname + '/api/swagger.yaml'));
+const swaggerDocument = yaml.load(fs.readFileSync(path.join(__dirname, '/api/swagger.yaml'), 'utf8'));
 const queryJoin = '/join?room=test&name=test';
 const queryRoom = '/?room=test';
 const packageJson = require('../package.json');
@@ -43,7 +44,6 @@ const nodemailer = require('./lib/nodemailer');
 let server;
 
 if (isHttps) {
-    const fs = require('fs');
     const keyPath = path.join(__dirname, 'ssl/key.pem');
     const certPath = path.join(__dirname, 'ssl/cert.pem');
 
