@@ -274,6 +274,11 @@ video {
     height: 100%;
     border-radius: var(--border-radius);
     object-fit: cover;
+    cursor: pointer;
+}
+
+video:hover {
+    filter: contrast(105%);
 }
 
 video:fullscreen {
