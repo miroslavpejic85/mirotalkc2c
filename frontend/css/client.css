@@ -253,8 +253,8 @@ body {
     right: 0;
     bottom: 0;
     display: none;
-    width: 15vh;
-    height: 15vh;
+    width: 10vh;
+    height: 10vh;
     margin: auto;
     border-radius: 50%;
 }
