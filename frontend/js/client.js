@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.24
+ * @version 1.1.25
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -828,7 +828,7 @@ function handleEvents() {
             popupMessage(
                 'toast',
                 'Max video quality and fps',
-                'If Active, The video resolution will be forced up to 4k and 60fps! (High bandwidth required)',
+                'If Active, The video resolution will be forced up to 8k and 60fps! (Very High bandwidth is required)',
                 'top',
                 6000,
             );
@@ -1044,8 +1044,8 @@ function getVideoConstraints(deviceId = false) {
     if (localStorageConfig.video.settings.best_quality) {
         resetVideoConstraints();
         videoConstraints = {
-            width: { ideal: 3840 },
-            height: { ideal: 2160 },
+            width: { ideal: 7680 },
+            height: { ideal: 4320 },
             frameRate: { ideal: 60 },
         };
     } else {
@@ -1103,6 +1103,22 @@ function getVideoConstraints(deviceId = false) {
                     height: { exact: 2160 },
                     frameRate: videoFrameRate,
                 };
+                break;
+            case '6k':
+                constraints = {
+                    width: { exact: 6144 },
+                    height: { exact: 3456 },
+                    frameRate: frameRate,
+                };
+                break;
+            case '8k':
+                constraints = {
+                    width: { exact: 7680 },
+                    height: { exact: 4320 },
+                    frameRate: frameRate,
+                };
+                break;
+            default:
                 break;
         }
     }
@@ -1507,6 +1523,8 @@ function handlePeerStatus(config) {
             break;
         case 'screen':
             setPeerScreenStatus(peerId, active);
+            break;
+        default:
             break;
     }
 }
