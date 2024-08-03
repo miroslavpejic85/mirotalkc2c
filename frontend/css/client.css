@@ -21,6 +21,7 @@
     --settings-width: 280px;
     --chat-width: 320px;
     --btn-hover-scale: scale(1.1);
+    --box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 1);
 }
 
 * {
@@ -58,10 +59,11 @@ body {
 #waitingDiv {
     min-width: 290px;
     padding: 30px;
+    color: #ffffff;
     border: var(--border);
     border-radius: var(--border-radius);
     background: var(--secondary-color);
-    color: #ffffff;
+    box-shadow: var(--box-shadow);
 }
 
 #waitingDiv h1,
