@@ -1108,14 +1108,14 @@ function getVideoConstraints(deviceId = false) {
                 constraints = {
                     width: { exact: 6144 },
                     height: { exact: 3456 },
-                    frameRate: frameRate,
+                    frameRate: videoFrameRate,
                 };
                 break;
             case '8k':
                 constraints = {
                     width: { exact: 7680 },
                     height: { exact: 4320 },
-                    frameRate: frameRate,
+                    frameRate: videoFrameRate,
                 };
                 break;
             default:
