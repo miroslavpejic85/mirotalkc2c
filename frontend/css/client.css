@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css?family=Comfortaa:wght@500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap');
 
 /*--------------------------------------------------------------
 # Root settings
@@ -25,7 +25,7 @@
 }
 
 * {
-    font-family: 'Comfortaa';
+    font-family: 'Montserrat';
     outline: none;
 }
 
