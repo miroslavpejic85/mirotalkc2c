@@ -19,3 +19,7 @@
 ::-webkit-scrollbar-track {
     background: #1a1b1f;
 }
+
+.red {
+    color: red !important;
+}

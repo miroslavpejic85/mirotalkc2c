@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.30
+ * @version 1.1.31
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -24,7 +24,7 @@ const initAudioBtn = document.getElementById('initAudioBtn');
 const initVideoBtn = document.getElementById('initVideoBtn');
 const initScreenShareBtn = document.getElementById('initScreenShareBtn');
 const initSettingsBtn = document.getElementById('initSettingsBtn');
-const initHomeBtn = document.getElementById('initHomeBtn');
+const initLeaveBtn = document.getElementById('initLeaveBtn');
 const buttonsBar = document.getElementById('buttonsBar');
 const hideMeBtn = document.getElementById('hideMeBtn');
 const audioBtn = document.getElementById('audioBtn');
@@ -32,7 +32,7 @@ const videoBtn = document.getElementById('videoBtn');
 const swapCameraBtn = document.getElementById('swapCameraBtn');
 const settingsBtn = document.getElementById('settingsBtn');
 const screenShareBtn = document.getElementById('screenShareBtn');
-const homeBtn = document.getElementById('homeBtn');
+const leaveBtn = document.getElementById('leaveBtn');
 const settings = document.getElementById('settings');
 const settingsCloseBtn = document.getElementById('settingsCloseBtn');
 const audioSource = document.getElementById('audioSource');
@@ -189,7 +189,7 @@ const tooltips = [
     { element: initAudioBtn, text: 'Toggle audio', position: 'top' },
     { element: initScreenShareBtn, text: 'Toggle screen sharing', position: 'top' },
     { element: initSettingsBtn, text: 'Toggle settings', position: 'top' },
-    { element: initHomeBtn, text: 'Go to home page', position: 'top' },
+    { element: initLeaveBtn, text: 'Leave room', position: 'top' },
     { element: hideMeBtn, text: 'Hide myself', position: 'top' },
     { element: videoBtn, text: 'Toggle video', position: 'top' },
     { element: audioBtn, text: 'Toggle audio', position: 'top' },
@@ -197,7 +197,7 @@ const tooltips = [
     { element: screenShareBtn, text: 'Toggle screen sharing', position: 'top' },
     { element: chatOpenBtn, text: 'Toggle chat', position: 'top' },
     { element: settingsBtn, text: 'Toggle settings', position: 'top' },
-    { element: homeBtn, text: 'Go to home page', position: 'top' },
+    { element: leaveBtn, text: 'Leave room', position: 'top' },
     //...
 ];
 
@@ -741,7 +741,7 @@ function handleIncomingDataChannelMessage(config) {
 }
 
 function handleEvents() {
-    initHomeBtn.onclick = () => {
+    initLeaveBtn.onclick = () => {
         endCall();
     };
     copyRoomBtn.onclick = () => {
@@ -901,7 +901,7 @@ function handleEvents() {
         }
         checkLineBreaks();
     };
-    homeBtn.onclick = () => {
+    leaveBtn.onclick = () => {
         endCall();
     };
 }
