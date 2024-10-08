@@ -40,6 +40,10 @@
 Install [NodeJs](https://nodejs.org/en/blog/release/v18.16.0).
 
 ```bash
+# Clone the project repo
+$ git clone https://github.com/miroslavpejic85/mirotalkc2c.git
+# Go to project dir
+$ cd mirotalkc2c
 # Copy .env.template in .env and edit it if needed
 $ cp .env.template .env
 # Install dependencies
@@ -64,6 +68,10 @@ Repository: [Docker hub](https://hub.docker.com/r/mirotalk/c2c)
 Install [docker](https://docs.docker.com/engine/install/) and [docker-compose](https://docs.docker.com/compose/install/).
 
 ```bash
+# Clone the project repo
+$ git clone https://github.com/miroslavpejic85/mirotalkc2c.git
+# Go to project dir
+$ cd mirotalkc2c
 # Copy .env.template in .env and edit it if needed
 $ cp .env.template .env
 # Copy docker-compose.template.yml in docker-compose.yml and edit it if needed
