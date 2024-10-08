@@ -39,6 +39,7 @@
         <script defer src="https://cdnjs.cloudflare.com/ajax/libs/tippy.js/6.3.7/tippy-bundle.umd.min.js"></script>
         <script defer src="https://cdnjs.cloudflare.com/ajax/libs/UAParser.js/1.0.37/ua-parser.min.js"></script>
         <script defer src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/emoji-mart@latest/dist/browser.js"></script>
         <script defer src="/socket.io/socket.io.js"></script>
         <script defer src="../js/storage.js"></script>
         <script defer src="../js/swal.js"></script>
@@ -154,8 +155,12 @@ Wait user to join.
             <div class="body" id="chatBody"></div>
             <div class="footer">
                 <textarea id="chatInput" placeholder="Write a message..."></textarea>
-                <button id="chatSendBtn" class="fas fa-paper-plane"></button>
+                <div class="buttons">
+                    <button id="chatSendBtn" class="fas fa-paper-plane"></button>
+                    <button id="chatEmojiBtn" class="fas fa-smile"></button>
+                </div>
             </div>
+            <div id="chatEmoji" class="chatEmojiPicker hidden"></div>
         </div>
     </body>
 </html>

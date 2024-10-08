@@ -89,8 +89,13 @@
 .chat .footer textarea:focus {
     border: 1px solid #439fff;
 }
-.chat .footer button {
-    position: absolute;
+
+.chat .footer .buttons {
+    display: inline;
+}
+
+.chat .footer .buttons button {
+    position: relative;
     bottom: 13px;
     right: 5px;
     border: none;
@@ -98,7 +103,7 @@
     background: transparent;
     color: #439fff;
 }
-.chat .footer button:hover {
+.chat .footer .buttons button:hover {
     color: var(--text-color);
 }
 
@@ -118,4 +123,15 @@
 .chat .msg .text::-webkit-scrollbar-thumb,
 .chat .footer textarea::-webkit-scrollbar-thumb {
     background: var(--primary-color);
+}
+
+.chatEmojiPicker {
+    position: absolute;
+    bottom: 0px;
+    background: var(--chat-bg);
+    border: var(--border);
+    border-radius: 5px;
+    --rgb-background: var(--chat-bg);
+    --color-border-over: var(--chat-bg);
+    --font-family: 'Montserrat';
 }

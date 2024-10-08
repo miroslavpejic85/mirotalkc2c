@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.31
+ * @version 1.1.32
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -50,7 +50,9 @@ const chatOpenBtn = document.getElementById('chatOpenBtn');
 const chatBody = document.getElementById('chatBody');
 const chatCloseBtn = document.getElementById('chatCloseBtn');
 const chatInput = document.getElementById('chatInput');
+const chatEmojiBtn = document.getElementById('chatEmojiBtn');
 const chatSendBtn = document.getElementById('chatSendBtn');
+const chatEmoji = document.getElementById('chatEmoji');
 
 const roomURL = window.location.origin + '/?room=' + roomId;
 
@@ -215,6 +217,7 @@ function thereIsPeerConnections() {
 
 document.addEventListener('DOMContentLoaded', function () {
     initClient();
+    handleChatEmojiPicker();
 });
 
 function initClient() {
@@ -885,6 +888,9 @@ function handleEvents() {
     chatCloseBtn.onclick = () => {
         toggleChat();
     };
+    chatEmojiBtn.onclick = () => {
+        toggleChatEmoji();
+    };
     chatSendBtn.onclick = () => {
         sendMessage();
     };
@@ -1440,6 +1446,25 @@ function toggleChat() {
         animateCSS(chat, 'fadeOutRight').then((ok) => {
             elemDisplay(chat, false);
         });
+    }
+}
+
+function toggleChatEmoji(){
+    chatEmoji.classList.toggle('show');
+}
+
+function handleChatEmojiPicker() {
+    const pickerOptions = {
+        theme: 'dark',
+        perLine: 8,
+        onEmojiSelect: addEmojiToMsg,
+    };
+    const emojiPicker = new EmojiMart.Picker(pickerOptions);
+    chatEmoji.appendChild(emojiPicker);
+
+    function addEmojiToMsg(data) {
+        chatInput.value += data.native;
+        toggleChatEmoji();
     }
 }
 
