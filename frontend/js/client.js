@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.32
+ * @version 1.1.33
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -848,7 +848,6 @@ function handleEvents() {
     if (isMobileDevice) {
         elemDisplay(maxVideoQualityDiv, false);
         elemDisplay(pushToTalkDiv, false);
-        document.documentElement.style.setProperty('--chat-width', '100%');
     } else {
         switchPushToTalk.onchange = (e) => {
             isPushToTalkActive = e.currentTarget.checked;
@@ -1449,7 +1448,7 @@ function toggleChat() {
     }
 }
 
-function toggleChatEmoji(){
+function toggleChatEmoji() {
     chatEmoji.classList.toggle('show');
 }
 
