@@ -33,21 +33,26 @@
 .chat .header .title {
     color: white;
     font-weight: 600;
-    font-size: 1.4rem;
+    font-size: 1.2rem;
     letter-spacing: 0.5px;
+}
+
+.chat .header .header-buttons {
+    display: inline;
+    float: right;
 }
 
 .chat .header button {
     background: transparent;
     border: none;
     color: white;
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     cursor: pointer;
     transition: color 0.2s ease;
 }
 
 .chat .header button:hover {
-    color: #ff4c4c;
+    color: #439fff;
 }
 
 /* Chat Body */
@@ -118,13 +123,13 @@
     box-shadow: 0 0 5px #439fff;
 }
 
-.chat .footer .buttons {
+.chat .footer .footer-buttons {
     display: flex;
     gap: 8px;
     margin: 10px;
 }
 
-.chat .footer .buttons button {
+.chat .footer .footer-buttons button {
     width: 2rem;
     height: 2rem;
     padding: 5px;
@@ -141,7 +146,7 @@
     transition: all 0.3s ease-in-out;
 }
 
-.chat .footer .buttons button:hover {
+.chat .footer .footer-buttons button:hover {
     background-color: var(--secondary-color);
 }
 
@@ -197,7 +202,7 @@
         font-size: 0.9rem;
     }
 
-    .chat .footer .buttons button {
+    .chat .footer .footer-buttons button {
         padding: 10px;
         width: 2.5rem;
         height: 2.5rem;

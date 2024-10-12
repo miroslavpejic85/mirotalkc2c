@@ -5,7 +5,10 @@
 
         <meta charset="utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="viewport"
+            content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
+        />
         <meta
             name="description"
             content="MiroTalk C2C WebRTC real-time cam-2-cam video calls and screen sharing, end-to-end encrypted."
@@ -150,12 +153,16 @@ Wait user to join.
         <div id="chat" class="chat">
             <div class="header">
                 <span class="title">Chat</span>
-                <button id="chatCloseBtn" class="fas fa-times"></button>
+                <div class="header-buttons">
+                    <button id="chatCleanBtn" class="fas fa-trash"></button>
+                    <button id="chatSaveBtn" class="fas fa-save"></button>
+                    <button id="chatCloseBtn" class="fas fa-times"></button>
+                </div>
             </div>
             <div class="body" id="chatBody"></div>
             <div class="footer">
                 <textarea id="chatInput" placeholder="Write a message..."></textarea>
-                <div class="buttons">
+                <div class="footer-buttons">
                     <button id="chatSendBtn" class="fas fa-paper-plane"></button>
                     <button id="chatEmojiBtn" class="fas fa-smile"></button>
                 </div>

@@ -255,6 +255,13 @@ function getTime() {
     return date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds();
 }
 
+function getDataTimeString() {
+    const d = new Date();
+    const date = d.toISOString().split('T')[0];
+    const time = d.toTimeString().split(' ')[0];
+    return `${date}-${time}`;
+}
+
 function escapeSpecialChars(regex) {
     return regex.replace(/([()[{*+.$^\\|?])/g, '\\$1');
 }

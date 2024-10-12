@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.33
+ * @version 1.1.34
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -48,11 +48,15 @@ const sessionTime = document.getElementById('sessionTime');
 const chat = document.getElementById('chat');
 const chatOpenBtn = document.getElementById('chatOpenBtn');
 const chatBody = document.getElementById('chatBody');
+const chatSaveBtn = document.getElementById('chatSaveBtn');
+const chatCleanBtn = document.getElementById('chatCleanBtn');
 const chatCloseBtn = document.getElementById('chatCloseBtn');
 const chatInput = document.getElementById('chatInput');
 const chatEmojiBtn = document.getElementById('chatEmojiBtn');
 const chatSendBtn = document.getElementById('chatSendBtn');
 const chatEmoji = document.getElementById('chatEmoji');
+
+let chatMessages = []; // collect chat messages to save it later
 
 const roomURL = window.location.origin + '/?room=' + roomId;
 
@@ -884,6 +888,12 @@ function handleEvents() {
     chatOpenBtn.onclick = () => {
         toggleChat();
     };
+    chatSaveBtn.onclick = () => {
+        saveChat();
+    };
+    chatCleanBtn.onclick = () => {
+        cleanChat();
+    };
     chatCloseBtn.onclick = () => {
         toggleChat();
     };
@@ -1448,6 +1458,45 @@ function toggleChat() {
     }
 }
 
+function saveChat() {
+    if (chatMessages.length === 0) {
+        return popupMessage('toast', 'Chat', 'No chat messages to save', 'top-end');
+    }
+    let a = document.createElement('a');
+    a.href = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(chatMessages, null, 1));
+    a.download = getDataTimeString() + '-chat.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    playSound('download');
+}
+
+function cleanChat() {
+    if (chatMessages.length === 0) {
+        return popupMessage('toast', 'Chat', 'No chat messages to delete', 'top-end');
+    }
+    playSound('message');
+    Swal.fire({
+        position: 'center',
+        title: 'Chat',
+        text: 'Clean up chat messages?',
+        showDenyButton: true,
+        confirmButtonText: `Yes`,
+        denyButtonText: `No`,
+        showClass: { popup: 'animate__animated animate__fadeInDown' },
+        hideClass: { popup: 'animate__animated animate__fadeOutUp' },
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const chatBodyMessages = chatBody.firstChild;
+            while (chatBody.firstChild) {
+                chatBody.removeChild(chatBody.firstChild);
+            }
+            chatMessages = [];
+            playSound('delete');
+        }
+    });
+}
+
 function toggleChatEmoji() {
     chatEmoji.classList.toggle('show');
 }
@@ -1494,18 +1543,24 @@ function emitDcMsg(msg) {
 }
 
 function appendMessage(name, msg) {
+    const time = getTime();
     const div = document.createElement('div');
     const span = document.createElement('span');
     const p = document.createElement('pre');
     div.className = 'msg';
     span.className = 'from';
-    span.innerText = name + ' ' + getTime();
+    span.innerText = name + ' ' + time;
     p.className = 'text';
     p.innerText = msg;
     div.appendChild(span);
     div.appendChild(p);
     chatBody.appendChild(div);
     chatBody.scrollTop += 500;
+    chatMessages.push({
+        time: time,
+        from: name,
+        message: msg,
+    });
 }
 
 function handleMessage(config) {
