@@ -68,7 +68,8 @@
 }
 
 .chat .body .msg {
-    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
 }
 
 .chat .body .msg .from {
@@ -77,6 +78,19 @@
     color: var(--secondary-color);
     border-bottom: 0.1px solid #439fff;
 }
+
+.chat .body .msg.sent .from {
+    align-self: flex-start;
+    text-align: left;
+    margin: 0;
+}
+
+.chat .body .msg.received .from {
+    align-self: flex-end;
+    text-align: right;
+    margin: 0;
+}
+
 .chat .body .msg .text {
     padding: 5px;
     border-radius: 10px;
@@ -85,6 +99,18 @@
     overflow: auto;
     word-wrap: break-word;
     user-select: text;
+}
+
+.chat .body .msg.sent .text {
+    background: #495057;
+    color: white;
+    border-radius: 10px 10px 10px 0;
+}
+
+.chat .body .msg.received .text {
+    background: #1c7ed6;
+    color: white;
+    border-radius: 10px 10px 0 10px;
 }
 
 .chat .body .msg .text:hover {

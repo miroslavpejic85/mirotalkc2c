@@ -250,9 +250,9 @@ function secondsToHms(d) {
     return hDisplay + ' ' + mDisplay + ' ' + sDisplay;
 }
 
-function getTime() {
+function getTime(seconds = true) {
     const date = new Date();
-    return date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds();
+    return date.getHours() + ':' + date.getMinutes() + (seconds ? ':' + date.getSeconds() : '');
 }
 
 function getDataTimeString() {
