@@ -1556,7 +1556,7 @@ function appendMessage(name, msg) {
     div.appendChild(span);
     div.appendChild(p);
     chatBody.appendChild(div);
-    chatBody.scrollTop += 500;
+    chatBody.scrollTop = chatBody.scrollHeight;
     chatMessages.push({
         time: time,
         from: name,
