@@ -1550,7 +1550,7 @@ function appendMessage(name, msg) {
     const messageClass = name === peerName ? 'sent' : 'received';
     div.className = `msg ${messageClass}`;
     span.className = 'from';
-    span.innerText = name + ' ' + time;
+    span.innerText = `${name} ${time}`;
     p.className = 'text';
     p.innerText = msg;
     div.appendChild(span);
