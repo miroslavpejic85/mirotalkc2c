@@ -25,7 +25,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 16px;
-    background: #5865f2;
+    background: #2a7aef;
     color: white;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px 0 0 0;
@@ -63,7 +63,7 @@
     height: 80vh;
     flex-grow: 1;
     scrollbar-width: thin;
-    scrollbar-color: #5865f2 #2f3136;
+    scrollbar-color: #2a7aef #2f3136;
     transition: max-height 0.3s ease;
 }
 
@@ -106,7 +106,7 @@
 }
 
 .chat .body .msg.received .text {
-    background: #5865f2;
+    background: #2a7aef;
     color: white;
     border-radius: 12px 12px 0 12px;
 }
@@ -131,7 +131,7 @@
     flex-grow: 1;
     padding: 5px;
     height: 40px;
-    border: 1px solid #5865f2;
+    border: 1px solid #2a7aef;
     border-radius: 8px;
     background: #2b2d36;
     color: var(--text-color);
@@ -141,10 +141,10 @@
 }
 
 .chat .footer textarea:focus {
-    border-color: #5865f2;
+    border-color: #2a7aef;
     height: 60px;
     outline: none;
-    box-shadow: 0 0 5px #5865f2;
+    box-shadow: 0 0 5px #2a7aef;
 }
 
 .chat .footer .footer-buttons {
@@ -159,7 +159,7 @@
     padding: 5px;
     border: none;
     border-radius: 50px;
-    background: #5865f2;
+    background: #2a7aef;
     color: white;
     text-align: center;
     font-size: 1.1rem;
