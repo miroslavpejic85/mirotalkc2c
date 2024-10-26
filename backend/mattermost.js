@@ -54,6 +54,7 @@ class mattermost {
             //
             const { token, text, command, channel_id } = req.body;
             if (token !== this.token) {
+                log.error('Invalid token attempt', { token });
                 return res.status(403).send('Invalid token');
             }
 
