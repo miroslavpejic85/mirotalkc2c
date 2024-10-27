@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.40
+ * @version 1.1.41
  */
 
 require('dotenv').config();
@@ -122,6 +122,14 @@ if (turnServerEnabled && turnServerUrl && turnServerUsername && turnServerCreden
     iceServers.push({ urls: turnServerUrl, username: turnServerUsername, credential: turnServerCredential });
 }
 
+const mattermostCfg = {
+    enabled: getEnvBoolean(process.env.MATTERMOST_ENABLED),
+    server_url: process.env.MATTERMOST_SERVER_URL,
+    username: process.env.MATTERMOST_USERNAME,
+    password: process.env.MATTERMOST_PASSWORD,
+    token: process.env.MATTERMOST_TOKEN,
+};
+
 const surveyURL = process.env.SURVEY_URL || false;
 const redirectURL = process.env.REDIRECT_URL || false;
 
@@ -181,7 +189,7 @@ app.use((req, res, next) => {
 });
 
 // Mattermost
-const mattermost = new mattermostCli(app);
+const mattermost = new mattermostCli(app, mattermostCfg);
 
 app.post('*', function (next) {
     next();
@@ -304,6 +312,38 @@ function getEnvBoolean(key, force_true_if_undefined = false) {
     return key == 'true' ? true : false;
 }
 
+function getServerConfig(tunnelHttps = false) {
+    // configurations
+    const server = {
+        home: host,
+        room: host + queryRoom,
+        join: host + queryJoin,
+    };
+
+    const server_tunnel = tunnelHttps
+        ? {
+              ngrokHome: tunnelHttps,
+              ngrokRoom: tunnelHttps + queryRoom,
+              ngrokJoin: tunnelHttps + queryJoin,
+              ngrokToken: ngrokAuthToken,
+          }
+        : false;
+
+    return {
+        server: server,
+        server_tunnel: server_tunnel,
+        oidc: OIDC.enabled ? OIDC : false,
+        iceServers: iceServers,
+        cors: corsOptions,
+        apiDocs: apiDocs,
+        apiKeySecret: apiKeySecret,
+        mattermost: mattermostCfg.enabled ? mattermostCfg : false,
+        redirectURL: redirectURL,
+        app_version: packageJson.version,
+        nodeVersion: process.versions.node,
+    };
+}
+
 async function ngrokStart() {
     try {
         await ngrok.authtoken(ngrokAuthToken);
@@ -311,19 +351,7 @@ async function ngrokStart() {
         const api = ngrok.getApi();
         const list = await api.listTunnels();
         const tunnelHttps = list.tunnels[0].public_url;
-        log.debug('settings', {
-            ngrokAuthToken: ngrokAuthToken,
-            iceServers: iceServers,
-            cors: corsOptions,
-            ngrokHome: tunnelHttps,
-            ngrokRoom: tunnelHttps + queryRoom,
-            ngrokJoin: tunnelHttps + queryJoin,
-            apiDocs: apiDocs,
-            apiKeySecret: apiKeySecret,
-            redirectURL: redirectURL,
-            nodeVersion: process.versions.node,
-            app_version: packageJson.version,
-        });
+        log.debug('settings', getServerConfig(tunnelHttps));
     } catch (err) {
         log.warn('[Error] ngrokStart', err);
         process.exit(1);
@@ -334,20 +362,7 @@ server.listen(port, null, () => {
     if (!isHttps && ngrokEnabled && ngrokAuthToken) {
         ngrokStart();
     } else {
-        log.debug('settings', {
-            oidc: OIDC.enabled ? OIDC : false,
-            iceServers: iceServers,
-            cors: corsOptions,
-            home: host,
-            room: host + queryRoom,
-            join: host + queryJoin,
-            apiDocs: apiDocs,
-            apiKeySecret: apiKeySecret,
-            redirectURL: redirectURL,
-            surveyURL: surveyURL,
-            nodeVersion: process.versions.node,
-            app_version: packageJson.version,
-        });
+        log.debug('settings', getServerConfig());
     }
 });
 
