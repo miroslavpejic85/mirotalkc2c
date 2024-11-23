@@ -35,7 +35,7 @@
 <details open>
 <summary>Quick start</summary>
 
-<br/>
+![nodejs](frontend/images/nodejs.png)
 
 Install [NodeJs](https://nodejs.org/en/blog/release/v18.16.0).
 
