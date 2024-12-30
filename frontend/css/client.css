@@ -9,12 +9,12 @@
     --secondary-color: #45494c;
     --chat-bg: #141519;
     --btn-bg: #f5f5f5;
-    --video-hf-bg: rgba(0, 0, 0, 0.5);
     --btn-color: #000000;
     --text-color: #f5f5f5;
     --hover-color: #45494c;
     --border: 0.1px solid #45494c;
     --border-radius: 1rem;
+    --video-hf-bg: rgba(0, 0, 0, 0.5);
     --video-obj-fit: cover;
     --my-video-wrap-width: 360px; /* Safari */
     --my-video-wrap-height: 205px;
