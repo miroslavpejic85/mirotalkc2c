@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.52
+ * @version 1.1.53
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -1516,25 +1516,50 @@ function emitDcMsg(msg) {
 }
 
 function appendMessage(name, msg) {
-    const time = getTime(false);
     const div = document.createElement('div');
     const span = document.createElement('span');
     const p = document.createElement('pre');
     const messageClass = name === peerName ? 'sent' : 'received';
     div.className = `msg ${messageClass}`;
     span.className = 'from';
-    span.innerText = `${name} ${time}`;
+    span.innerText = name;
     p.className = 'text';
-    p.innerText = msg;
+    p.innerHTML = processMessage(msg);
     div.appendChild(span);
     div.appendChild(p);
     chatBody.appendChild(div);
     chatBody.scrollTop = chatBody.scrollHeight;
     chatMessages.push({
-        time: time,
         from: name,
         message: msg,
     });
+    hljs.highlightAll();
+}
+
+function processMessage(message) {
+    const codeBlockRegex = /```([a-zA-Z0-9]+)?\n([\s\S]*?)```/g;
+    let parts = [];
+    let lastIndex = 0;
+
+    message.replace(codeBlockRegex, (match, lang, code, offset) => {
+        if (offset > lastIndex) {
+            parts.push({ type: 'text', value: message.slice(lastIndex, offset) });
+        }
+        parts.push({ type: 'code', lang, value: code });
+        lastIndex = offset + match.length;
+    });
+
+    if (lastIndex < message.length) {
+        parts.push({ type: 'text', value: message.slice(lastIndex) });
+    }
+
+    return parts.map(part => {
+        if (part.type === 'text') {
+            return part.value;
+        } else if (part.type === 'code') {
+            return `<pre><code class="language-${part.lang || ''}">${part.value}</code></pre>`;
+        }
+    }).join('');
 }
 
 function handleMessage(config) {
