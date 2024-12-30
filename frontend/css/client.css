@@ -117,7 +117,6 @@ body {
     bottom: 0;
     display: none;
     text-align: center;
-    border-radius: 20px;
     background: transparent;
 }
 
@@ -153,6 +152,16 @@ body {
 .fa-microphone-slash,
 .fa-video-slash {
     color: #e74c3c !important;
+}
+
+/* Responsive for mobile */
+@media (max-width: 320px) {
+    #buttonsBar button {
+        font-size: 0.8rem;
+        width: 1.5rem;
+        height: 1.5rem;
+        padding: 0px;
+    }
 }
 
 /*--------------------------------------------------------------
@@ -578,16 +587,6 @@ button {
 hr {
     margin-top: 25px;
     border: 1px solid grey;
-}
-
-/* Responsive for mobile */
-@media (max-width: 320px) {
-    #buttonsBar button {
-        font-size: 0.8rem;
-        width: 1.5rem;
-        height: 1.5rem;
-        padding: 0px;
-    }
 }
 
 /*
