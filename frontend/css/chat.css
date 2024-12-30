@@ -88,6 +88,9 @@
 }
 
 .chat .body .msg .text {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
     padding: 10px;
     border-radius: 12px;
     background: var(--chat-bg);
