@@ -580,6 +580,16 @@ hr {
     border: 1px solid grey;
 }
 
+/* Responsive for mobile */
+@media (max-width: 320px) {
+    #buttonsBar button {
+        font-size: 0.8rem;
+        width: 1.5rem;
+        height: 1.5rem;
+        padding: 0px;
+    }
+}
+
 /*
 z-index:
     0 waitingDivContainer

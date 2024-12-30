@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.45
+ * @version 1.1.50
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -55,6 +55,9 @@ const chatInput = document.getElementById('chatInput');
 const chatEmojiBtn = document.getElementById('chatEmojiBtn');
 const chatSendBtn = document.getElementById('chatSendBtn');
 const chatEmoji = document.getElementById('chatEmoji');
+const recordingLabel = document.getElementById('recordingLabel');
+const recordingBtn = document.getElementById('recordingBtn');
+const recordingTime = document.getElementById('recordingTime');
 
 let chatMessages = []; // collect chat messages to save it later
 
@@ -70,6 +73,7 @@ const image = {
     camOff: '../images/camOff.png',
     feedback: '../images/feedback.png',
     forbidden: '../images/forbidden.png',
+    poster: '../images/loader.gif',
 };
 
 const className = {
@@ -170,6 +174,8 @@ let thisPeerId;
 let signalingSocket;
 let localMediaStream;
 let remoteMediaStream;
+let recording = null;
+let recordingTimer = null;
 let roomPeersCount = 0;
 let peerDevice = {};
 let peerConnections = {};
@@ -201,6 +207,7 @@ const tooltips = [
     { element: audioBtn, text: 'Toggle audio', position: 'top' },
     { element: swapCameraBtn, text: 'Swap camera', position: 'top' },
     { element: screenShareBtn, text: 'Toggle screen sharing', position: 'top' },
+    { element: recordingBtn, text: 'Toggle recording', position: 'top' },
     { element: chatOpenBtn, text: 'Toggle chat', position: 'top' },
     { element: settingsBtn, text: 'Toggle settings', position: 'top' },
     { element: leaveBtn, text: 'Leave room', position: 'top' },
@@ -646,6 +653,7 @@ function setLocalMedia(stream) {
     myLocalMedia.volume = 0;
     myLocalMedia.controls = false;
     myLocalMedia.style.objectFit = localStorageConfig.video.settings.aspect_ratio ? 'contain' : 'cover';
+    myLocalMedia.poster = image.poster;
     myVideoWrap.id = 'myVideoWrap';
     myVideoWrap.className = 'myVideoWrap';
     myVideoWrap.appendChild(myVideoHeader);
@@ -713,6 +721,7 @@ function setRemoteMedia(stream, peers, peerId) {
     remoteMedia.autoplay = true;
     remoteMedia.controls = false;
     remoteMedia.style.objectFit = localStorageConfig.video.settings.aspect_ratio ? 'contain' : 'cover';
+    remoteMedia.poster = image.poster;
     peerMediaElements[peerId] = remoteMedia;
     remoteVideoWrap.id = peerId + '_remoteVideoWrap';
     remoteVideoWrap.className = 'remoteVideoWrap';
@@ -803,6 +812,9 @@ function handleEvents() {
             elemDisplay(swapCameraBtn, false);
         }
     });
+    recordingBtn.onclick = () => {
+        toggleRecording();
+    };
     settingsBtn.onclick = () => {
         toggleSettings();
     };
@@ -1054,8 +1066,10 @@ function getAudioConstraints(deviceId = false) {
 
 function getVideoConstraints(deviceId = false) {
     let videoConstraints = true;
+
     elemDisable(videoQualitySelect, localStorageConfig.video.settings.best_quality);
     elemDisable(videoFpsSelect, localStorageConfig.video.settings.best_quality);
+
     if (localStorageConfig.video.settings.best_quality) {
         resetVideoConstraints();
         videoConstraints = {
@@ -1065,79 +1079,38 @@ function getVideoConstraints(deviceId = false) {
         };
     } else {
         const videoQuality = videoQualitySelect.value;
-        const videoFrameRate = videoFpsSelect.value == 'default' ? 30 : parseInt(videoFpsSelect.value, 10);
+        const videoFrameRate = videoFpsSelect.value === 'default' ? 30 : parseInt(videoFpsSelect.value, 10);
 
-        videoFpsSelect.disabled = false;
+        const qualityMap = {
+            default: { width: { ideal: 1280 }, height: { ideal: 720 } },
+            qvga: { width: { exact: 320 }, height: { exact: 240 } },
+            vga: { width: { exact: 640 }, height: { exact: 480 } },
+            hd: { width: { exact: 1280 }, height: { exact: 720 } },
+            fhd: { width: { exact: 1920 }, height: { exact: 1080 } },
+            '2k': { width: { exact: 2560 }, height: { exact: 1440 } },
+            '4k': { width: { exact: 3840 }, height: { exact: 2160 } },
+            '6k': { width: { exact: 6144 }, height: { exact: 3456 } },
+            '8k': { width: { exact: 7680 }, height: { exact: 4320 } },
+        };
 
-        switch (videoQuality) {
-            case 'default':
-                videoConstraints = {
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 },
-                };
-                videoFpsSelect.disabled = true;
-                videoFpsSelect.selectedIndex = 0;
-                break;
-            case 'qvga':
-                videoConstraints = {
-                    width: { exact: 320 },
-                    height: { exact: 240 },
-                    frameRate: videoFrameRate,
-                };
-                break;
-            case 'vga':
-                videoConstraints = {
-                    width: { exact: 640 },
-                    height: { exact: 480 },
-                    frameRate: videoFrameRate,
-                };
-                break;
-            case 'hd':
-                videoConstraints = {
-                    width: { exact: 1280 },
-                    height: { exact: 720 },
-                    frameRate: videoFrameRate,
-                };
-            case 'fhd':
-                videoConstraints = {
-                    width: { exact: 1920 },
-                    height: { exact: 1080 },
-                    frameRate: videoFrameRate,
-                };
-                break;
-            case '2k':
-                videoConstraints = {
-                    width: { exact: 2560 },
-                    height: { exact: 1440 },
-                    frameRate: videoFrameRate,
-                };
-                break;
-            case '4k':
-                videoConstraints = {
-                    width: { exact: 3840 },
-                    height: { exact: 2160 },
-                    frameRate: videoFrameRate,
-                };
-                break;
-            case '6k':
-                videoConstraints = {
-                    width: { exact: 6144 },
-                    height: { exact: 3456 },
-                    frameRate: videoFrameRate,
-                };
-                break;
-            case '8k':
-                videoConstraints = {
-                    width: { exact: 7680 },
-                    height: { exact: 4320 },
-                    frameRate: videoFrameRate,
-                };
-                break;
-            default:
-                break;
+        videoConstraints = qualityMap[videoQuality] || true;
+
+        if (videoQuality === 'default') {
+            videoFpsSelect.disabled = true;
+            videoFpsSelect.selectedIndex = 0;
+        } else if (videoConstraints !== true) {
+            videoConstraints.frameRate = videoFrameRate;
+            videoFpsSelect.disabled = false;
         }
     }
-    if (deviceId) videoConstraints['deviceId'] = deviceId;
+
+    if (deviceId) {
+        videoConstraints = {
+            ...videoConstraints,
+            deviceId,
+        };
+    }
+
     console.log('Video constraints', videoConstraints);
     return videoConstraints;
 }
@@ -1629,6 +1602,56 @@ function setPeerScreenStatus(peerId, active) {
     elemDisplay(peerVideoAvatarImage, active ? false : true);
 }
 
+// =====================================================
+// Handle recording
+// =====================================================
+
+function toggleRecording() {
+    recording && recording.isStreamRecording() ? stopRecording() : startRecording();
+}
+
+function startRecording() {
+    if (!isVideoStreaming && !isAudioStreaming) {
+        return popupMessage('toast', 'Video', "There isn't a video/audio stream to recording", 'top');
+    } else {
+        recording = new Recording(
+            myVideo.srcObject,
+            recordingLabel,
+            recordingTime,
+            recordingBtn,
+            audioSource,
+            audioSource,
+        );
+        recording.start();
+    }
+}
+
+function stopRecording() {
+    recording.stop();
+}
+
+function saveRecording() {
+    if (recording && recording.isStreamRecording()) stopRecording();
+}
+
+function startRecordingTimer() {
+    let recElapsedTime = 0;
+    recordingTimer = setInterval(function printTime() {
+        if (recording.isStreamRecording()) {
+            recElapsedTime++;
+            recordingTime.innerText = secondsToHms(recElapsedTime);
+        }
+    }, 1000);
+}
+
+function stopRecordingTimer() {
+    clearInterval(recordingTimer);
+}
+
+// =====================================================
+// Handle window
+// =====================================================
+
 window.addEventListener(
     'load',
     function (event) {
@@ -1642,4 +1665,5 @@ window.onbeforeunload = confirmExit;
 function confirmExit(e) {
     console.log('onbeforeunload', e);
     saveLocalStorageConfig();
+    saveRecording();
 }

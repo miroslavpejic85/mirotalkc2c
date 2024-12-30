@@ -47,6 +47,7 @@
         <script defer src="../js/storage.js"></script>
         <script defer src="../js/swal.js"></script>
         <script defer src="../js/utils.js"></script>
+        <script defer src="../js/recording.js"></script>
         <script defer src="../js/client.js"></script>
         <script defer src="../js/translate.js"></script>
     </head>
@@ -87,6 +88,7 @@ Wait user to join.
             <button id="audioBtn" class="fas fa-microphone"></button>
             <button id="swapCameraBtn" class="fas fa-camera-rotate"></button>
             <button id="screenShareBtn" class="fas fa-desktop"></button>
+            <button id="recordingBtn" class="fas fa-record-vinyl"></button>
             <button id="chatOpenBtn" class="fas fa-comments"></button>
             <button id="settingsBtn" class="fas fa-ellipsis-vertical"></button>
             <button id="leaveBtn" class="fa-solid fa-phone-slash red"></button>
@@ -140,11 +142,15 @@ Wait user to join.
                     </td>
                     <td><input id="switchPushToTalk" class="toggle" type="checkbox" /></td>
                 </tr>
+                <tr id="recordingDiv">
+                    <td><span id="recordingLabel">🔴 Recording </span></td>
+                    <td><span id="recordingTime">0s</span></td>
+                </tr>
                 <tr>
                     <td>
                         <span> <i class="fas fa-clock"></i> Session time </span>
                     </td>
-                    <td><p class="notranslate" id="sessionTime">0s</p></td>
+                    <td><span class="notranslate" id="sessionTime">0s</span></td>
                 </tr>
             </table>
             <hr />

@@ -1,4 +1,4 @@
-'use-strict';
+'use strict';
 
 function popupMessage(icon, title, message, position = 'center', timer = 3000) {
     switch (icon) {
