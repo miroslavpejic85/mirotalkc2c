@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.53
+ * @version 1.1.54
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -38,6 +38,7 @@ const settingsCloseBtn = document.getElementById('settingsCloseBtn');
 const audioSource = document.getElementById('audioSource');
 const videoSource = document.getElementById('videoSource');
 const videoQualitySelect = document.getElementById('videoQualitySelect');
+const videoFpsDiv = document.getElementById('videoFpsDiv');
 const videoFpsSelect = document.getElementById('videoFpsSelect');
 const maxVideoQualityDiv = document.getElementById('maxVideoQualityDiv');
 const pushToTalkDiv = document.getElementById('pushToTalkDiv');
@@ -153,6 +154,7 @@ const osName = result.os.name;
 const osVersion = result.os.version;
 const browserName = result.browser.name;
 const browserVersion = result.browser.version;
+const isFirefox = browserName === 'Firefox';
 
 let userAgent;
 let isWebRTCSupported = false;
@@ -835,6 +837,9 @@ function handleEvents() {
     videoQualitySelect.onchange = (e) => {
         refreshVideoConstraints();
     };
+    if (isFirefox) {
+        elemDisplay(videoFpsDiv, false);
+    }
     videoFpsSelect.onchange = (e) => {
         refreshVideoConstraints();
     };
@@ -1109,6 +1114,10 @@ function getVideoConstraints(deviceId = false) {
             ...videoConstraints,
             deviceId,
         };
+    }
+
+    if (isFirefox) {
+        delete videoConstraints.frameRate;
     }
 
     console.log('Video constraints', videoConstraints);
@@ -1448,7 +1457,6 @@ function cleanChat() {
     if (chatMessages.length === 0) {
         return popupMessage('toast', 'Chat', 'No chat messages to delete', 'top-end');
     }
-    playSound('message');
     Swal.fire({
         position: 'top',
         title: 'Chat',
@@ -1553,13 +1561,15 @@ function processMessage(message) {
         parts.push({ type: 'text', value: message.slice(lastIndex) });
     }
 
-    return parts.map(part => {
-        if (part.type === 'text') {
-            return part.value;
-        } else if (part.type === 'code') {
-            return `<pre><code class="language-${part.lang || ''}">${part.value}</code></pre>`;
-        }
-    }).join('');
+    return parts
+        .map((part) => {
+            if (part.type === 'text') {
+                return part.value;
+            } else if (part.type === 'code') {
+                return `<pre><code class="language-${part.lang || ''}">${part.value}</code></pre>`;
+            }
+        })
+        .join('');
 }
 
 function handleMessage(config) {
