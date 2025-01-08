@@ -4,7 +4,7 @@ function openURL(url, blank = false) {
     blank ? window.open(url, '_blank') : (window.location.href = url);
 }
 
-function IsSupportedWebRTC() {
+function checkWebRTCSupported() {
     let isWebRTCSupported = false;
     ['RTCPeerConnection', 'webkitRTCPeerConnection', 'mozRTCPeerConnection', 'RTCIceGatherer'].forEach(function (item) {
         if (isWebRTCSupported) return;

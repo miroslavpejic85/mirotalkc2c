@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.56
+ * @version 1.1.57
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -148,21 +148,22 @@ const chatInputEmoji = {
     ':J': '🥴',
 };
 
-const parser = new UAParser();
+const isWebRTCSupported = checkWebRTCSupported();
+const userAgent = navigator.userAgent;
+const parser = new UAParser(userAgent);
 const result = parser.getResult();
+const deviceType = result.device.type || 'desktop';
+const isMobileDevice = deviceType === 'mobile';
+const isTabletDevice = deviceType === 'tablet';
+const isIPadDevice = result.device.model?.toLowerCase() === 'ipad';
+const isDesktopDevice = deviceType === 'desktop';
 const osName = result.os.name;
 const osVersion = result.os.version;
 const browserName = result.browser.name;
 const browserVersion = result.browser.version;
-const isFirefox = browserName === 'Firefox';
+const isFirefox = browserName.toLowerCase().includes('firefox');
 
-let userAgent;
-let isWebRTCSupported = false;
 let isVideoPIPSupported = document.pictureInPictureEnabled;
-let isMobileDevice = false;
-let isTabletDevice = false;
-let isIPadDevice = false;
-let isDesktopDevice = false;
 let isCamMirrored = false;
 let myVideoChange = false;
 let isVideoStreaming = true;
@@ -237,16 +238,9 @@ function initClient() {
     console.log('RoomURL', roomURL);
     console.log('Location', window.location);
 
-    isWebRTCSupported = IsSupportedWebRTC();
     if (!isWebRTCSupported) {
         return popupMessage('warning', 'WebRTC', 'This browser seems not supported WebRTC!');
     }
-
-    userAgent = navigator.userAgent.toLowerCase();
-    isMobileDevice = isMobile(userAgent);
-    isTabletDevice = isTablet(userAgent);
-    isIPadDevice = isIpad(userAgent);
-    isDesktopDevice = isDesktop();
 
     tooltips.forEach(({ element, text, position }) => {
         setTippy(element, text, position);
