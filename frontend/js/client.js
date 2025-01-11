@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.58
+ * @version 1.1.59
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -1327,6 +1327,16 @@ function handlePictureInPicture(pipBtn, videoMedia) {
                 });
             }
         };
+        if (videoMedia) {
+            videoMedia.addEventListener('leavepictureinpicture', (event) => {
+                console.log('Exited PiP mode');
+                if (videoMedia.paused) {
+                    videoMedia.play().catch((error) => {
+                        console.error('Error playing video after exit PIP mode:', error);
+                    });
+                }
+            });
+        }
     } else {
         elemDisplay(pipBtn, false);
     }
