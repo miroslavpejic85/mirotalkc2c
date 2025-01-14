@@ -148,6 +148,7 @@ const chatInputEmoji = {
     ':J': '🥴',
 };
 
+const isVideoPIPSupported = document.pictureInPictureEnabled;
 const isWebRTCSupported = checkWebRTCSupported();
 const userAgent = navigator.userAgent;
 const parser = new UAParser(userAgent);
@@ -163,7 +164,6 @@ const browserName = result.browser.name;
 const browserVersion = result.browser.version;
 const isFirefox = browserName.toLowerCase().includes('firefox');
 
-let isVideoPIPSupported = document.pictureInPictureEnabled;
 let isCamMirrored = false;
 let myVideoChange = false;
 let isVideoStreaming = true;
