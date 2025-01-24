@@ -1,6 +1,6 @@
 {
     "name": "mirotalkc2c",
-    "version": "1.1.59",
+    "version": "1.1.60",
     "description": "A free WebRTC Cam-2-Cam browser-based video calls",
     "main": "server.js",
     "scripts": {
@@ -45,7 +45,7 @@
         "express-openid-connect": "^2.17.1",
         "js-yaml": "^4.1.0",
         "ngrok": "^5.0.0-beta.2",
-        "nodemailer": "^6.9.16",
+        "nodemailer": "^6.10.0",
         "socket.io": "^4.8.1",
         "swagger-ui-express": "5.0.1",
         "uuid": "11.0.5",
