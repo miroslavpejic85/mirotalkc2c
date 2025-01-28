@@ -459,7 +459,11 @@ th {
 .skiptranslate iframe,
 .goog-te-banner-frame.skiptranslate,
 .VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
-.VIpgJd-ZVi9od-aZ2wEe-OiiCO {
+.VIpgJd-ZVi9od-aZ2wEe-OiiCO,
+#goog-gt-tt,
+#goog-gt-tt *,
+#goog-gt-vt,
+#goog-gt-vt * {
     display: none !important;
 }
 
