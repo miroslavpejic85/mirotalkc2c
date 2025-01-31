@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.62
+ * @version 1.1.63
  */
 
 require('dotenv').config();
@@ -25,6 +25,7 @@ const checkXSS = require('./xss.js');
 const path = require('path');
 const ngrok = require('ngrok');
 const app = express();
+const helmet = require('helmet');
 const fs = require('fs');
 const logs = require('./logs');
 const log = new logs('server');
@@ -171,6 +172,8 @@ const channels = {};
 const sockets = {};
 const peers = {};
 
+app.use(helmet.xssFilter()); // Enable XSS protection
+app.use(helmet.noSniff()); // Enable content type sniffing prevention
 app.use(express.static(frontendDir));
 app.use(cors(corsOptions));
 app.use(compression());
