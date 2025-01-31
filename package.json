@@ -1,6 +1,6 @@
 {
     "name": "mirotalkc2c",
-    "version": "1.1.63",
+    "version": "1.1.64",
     "description": "A free WebRTC Cam-2-Cam browser-based video calls",
     "main": "server.js",
     "scripts": {
