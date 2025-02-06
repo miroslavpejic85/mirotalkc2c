@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.64
+ * @version 1.1.65
  */
 
 require('dotenv').config();
@@ -65,6 +65,8 @@ if (isHttps) {
 } else {
     server = http.createServer(app);
 }
+
+const trustProxy = !!getEnvBoolean(process.env.TRUST_PROXY);
 
 const domain = process.env.HOST || 'localhost';
 
@@ -147,7 +149,7 @@ const OIDC = {
             scope: 'openid profile email',
         },
         authRequired: process.env.OIDC_AUTH_REQUIRED ? getEnvBoolean(process.env.OIDC_AUTH_REQUIRED) : false,
-        auth0Logout: true,
+        auth0Logout: process.env.OIDC_AUTH_LOGOUT ? getEnvBoolean(process.env.OIDC_AUTH_LOGOUT) : true, // Set to true to enable logout with Auth0
         routes: {
             callback: '/auth/callback',
             login: false,
@@ -172,6 +174,7 @@ const channels = {};
 const sockets = {};
 const peers = {};
 
+app.set('trust proxy', trustProxy); // Enables trust for proxy headers (e.g., X-Forwarded-For) based on the trustProxy setting
 app.use(helmet.xssFilter()); // Enable XSS protection
 app.use(helmet.noSniff()); // Enable content type sniffing prevention
 app.use(express.static(frontendDir));
@@ -349,7 +352,8 @@ function getServerConfig(tunnelHttps = false) {
 
     return {
         server: server,
-        server_tunnel: server_tunnel,
+        serverTunnel: server_tunnel,
+        trustProxy: trustProxy,
         oidc: OIDC.enabled ? OIDC : false,
         iceServers: iceServers,
         cors: corsOptions,
