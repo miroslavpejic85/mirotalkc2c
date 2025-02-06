@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.65
+ * @version 1.1.66
  */
 
 require('dotenv').config();
@@ -160,11 +160,15 @@ const OIDC = {
 
 const OIDCAuth = function (req, res, next) {
     if (OIDC.enabled) {
+        if (req.oidc.isAuthenticated()) { 
+            log.debug('OIDC ------> User already Authenticated');
+            return next();
+        }
         requiresAuth()(req, res, next);
     } else {
         next();
     }
-};
+}
 
 const frontendDir = path.join(__dirname, '../', 'frontend');
 const htmlClient = path.join(__dirname, '../', 'frontend/html/client.html');
@@ -267,12 +271,19 @@ app.get('/', OIDCAuth, (req, res) => {
     return res.sendFile(htmlHome);
 });
 
-app.get('/join/', OIDCAuth, (req, res) => {
+app.get('/join/', (req, res) => {
     if (Object.keys(req.query).length > 0) {
         //http://localhost:3000/join?room=test&name=test
         log.debug('[' + req.headers.host + ']' + ' request query', req.query);
         const { room, name } = checkXSS('join', req.query);
         if (room && name) {
+            // OIDC enabled not authorized user, allow join room only if exist
+            if (OIDC.enabled && !req.oidc.isAuthenticated()) {
+                const roomExist = room in peers;
+                if (!roomExist) { 
+                    return notFound(res);
+                }
+            }
             return res.sendFile(htmlClient);
         }
         return notFound(res);
