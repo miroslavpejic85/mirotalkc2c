@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.68
+ * @version 1.1.69
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -988,7 +988,7 @@ function swapCamera() {
 
 async function toggleScreenSharing() {
     const constraints = {
-        audio: false,
+        audio: true,
         video: true,
     };
     let screenMediaPromise = null;
@@ -998,13 +998,12 @@ async function toggleScreenSharing() {
             console.log('Is my video active before screen sharing: ' + isMyVideoActiveBefore);
         }
         screenMediaPromise = isScreenStreaming
-            ? await navigator.mediaDevices.getUserMedia({ video: true })
+            ? await navigator.mediaDevices.getUserMedia(constraints)
             : await navigator.mediaDevices.getDisplayMedia(constraints);
         if (screenMediaPromise) {
             localMediaStream.getVideoTracks()[0].stop();
             isScreenStreaming = !isScreenStreaming;
-            refreshMyLocalVideoStream(screenMediaPromise);
-            refreshMyVideoStreamToPeers(screenMediaPromise);
+            refreshMyAndPeersAudioVideoStream(screenMediaPromise);
             setVideoStatus(isScreenStreaming);
             setScreenStatus(isScreenStreaming);
             myVideo.classList.toggle('mirror');
@@ -1310,6 +1309,29 @@ function refreshMyLocalAudioStreamToPeers(stream) {
             .find((s) => (s.track ? s.track.kind === 'audio' : false));
         if (audioSender) audioSender.replaceTrack(stream.getAudioTracks()[0]);
     }
+}
+
+function refreshMyAndPeersAudioVideoStream(stream) {
+    if (hasVideoTrack(stream)) stream.getVideoTracks()[0].enabled = true;
+    if (hasAudioTrack(stream)) stream.getAudioTracks()[0].enabled = true;
+    if (hasAudioTrack(localMediaStream)) localMediaStream.getAudioTracks()[0].enabled = true;
+
+    const tracksToInclude = [];
+    const videoTrack = hasVideoTrack(stream) ? stream.getVideoTracks()[0] : null;
+    const audioTabTrack = hasAudioTrack(stream) ? stream.getAudioTracks()[0] : null;
+    const audioTrack = hasAudioTrack(localMediaStream) ? localMediaStream.getAudioTracks()[0] : null;
+
+    if (videoTrack) tracksToInclude.push(videoTrack);
+    if (audioTabTrack) tracksToInclude.push(audioTabTrack);
+    if (audioTrack) tracksToInclude.push(audioTrack);
+
+    const newStream = new MediaStream(tracksToInclude);
+    localMediaStream = newStream;
+
+    attachMediaStream(myVideo, localMediaStream);
+    refreshMyVideoStreamToPeers(localMediaStream);
+    refreshMyLocalAudioStreamToPeers(localMediaStream);
+    logStreamSettingsInfo('refreshMyAndPeersAudioVideoStream', localMediaStream);
 }
 
 function handlePictureInPicture(pipBtn, videoMedia) {

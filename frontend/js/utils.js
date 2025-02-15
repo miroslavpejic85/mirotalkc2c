@@ -98,15 +98,11 @@ function logStreamSettingsInfo(name, stream) {
 }
 
 function hasAudioTrack(mediaStream) {
-    if (!mediaStream) return false;
-    const audioTracks = mediaStream.getAudioTracks();
-    return audioTracks.length > 0;
+    return mediaStream && mediaStream.getAudioTracks().length > 0;
 }
 
 function hasVideoTrack(mediaStream) {
-    if (!mediaStream) return false;
-    const videoTracks = mediaStream.getVideoTracks();
-    return videoTracks.length > 0;
+    return mediaStream && mediaStream.getVideoTracks().length > 0;
 }
 
 function setTippy(element, content, placement) {
