@@ -105,6 +105,20 @@ function hasVideoTrack(mediaStream) {
     return mediaStream && mediaStream.getVideoTracks().length > 0;
 }
 
+function getEnabledTrack(stream, trackType) {
+    if (trackType === 'video' && hasVideoTrack(stream)) {
+        return stream.getVideoTracks()[0];
+    }
+    if (trackType === 'audio' && hasAudioTrack(stream)) {
+        return stream.getAudioTracks()[0];
+    }
+    return null;
+}
+
+function refreshTrackState(track) {
+    if (track) track.enabled = true;
+}
+
 function setTippy(element, content, placement) {
     if (isMobileDevice) return;
     if (element) {

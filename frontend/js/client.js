@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.69
+ * @version 1.1.70
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -1004,6 +1004,7 @@ async function toggleScreenSharing() {
             localMediaStream.getVideoTracks()[0].stop();
             isScreenStreaming = !isScreenStreaming;
             refreshMyAndPeersAudioVideoStream(screenMediaPromise);
+            setAudioStatus(isScreenStreaming);
             setVideoStatus(isScreenStreaming);
             setScreenStatus(isScreenStreaming);
             myVideo.classList.toggle('mirror');
@@ -1312,18 +1313,15 @@ function refreshMyLocalAudioStreamToPeers(stream) {
 }
 
 function refreshMyAndPeersAudioVideoStream(stream) {
-    if (hasVideoTrack(stream)) stream.getVideoTracks()[0].enabled = true;
-    if (hasAudioTrack(stream)) stream.getAudioTracks()[0].enabled = true;
-    if (hasAudioTrack(localMediaStream)) localMediaStream.getAudioTracks()[0].enabled = true;
+    const videoTrack = getEnabledTrack(stream, 'video');
+    const audioTabTrack = getEnabledTrack(stream, 'audio');
+    const audioTrack = getEnabledTrack(localMediaStream, 'audio');
 
-    const tracksToInclude = [];
-    const videoTrack = hasVideoTrack(stream) ? stream.getVideoTracks()[0] : null;
-    const audioTabTrack = hasAudioTrack(stream) ? stream.getAudioTracks()[0] : null;
-    const audioTrack = hasAudioTrack(localMediaStream) ? localMediaStream.getAudioTracks()[0] : null;
+    refreshTrackState(videoTrack);
+    refreshTrackState(audioTabTrack);
+    refreshTrackState(audioTrack);
 
-    if (videoTrack) tracksToInclude.push(videoTrack);
-    if (audioTabTrack) tracksToInclude.push(audioTabTrack);
-    if (audioTrack) tracksToInclude.push(audioTrack);
+    const tracksToInclude = [videoTrack, audioTabTrack, audioTrack].filter((track) => track !== null);
 
     const newStream = new MediaStream(tracksToInclude);
     localMediaStream = newStream;
