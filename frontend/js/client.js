@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.70
+ * @version 1.1.71
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -171,6 +171,7 @@ let isAudioStreaming = true;
 let isScreenStreaming = false;
 let isPushToTalkActive = false;
 let isSpaceDown = false;
+let isMyAudioActiveBefore = false;
 let isMyVideoActiveBefore = false;
 let camera = 'user';
 let thisPeerId;
@@ -994,8 +995,12 @@ async function toggleScreenSharing() {
     let screenMediaPromise = null;
     try {
         if (!isScreenStreaming) {
+            isMyAudioActiveBefore = localMediaStream.getAudioTracks()[0].enabled;
             isMyVideoActiveBefore = localMediaStream.getVideoTracks()[0].enabled;
-            console.log('Is my video active before screen sharing: ' + isMyVideoActiveBefore);
+            console.log('My audio/video status before screen sharing ', {
+                isMyAudioActiveBefore,
+                isMyVideoActiveBefore,
+            });
         }
         screenMediaPromise = isScreenStreaming
             ? await navigator.mediaDevices.getUserMedia(constraints)
@@ -1012,7 +1017,10 @@ async function toggleScreenSharing() {
                 isScreenStreaming || localStorageConfig.video.settings.aspect_ratio ? 'contain' : 'cover';
             initScreenShareBtn.className = isScreenStreaming ? className.screenOff : className.screenOn;
             screenShareBtn.className = isScreenStreaming ? className.screenOff : className.screenOn;
-            if (!isScreenStreaming && isMyVideoActiveBefore) videoBtn.click();
+            if (!isScreenStreaming) {
+                if (isMyAudioActiveBefore) setAudioStatus(true);
+                if (isMyVideoActiveBefore) setVideoStatus(true);
+            }
         }
     } catch (err) {
         console.error('[Error] unable to share the screen', err);
