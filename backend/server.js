@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.71
+ * @version 1.1.72
  */
 
 require('dotenv').config();
@@ -138,6 +138,7 @@ const redirectURL = process.env.REDIRECT_URL || false;
 
 const OIDC = {
     enabled: process.env.OIDC_ENABLED ? getEnvBoolean(process.env.OIDC_ENABLED) : false,
+    baseUrlDynamic: process.env.OIDC_BASE_URL_DYNAMIC ? getEnvBoolean(process.env.OIDC_BASE_URL_DYNAMIC) : false,
     config: {
         issuerBaseURL: process.env.OIDC_ISSUER_BASE_URL,
         clientID: process.env.OIDC_CLIENT_ID,
@@ -229,11 +230,17 @@ app.use((err, req, res, next) => {
 if (OIDC.enabled) {
     const getDynamicConfig = (host, protocol) => {
         const baseURL = `${protocol}://${host}`;
-        log.debug('OIDC baseURL', baseURL);
-        return {
-            ...OIDC.config,
-            baseURL,
-        };
+
+        const config = OIDC.baseUrlDynamic
+            ? {
+                  ...OIDC.config,
+                  baseURL,
+              }
+            : OIDC.config;
+
+        log.debug('OIDC baseURL', config.baseURL);
+
+        return config;
     };
 
     // Apply the authentication middleware using dynamic baseURL configuration
