@@ -9,15 +9,14 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.74
+ * @version 1.1.75
  */
 
 require('dotenv').config();
 
 const { auth, requiresAuth } = require('express-openid-connect');
 const { Server } = require('socket.io');
-const http = require('http');
-const https = require('https');
+const httpolyglot = require('httpolyglot');
 const compression = require('compression');
 const express = require('express');
 const cors = require('cors');
@@ -29,8 +28,6 @@ const helmet = require('helmet');
 const fs = require('fs');
 const logs = require('./logs');
 const log = new logs('server');
-const isHttps = process.env.HTTPS == 'true';
-const port = process.env.PORT || 8080;
 const ServerApi = require('./api');
 const mattermostCli = require('./mattermost');
 const yaml = require('js-yaml');
@@ -43,34 +40,23 @@ const packageJson = require('../package.json');
 // Email alerts and notifications
 const nodemailer = require('./lib/nodemailer');
 
-let server;
+// Define paths to the SSL key and certificate files
+const keyPath = path.join(__dirname, 'ssl/key.pem');
+const certPath = path.join(__dirname, 'ssl/cert.pem');
 
-if (isHttps) {
-    const keyPath = path.join(__dirname, 'ssl/key.pem');
-    const certPath = path.join(__dirname, 'ssl/cert.pem');
+// Read SSL key and certificate files securely
+const options = {
+    key: fs.readFileSync(keyPath, 'utf-8'),
+    cert: fs.readFileSync(certPath, 'utf-8'),
+};
 
-    if (!fs.existsSync(keyPath)) {
-        log.error('SSL key file not found.');
-        process.exit(1);
-    }
-    if (!fs.existsSync(certPath)) {
-        log.error('SSL certificate file not found.');
-        process.exit(1);
-    }
-    const options = {
-        key: fs.readFileSync(keyPath, 'utf-8'),
-        cert: fs.readFileSync(certPath, 'utf-8'),
-    };
-    server = https.createServer(options, app);
-} else {
-    server = http.createServer(app);
-}
+// Server both http and https
+const server = httpolyglot.createServer(options, app);
 
 const trustProxy = !!getEnvBoolean(process.env.TRUST_PROXY);
 
-const domain = process.env.HOST || 'localhost';
-
-const host = `http${isHttps ? 's' : ''}://${domain}:${port}`;
+const port = process.env.PORT || 8080;
+const host = process.env.HOST || `http://localhost:${port}`;
 
 const apiKeySecret = process.env.API_KEY_SECRET || 'mirotalkc2c_default_secret';
 const apiBasePath = '/api/v1'; // api endpoint path
@@ -398,7 +384,7 @@ async function ngrokStart() {
 }
 
 server.listen(port, null, () => {
-    if (!isHttps && ngrokEnabled && ngrokAuthToken) {
+    if (ngrokEnabled && ngrokAuthToken) {
         ngrokStart();
     } else {
         log.debug('settings', getServerConfig());
