@@ -1537,6 +1537,7 @@ function handleChatEmojiPicker() {
 function sendMessage() {
     if (!thereIsPeerConnections()) {
         popupMessage('info', 'Chat', 'No connected peer in the meeting', 'top');
+        chatInput.value = '';
         return;
     }
     console.log(typeof chatInput.value);
