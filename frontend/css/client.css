@@ -77,15 +77,14 @@ body {
 }
 
 #waitingDivContainer button {
-    width: 2rem;
-    height: 2rem;
+    width: 28px;
+    height: 28px;
     padding: 5px;
     border: none;
     border-radius: 50px;
     background: var(--btn-bg);
     text-align: center;
     color: var(--btn-color);
-    font-size: 1rem;
 }
 
 #waitingDivContainer button:hover {

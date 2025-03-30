@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.76
+ * @version 1.1.77
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -23,6 +23,7 @@ const initHideMeBtn = document.getElementById('initHideMeBtn');
 const initAudioBtn = document.getElementById('initAudioBtn');
 const initVideoBtn = document.getElementById('initVideoBtn');
 const initScreenShareBtn = document.getElementById('initScreenShareBtn');
+const initChatOpenBtn = document.getElementById('initChatOpenBtn');
 const initSettingsBtn = document.getElementById('initSettingsBtn');
 const initLeaveBtn = document.getElementById('initLeaveBtn');
 const buttonsBar = document.getElementById('buttonsBar');
@@ -204,6 +205,7 @@ const tooltips = [
     { element: initVideoBtn, text: 'Toggle video', position: 'top' },
     { element: initAudioBtn, text: 'Toggle audio', position: 'top' },
     { element: initScreenShareBtn, text: 'Toggle screen sharing', position: 'top' },
+    { element: initChatOpenBtn, text: 'Toggle chat', position: 'top' },
     { element: initSettingsBtn, text: 'Toggle settings', position: 'top' },
     { element: initLeaveBtn, text: 'Leave room', position: 'top' },
     { element: hideMeBtn, text: 'Hide myself', position: 'top' },
@@ -775,6 +777,9 @@ function handleEvents() {
     };
     initVideoBtn.onclick = (e) => {
         setVideoStatus(!localMediaStream.getVideoTracks()[0].enabled, e);
+    };
+    initChatOpenBtn.onclick = () => {
+        toggleChat();
     };
     initSettingsBtn.onclick = () => {
         settingsBtn.click();
@@ -1530,6 +1535,10 @@ function handleChatEmojiPicker() {
 }
 
 function sendMessage() {
+    if (!thereIsPeerConnections()) {
+        popupMessage('info', 'Chat', 'No connected peer in the meeting', 'top');
+        return;
+    }
     console.log(typeof chatInput.value);
     if (!chatInput.value) return;
     chatInput.value = filterXSS(chatInput.value);
