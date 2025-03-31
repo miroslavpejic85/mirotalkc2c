@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.79
+ * @version 1.1.80
  */
 
 require('dotenv').config();
@@ -187,14 +187,6 @@ app.use((req, res, next) => {
 // Mattermost
 const mattermost = new mattermostCli(app, mattermostCfg);
 
-app.post('*', function (next) {
-    next();
-});
-
-app.get('*', function (next) {
-    next();
-});
-
 app.use((err, req, res, next) => {
     if (err instanceof SyntaxError || err.status === 400 || 'body' in err) {
         log.error('Request Error', {
@@ -283,7 +275,7 @@ app.get('/join/', (req, res) => {
     return notFound(res);
 });
 
-app.get('*', (req, res) => {
+app.get('\\*', (req, res) => {
     return notFound(res);
 });
 
