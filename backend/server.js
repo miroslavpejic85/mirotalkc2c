@@ -275,10 +275,6 @@ app.get('/join/', (req, res) => {
     return notFound(res);
 });
 
-app.get('\\*', (req, res) => {
-    return notFound(res);
-});
-
 // API request meeting room endpoint
 app.post([`${apiBasePath}/meeting`], (req, res) => {
     const { host, authorization } = req.headers;
@@ -317,6 +313,10 @@ app.post([`${apiBasePath}/join`], (req, res) => {
         body: req.body,
         join: joinURL,
     });
+});
+
+app.use((req, res) => {
+    return notFound(res);
 });
 
 function notFound(res) {
