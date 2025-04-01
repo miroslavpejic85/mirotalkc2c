@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.80
+ * @version 1.1.81
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -165,7 +165,6 @@ const browserName = result.browser.name;
 const browserVersion = result.browser.version;
 const isFirefox = browserName.toLowerCase().includes('firefox');
 
-let isCamMirrored = false;
 let myVideoChange = false;
 let isVideoStreaming = true;
 let isAudioStreaming = true;
@@ -278,6 +277,7 @@ function handleConnect() {
             await enumerateDevices();
             handleVideoWrapSize();
             getDocumentElementsById();
+            handleCameraMirror(myVideo, camera);
             handleEvents();
             loadLocalStorageConfig();
             showWaitingUser();
@@ -566,6 +566,7 @@ function setupLocalMedia(callback, errorBack) {
         })
         .then((stream) => {
             setLocalMedia(stream);
+            camera = detectCameraFacingMode(stream);
             if (callback) callback();
         })
         .catch((err) => {
@@ -989,10 +990,8 @@ function swapCamera() {
             refreshMyLocalVideoStream(camStream);
             refreshMyVideoStreamToPeers(camStream);
             setVideoStatus(true);
-            if (!isCamMirrored) {
-                myVideo.classList.toggle('mirror');
-                isCamMirrored = true;
-            }
+            camera = detectCameraFacingMode(camStream);
+            handleCameraMirror(myVideo, camera);
         })
         .catch((err) => {
             console.error('[Error] to swapping camera', err);
@@ -1052,6 +1051,8 @@ function changeCamera(deviceId = false) {
             localMediaStream.getVideoTracks()[0].stop();
             refreshMyLocalVideoStream(camStream);
             refreshMyVideoStreamToPeers(camStream);
+            camera = detectCameraFacingMode(camStream);
+            handleCameraMirror(myVideo, camera);
             setVideoStatus(true);
         })
         .catch((err) => {

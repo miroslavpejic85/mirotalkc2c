@@ -97,6 +97,22 @@ function logStreamSettingsInfo(name, stream) {
     }
 }
 
+function detectCameraFacingMode(stream) {
+    if (!stream || !stream.getVideoTracks().length) {
+        console.warn("No video track found in the stream. Defaulting to 'user'.");
+        return 'user';
+    }
+    const videoTrack = stream.getVideoTracks()[0];
+    const settings = videoTrack.getSettings();
+    const capabilities = videoTrack.getCapabilities?.() || {};
+    const facingMode = settings.facingMode || capabilities.facingMode?.[0] || 'user';
+    return facingMode === 'environment' ? 'environment' : 'user';
+}
+
+function handleCameraMirror(video, camera) {
+    camera === 'environment' ? video.classList.remove('mirror') : video.classList.add('mirror');
+}
+
 function hasAudioTrack(mediaStream) {
     return mediaStream && mediaStream.getAudioTracks().length > 0;
 }
