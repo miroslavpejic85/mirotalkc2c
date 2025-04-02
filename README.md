@@ -83,7 +83,7 @@ $ cp docker-compose.template.yml docker-compose.yml
 # Get official image from Docker Hub
 $ docker pull mirotalk/c2c:latest
 # Create and start containers
-$ docker compose up
+$ docker-compose up
 ```
 
 Open [http://localhost:8080](http://localhost:8080) in your browser.
