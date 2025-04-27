@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.83
+ * @version 1.1.84
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -176,9 +176,10 @@ let isMyVideoActiveBefore = false;
 let camera = 'user';
 let thisPeerId;
 let signalingSocket;
-let localMediaStream;
-let remoteMediaStream;
+let localMediaStream = null;
+let remoteMediaStream = null;
 let recording = null;
+let audioRecorder = null;
 let recordingTimer = null;
 let roomPeersCount = 0;
 let peerDevice = {};
@@ -1705,20 +1706,82 @@ function startRecording() {
     if (!isVideoStreaming && !isAudioStreaming) {
         return popupMessage('toast', 'Video', "There isn't a video/audio stream to recording", 'top');
     } else {
-        recording = new Recording(
-            myVideo.srcObject,
-            recordingLabel,
-            recordingTime,
-            recordingBtn,
-            audioSource,
-            audioSource,
-        );
-        recording.start();
+        try {
+            audioRecorder = new MixedAudioRecorder();
+            const audioStreams = getAudioStreamFromVideoElements();
+            console.log('Recording Audio streams tracks --->', audioStreams.getTracks());
+
+            const audioMixerStreams = audioRecorder.getMixedAudioStream(
+                audioStreams
+                    .getTracks()
+                    .filter((track) => track.kind === 'audio')
+                    .map((track) => new MediaStream([track])),
+            );
+
+            const audioMixerTracks = audioMixerStreams.getTracks();
+            console.log('Recording Audio mixer tracks --->', audioMixerTracks);
+
+            const recordingStream = getRecordingStream(audioMixerTracks);
+
+            recording = new Recording(
+                recordingStream,
+                recordingLabel,
+                recordingTime,
+                recordingBtn,
+                videoSource,
+                audioSource,
+            );
+            recording.start();
+        } catch (err) {
+            popupMessage('error', 'Recording', 'Exception while creating MediaRecorder: ' + err);
+        }
+    }
+}
+
+function getAudioStreamFromVideoElements() {
+    const videoElements = document.querySelectorAll('video');
+    const audioStream = new MediaStream();
+    videoElements.forEach((video) => {
+        if (video.srcObject) {
+            const audioTracks = video.srcObject.getAudioTracks();
+            if (audioTracks.length > 0) {
+                audioStream.addTrack(audioTracks[0]);
+            }
+        }
+    });
+    return audioStream;
+}
+
+function getRecordingStream(audioMixerTracks) {
+    try {
+        const combinedTracks = [];
+
+        if (Array.isArray(audioMixerTracks)) {
+            combinedTracks.push(...audioMixerTracks);
+        }
+
+        if (localMediaStream !== null) {
+            const videoTracks = localMediaStream.getVideoTracks();
+            console.log('Recording video tracks --->', videoTracks);
+            if (Array.isArray(videoTracks)) {
+                combinedTracks.push(...videoTracks);
+            }
+        }
+
+        const recordingStream = new MediaStream(combinedTracks);
+        console.log('New Recording Media Stream tracks  --->', recordingStream.getTracks());
+        return recordingStream;
+    } catch (err) {
+        popupMessage('error', 'Recording', 'Unable to recording video + all participants audio: ' + err.message);
+        return localMediaStream;
     }
 }
 
 function stopRecording() {
     recording.stop();
+    if (audioRecorder) {
+        audioRecorder.stopMixedAudioStream();
+    }
 }
 
 function saveRecording() {
@@ -1737,6 +1800,7 @@ function startRecordingTimer() {
 
 function stopRecordingTimer() {
     clearInterval(recordingTimer);
+    recordingTimer = null;
 }
 
 // =====================================================
