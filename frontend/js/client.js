@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.84
+ * @version 1.1.85
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -1669,6 +1669,9 @@ function handlePeerStatus(config) {
         case 'screen':
             setPeerScreenStatus(peerId, active);
             break;
+        case 'recording':
+            popupMessage('info', 'Recording', `The participant has ${active ? 'started' : 'stopped'} recording the current session`, 'top');
+            break;
         default:
             break;
     }
@@ -1732,6 +1735,9 @@ function startRecording() {
                 audioSource,
             );
             recording.start();
+
+            // Notice for recording
+            emitPeerStatus('recording', true);
         } catch (err) {
             popupMessage('error', 'Recording', 'Exception while creating MediaRecorder: ' + err);
         }
@@ -1782,6 +1788,7 @@ function stopRecording() {
     if (audioRecorder) {
         audioRecorder.stopMixedAudioStream();
     }
+    emitPeerStatus('recording', false);
 }
 
 function saveRecording() {
