@@ -11,6 +11,9 @@
     --btn-bg: #f5f5f5;
     --btn-color: #000000;
     --text-color: #f5f5f5;
+    --accent-color: #376df9;
+    --danger-color: #ff4d4d;
+    --success-color: #4caf50;
     --hover-color: #45494c;
     --border: 0.1px solid #45494c;
     --border-radius: 1rem;
@@ -158,6 +161,8 @@ body {
 .fa-microphone-slash,
 .fa-video-slash {
     color: #e74c3c !important;
+    background: #ff4d4d !important;
+    color: white !important;
 }
 
 /* Responsive for mobile */
@@ -201,7 +206,7 @@ body {
     right: 10px;
     overflow: hidden;
     width: auto;
-    padding: 5px;
+    padding: 10px;
     border-radius: var(--border-radius);
     font-size: small;
     font-weight: bold;
@@ -212,7 +217,9 @@ body {
 
 .videoHeader button {
     display: inline;
+    padding: 10px;
     border: none;
+    border-radius: var(--border-radius);
     background: transparent;
     color: var(--text-color);
 }
