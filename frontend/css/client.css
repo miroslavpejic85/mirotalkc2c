@@ -103,11 +103,6 @@ body {
     -moz-transform: var(--btn-hover-scale);
 }
 
-.header {
-    text-align: center;
-    justify-items: center;
-}
-
 /*--------------------------------------------------------------
 # Room QR
 --------------------------------------------------------------*/
@@ -608,6 +603,11 @@ button {
 hr {
     margin-top: 25px;
     border: 1px solid grey;
+}
+
+.header {
+    text-align: center;
+    justify-items: center;
 }
 
 /*
