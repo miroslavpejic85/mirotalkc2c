@@ -70,12 +70,11 @@ body {
 
 #waitingDiv h1,
 #loadingDiv h1 {
-    font-size: 60px;
+    font-size: 30px;
 }
 
 #waitingDiv pre,
 #loadingDiv pre {
-    padding: 5px;
     font-size: 15px;
 }
 
@@ -102,6 +101,11 @@ body {
     transform: var(--btn-hover-scale);
     -webkit-transform: var(--btn-hover-scale);
     -moz-transform: var(--btn-hover-scale);
+}
+
+.header {
+    text-align: center;
+    justify-items: center;
 }
 
 /*--------------------------------------------------------------
