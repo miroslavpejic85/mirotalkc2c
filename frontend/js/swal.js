@@ -17,7 +17,7 @@ function popupMessage(icon, title, message, position = 'center', timer = 3000) {
                 hideClass: { popup: 'animate__animated animate__fadeOutUp' },
             });
             break;
-        case 'clean':
+        case 'html':
             Swal.fire({
                 allowOutsideClick: false,
                 allowEscapeKey: false,

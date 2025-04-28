@@ -1670,7 +1670,18 @@ function handlePeerStatus(config) {
             setPeerScreenStatus(peerId, active);
             break;
         case 'recording':
-            popupMessage('info', 'Recording', `The participant has ${active ? 'started' : 'stopped'} recording the current session`, 'top');
+            popupMessage(
+                'html',
+                'Recording',
+                `<div style="text-align: left;">
+                    🔴 &nbsp;The participant has 
+                    <span style="color: ${active ? 'green' : 'red'}">
+                        ${active ? 'started' : 'stopped'}
+                    </span> 
+                    recording the current session
+                </div>`,
+                'top',
+            );
             break;
         default:
             break;

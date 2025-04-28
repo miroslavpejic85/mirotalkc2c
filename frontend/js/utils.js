@@ -207,7 +207,7 @@ function copyRoom() {
         console.log('Copied to clipboard Join Link ', roomURL);
         document.body.removeChild(tmpInput);
         popupMessage(
-            'clean',
+            'html',
             'Room sharing',
             `<div id="qrRoomContainer">
                 <canvas id="qrRoom"></canvas>

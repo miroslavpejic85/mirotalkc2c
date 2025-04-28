@@ -76,7 +76,7 @@ class Recording {
             const currentDevice = isMobileDevice ? 'MOBILE' : 'PC';
             const blobFileSize = this.bytesToSize(blob.size);
             popupMessage(
-                'clean',
+                'html',
                 'Recording',
                 `<div style="text-align: left;">
 					🔴 &nbsp; Recording Info:
