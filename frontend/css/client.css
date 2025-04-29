@@ -159,7 +159,6 @@ body {
 .fa-user-slash,
 .fa-microphone-slash,
 .fa-video-slash {
-    color: #e74c3c !important;
     background: #ff4d4d !important;
     color: white !important;
 }
