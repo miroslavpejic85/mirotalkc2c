@@ -87,7 +87,7 @@ class Recording {
 					</ul>
 					Please wait to be processed, then will be downloaded to your ${currentDevice} device.
 				</div>`,
-                'top',
+                'top'
             );
             this._recordingTime.innerText = '0s';
             this.saveBlobToFile(blob, recFileName);

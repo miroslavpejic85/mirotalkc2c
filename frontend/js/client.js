@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.89
+ * @version 1.1.90
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -582,10 +582,10 @@ async function enumerateDevices() {
         .enumerateDevices()
         .then((devices) => {
             const videoDevices = devices.filter(
-                (device) => device.kind === 'videoinput' && device.deviceId !== 'default',
+                (device) => device.kind === 'videoinput' && device.deviceId !== 'default'
             );
             const audioDevices = devices.filter(
-                (device) => device.kind === 'audioinput' && device.deviceId !== 'default',
+                (device) => device.kind === 'audioinput' && device.deviceId !== 'default'
             );
             console.log('Devices', {
                 audioDevices: audioDevices,
@@ -864,7 +864,7 @@ function handleEvents() {
                 'Max video quality and fps',
                 'If Active, The video resolution will be forced up to 8k and 60fps! (Very High bandwidth is required)',
                 'top',
-                6000,
+                6000
             );
         }
         playSound('switch');
@@ -888,7 +888,7 @@ function handleEvents() {
                     'Push to talk',
                     'If Active, When SpaceBar keydown the microphone will be activated, otherwise will be deactivated, like a walkie-talkie.',
                     'top',
-                    6000,
+                    6000
                 );
             }
             playSound('switch');
@@ -1294,7 +1294,7 @@ function refreshVideoConstraints() {
             popupMessage(
                 'warning',
                 'Video quality/fps',
-                "Your device doesn't support the selected video quality and fps, please select the another one.",
+                "Your device doesn't support the selected video quality and fps, please select the another one."
             );
         });
 }
@@ -1550,7 +1550,7 @@ function sendMessage() {
             'info',
             'Chat',
             'No peer is connected to the meeting. The message will be sent when a peer connects',
-            'top',
+            'top'
         );
         toggleChat();
         return;
@@ -1574,8 +1574,8 @@ function emitDcMsg(msg) {
                     roomId: roomId,
                     peerName: peerName,
                     msg: msg,
-                }),
-            ),
+                })
+            )
         );
     }
 }
@@ -1680,7 +1680,7 @@ function handlePeerStatus(config) {
                     </span> 
                     recording the current session
                 </div>`,
-                'top',
+                'top'
             );
             break;
         default:
@@ -1729,7 +1729,7 @@ function startRecording() {
                 audioStreams
                     .getTracks()
                     .filter((track) => track.kind === 'audio')
-                    .map((track) => new MediaStream([track])),
+                    .map((track) => new MediaStream([track]))
             );
 
             const audioMixerTracks = audioMixerStreams.getTracks();
@@ -1743,7 +1743,7 @@ function startRecording() {
                 recordingTime,
                 recordingBtn,
                 videoSource,
-                audioSource,
+                audioSource
             );
             recording.start();
 
@@ -1831,7 +1831,7 @@ window.addEventListener(
         resetVideoZoom();
         window.onresize = resetVideoZoom;
     },
-    false,
+    false
 );
 
 window.onbeforeunload = confirmExit;

@@ -21,7 +21,7 @@ function isMobile(userAgent) {
 
 function isTablet(userAgent) {
     return /(ipad|tablet|(android(?!.*mobile))|(windows(?!.*phone)(.*touch))|kindle|playbook|silk|(puffin(?!.*(IP|AP|WP))))/.test(
-        userAgent,
+        userAgent
     );
 }
 
@@ -74,7 +74,7 @@ function handleMediaError(mediaType, err) {
     popupHtmlMessage(null, image.forbidden, 'Access denied', $html, 'center', '/');
 
     throw new Error(
-        `Access denied for ${mediaType} device [${err.name}]: ${errMessage} check the common getUserMedia errors: https://blog.addpipe.com/common-getusermedia-errors/`,
+        `Access denied for ${mediaType} device [${err.name}]: ${errMessage} check the common getUserMedia errors: https://blog.addpipe.com/common-getusermedia-errors/`
     );
 }
 
@@ -215,7 +215,7 @@ function copyRoom() {
             <br/>
             <p style="color:rgb(8, 189, 89);">Join from your mobile device</p>
             <p style="background:transparent; color:white; font-family: Arial, Helvetica, sans-serif;">No need for apps, simply capture the QR code with your mobile camera Or Invite someone else to join by sending them the following URL</p>
-            <p style="color:rgb(8, 189, 89);">${roomURL}</p>`,
+            <p style="color:rgb(8, 189, 89);">${roomURL}</p>`
         );
         makeRoomQR();
     });
