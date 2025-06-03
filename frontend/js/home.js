@@ -19,9 +19,23 @@ document.addEventListener('DOMContentLoaded', function () {
     initHome();
 });
 
-function initHome() {
+async function initHome() {
     roomIdIn.value = roomId ? roomId : filterXSS(window.localStorage.room) || '';
-    userNameIn.value = filterXSS(window.localStorage.name) || '';
+
+    const getUserName = async () => {
+        try {
+            const { data: profile } = await axios.get('/profile', { timeout: 5000 });
+            if (profile && profile.name) {
+                console.log('AXIOS GET OIDC Profile retrieved successfully', profile);
+                window.localStorage.name = profile.name;
+            }
+        } catch (error) {
+            console.error('AXIOS OIDC Error fetching profile', error.message || error);
+        }
+        return window.localStorage.name || '';
+    }
+
+    userNameIn.value = filterXSS(await getUserName());
 
     joinBtn.onclick = () => {
         if (roomIdIn.value && userNameIn.value) {
