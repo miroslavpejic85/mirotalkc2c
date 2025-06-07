@@ -8,9 +8,10 @@ const HTTPS = process.env.HTTPS === 'true';
 const LOCAL_PORT = process.env.PORT || 8080;
 
 const EMAIL_HOST = process.env.EMAIL_HOST;
-const EMAIL_PORT = process.env.EMAIL_PORT;
+const EMAIL_PORT = Number(process.env.EMAIL_PORT);
 const EMAIL_USERNAME = process.env.EMAIL_USERNAME;
 const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD;
+const EMAIL_FROM = process.env.EMAIL_FROM || EMAIL_USERNAME;
 const EMAIL_SEND_TO = process.env.EMAIL_SEND_TO;
 const EMAIL_ALERT = process.env.EMAIL_ALERT === 'true' || false;
 
@@ -21,12 +22,16 @@ if (EMAIL_ALERT && EMAIL_HOST && EMAIL_PORT && EMAIL_USERNAME && EMAIL_PASSWORD 
         port: EMAIL_PORT,
         username: EMAIL_USERNAME,
         password: EMAIL_PASSWORD,
+        from: EMAIL_FROM,
+        to: EMAIL_SEND_TO,
     });
 }
 
+const IS_TLS_PORT = EMAIL_PORT === 465;
 const transport = nodemailer.createTransport({
     host: EMAIL_HOST,
     port: EMAIL_PORT,
+    secure: IS_TLS_PORT,
     auth: {
         user: EMAIL_USERNAME,
         pass: EMAIL_PASSWORD,
@@ -60,7 +65,7 @@ function sendEmailAlert(event, data) {
 function sendEmail(subject, body) {
     transport
         .sendMail({
-            from: EMAIL_USERNAME,
+            from: EMAIL_FROM,
             to: EMAIL_SEND_TO,
             subject: subject,
             html: body,
