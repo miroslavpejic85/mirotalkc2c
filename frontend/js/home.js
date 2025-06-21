@@ -33,7 +33,7 @@ async function initHome() {
             console.error('AXIOS OIDC Error fetching profile', error.message || error);
         }
         return window.localStorage.name || '';
-    }
+    };
 
     userNameIn.value = filterXSS(await getUserName());
 

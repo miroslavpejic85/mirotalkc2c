@@ -110,6 +110,7 @@ function detectCameraFacingMode(stream) {
 }
 
 function handleCameraMirror(video, camera) {
+    if (!video) return;
     camera === 'environment' ? video.classList.remove('mirror') : video.classList.add('mirror');
 }
 
@@ -131,8 +132,111 @@ function getEnabledTrack(stream, trackType) {
     return null;
 }
 
+function enableAllAudioTracks(stream) {
+    stream && stream.getAudioTracks().forEach((track) => (track.enabled = true));
+}
+
 function refreshTrackState(track) {
     if (track) track.enabled = true;
+}
+
+function safeXSS(input) {
+    return typeof filterXSS === 'function' ? filterXSS(input) : input;
+}
+
+function removeAllChildren(node) {
+    while (node.firstChild) node.removeChild(node.firstChild);
+}
+
+function removeElement(el) {
+    if (el && el.parentNode) el.parentNode.removeChild(el);
+}
+
+function stopMediaStream(stream) {
+    if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+    }
+}
+
+function isDisplayStream(stream) {
+    return (
+        stream &&
+        stream.getVideoTracks().some((track) => {
+            const label = track.label.toLowerCase();
+            return (
+                label.includes('screen') ||
+                label.includes('display') ||
+                (track.kind === 'video' && track.getSettings && track.getSettings().displaySurface)
+            );
+        })
+    );
+}
+
+function cleanupPeerMediaElements() {
+    Object.values(peerMediaElements).forEach((el) => removeElement(el.parentNode));
+    peerMediaElements = {};
+}
+
+function cleanupPeerConnections() {
+    Object.values(peerConnections).forEach((pc) => pc.close());
+    peerConnections = {};
+    dataChannels = {};
+}
+
+function buildUniqueMediaStream(stream) {
+    const tracks = [];
+    const seenIds = new Set();
+    stream.getTracks().forEach((track) => {
+        if (!seenIds.has(track.id)) {
+            tracks.push(track);
+            seenIds.add(track.id);
+        }
+    });
+    return new MediaStream(tracks);
+}
+
+async function getBestUserMedia(constraints) {
+    try {
+        return await navigator.mediaDevices.getUserMedia(constraints);
+    } catch (err1) {
+        console.warn('[Warning] audio+video denied or not present', err1);
+        try {
+            return await navigator.mediaDevices.getUserMedia({ audio: constraints.audio, video: false });
+        } catch (err2) {
+            console.warn('[Warning] audio only denied or not present', err2);
+            try {
+                return await navigator.mediaDevices.getUserMedia({ audio: false, video: constraints.video });
+            } catch (err3) {
+                console.warn('[Warning] video only denied or not present', err3);
+                return new MediaStream();
+            }
+        }
+    }
+}
+
+async function getScreenWithMic(constraints) {
+    const screenStream = await navigator.mediaDevices.getDisplayMedia(constraints);
+    let micStream = null;
+    try {
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (err) {
+        console.warn('[Warning] Could not get mic for screen sharing', err);
+    }
+
+    const hasSystemAudio = screenStream.getAudioTracks().length > 0;
+    const hasMicAudio = micStream && micStream.getAudioTracks().length > 0;
+
+    if (hasSystemAudio) {
+        // If system audio is present, use only system audio (browser will not allow mixing in most cases)
+        // Optionally, you could warn the user that mic audio will not be sent
+        return screenStream;
+    } else if (hasMicAudio) {
+        // Only mic audio, add to screen stream
+        micStream.getAudioTracks().forEach((track) => screenStream.addTrack(track));
+    }
+
+    // else: only video, nothing to do
+    return screenStream;
 }
 
 function setTippy(element, content, placement) {

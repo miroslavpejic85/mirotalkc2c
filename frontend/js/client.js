@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.1.92
+ * @version 1.2.00
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -165,23 +165,23 @@ const browserName = result.browser.name;
 const browserVersion = result.browser.version;
 const isFirefox = browserName.toLowerCase().includes('firefox');
 
-let myVideoChange = false;
-let isVideoStreaming = true;
-let isAudioStreaming = true;
+let isVideoStreaming = false;
+let isAudioStreaming = false;
 let isScreenStreaming = false;
 let isPushToTalkActive = false;
 let isSpaceDown = false;
 let isMyAudioActiveBefore = false;
 let isMyVideoActiveBefore = false;
+let localMediaStream = null;
+let remoteMediaStream = null;
 let camera = 'user';
 let thisPeerId;
 let signalingSocket;
-let localMediaStream = null;
-let remoteMediaStream = null;
 let recording = null;
 let audioRecorder = null;
 let recordingTimer = null;
 let roomPeersCount = 0;
+let peersInfo = {};
 let peerDevice = {};
 let peerConnections = {};
 let peerMediaElements = {};
@@ -219,13 +219,6 @@ const tooltips = [
     { element: leaveBtn, text: 'Leave room', position: 'top' },
     //...
 ];
-
-function getDocumentElementsById() {
-    myVideo = document.getElementById('myVideo');
-    myVideoWrap = document.getElementById('myVideoWrap');
-    myVideoAvatarImage = document.getElementById('myVideoAvatarImage');
-    myAudioStatusIcon = document.getElementById('myAudioStatusIcon');
-}
 
 function thereIsPeerConnections() {
     if (Object.keys(peerConnections).length === 0) return false;
@@ -277,8 +270,7 @@ function handleConnect() {
         setupLocalMedia(async () => {
             await enumerateDevices();
             handleVideoWrapSize();
-            getDocumentElementsById();
-            handleCameraMirror(myVideo, camera);
+            handleCameraMirror(window.myVideo, camera);
             handleEvents();
             loadLocalStorageConfig();
             showWaitingUser();
@@ -330,6 +322,8 @@ function handleAddPeer(config) {
     }
     const { peers, peerId, shouldCreateOffer, iceServers } = config;
 
+    peersInfo = peers;
+
     console.log('Add peer', peers);
 
     if (peerId in peerConnections) {
@@ -345,12 +339,13 @@ function handleAddPeer(config) {
     handlePeersConnectionStatus(peerId);
     handleOnIceCandidate(peerId);
     handleRTCDataChannels(peerId);
-    handleOnTrack(peerId, peers);
+    handleOnTrack(peerId);
     handleAddTracks(peerId);
 
     if (shouldCreateOffer) {
         handleRtcOffer(peerId);
     }
+
     if (thereIsPeerConnections()) {
         elemDisplay(waitingDivContainer, false);
     }
@@ -363,6 +358,7 @@ function handleAddPeer(config) {
         }, 2000);
     }
 
+    startSessionTime();
     playSound('join');
 }
 
@@ -425,82 +421,102 @@ async function handleRTCDataChannels(peerId) {
     };
 }
 
-function handleOnTrack(peerId, peers) {
+function handleOnTrack(peerId) {
     peerConnections[peerId].ontrack = (event) => {
         console.log('Handle on track event', event);
-        if (event.track.kind === 'video') {
-            setRemoteMedia(event.streams[0], peers, peerId);
+        setRemoteMedia(event.streams[0], peersInfo, peerId);
+    };
+}
+
+function getSilentAudioTrack() {
+    const ctx = new AudioContext();
+    const oscillator = ctx.createOscillator();
+    const dst = oscillator.connect(ctx.createMediaStreamDestination());
+    oscillator.start();
+    const track = dst.stream.getAudioTracks()[0];
+    track.enabled = false;
+    return track;
+}
+
+function getBlackVideoTrack({ width = 640, height = 480 } = {}) {
+    const canvas = Object.assign(document.createElement('canvas'), { width, height });
+    canvas.getContext('2d').fillRect(0, 0, width, height);
+    const stream = canvas.captureStream();
+    const track = stream.getVideoTracks()[0];
+    track.enabled = false;
+    return track;
+}
+
+function handleAddTracks(peerId) {
+    if (!localMediaStream) return;
+
+    const pc = peerConnections[peerId];
+
+    // Always add video track (real or dummy) if not already added
+    let videoTrack = localMediaStream.getVideoTracks()[0];
+    const hasVideoSender = pc.getSenders().some((s) => s.track && s.track.kind === 'video');
+    if (!hasVideoSender) {
+        if (!videoTrack) {
+            videoTrack = getBlackVideoTrack();
+        }
+        pc.addTrack(videoTrack, localMediaStream);
+    }
+
+    // Always add audio track (real or dummy) if not already added
+    let audioTrack = localMediaStream.getAudioTracks()[0];
+    const hasAudioSender = pc.getSenders().some((s) => s.track && s.track.kind === 'audio');
+    if (!hasAudioSender) {
+        if (!audioTrack) {
+            audioTrack = getSilentAudioTrack();
+        }
+        pc.addTrack(audioTrack, localMediaStream);
+    }
+}
+
+function handleRtcOffer(peerId) {
+    peerConnections[peerId].onnegotiationneeded = async () => {
+        try {
+            const offer = await peerConnections[peerId].createOffer();
+            await peerConnections[peerId].setLocalDescription(offer);
+            sendToServer('relaySDP', {
+                peerId: peerId,
+                sessionDescription: offer,
+            });
+        } catch (err) {
+            console.error('Offer creation error:', err);
         }
     };
 }
 
-function handleAddTracks(peerId) {
-    localMediaStream.getTracks().forEach((track) => {
-        peerConnections[peerId].addTrack(track, localMediaStream);
-    });
-}
+function handleSessionDescription(config) {
+    const { peerId, sessionDescription } = config;
+    const pc = peerConnections[peerId];
+    const remoteDescription = new RTCSessionDescription(sessionDescription);
 
-function handleRtcOffer(peerId) {
-    peerConnections[peerId].onnegotiationneeded = () => {
-        console.log('Creating RTC offer to', peerId);
-        peerConnections[peerId]
-            .createOffer()
-            .then((localDescription) => {
-                console.log('Local offer description is', localDescription);
-                peerConnections[peerId]
-                    .setLocalDescription(localDescription)
-                    .then(() => {
-                        sendToServer('relaySDP', {
-                            peerId: peerId,
-                            sessionDescription: localDescription,
+    // Only set remote description if in correct state
+    if (
+        (sessionDescription.type === 'offer' && pc.signalingState === 'stable') ||
+        (sessionDescription.type === 'answer' && pc.signalingState === 'have-local-offer')
+    ) {
+        pc.setRemoteDescription(remoteDescription)
+            .then(() => {
+                if (sessionDescription.type == 'offer') {
+                    pc.createAnswer().then((localDescription) => {
+                        pc.setLocalDescription(localDescription).then(() => {
+                            sendToServer('relaySDP', {
+                                peerId: peerId,
+                                sessionDescription: localDescription,
+                            });
                         });
-                        console.log('Offer setLocalDescription done!');
-                    })
-                    .catch((err) => {
-                        console.error('[Error] offer setLocalDescription', err);
                     });
+                }
             })
             .catch((err) => {
-                console.error('[Error] sending offer', err);
+                console.error('[Error] setRemoteDescription', err);
             });
-    };
-}
-
-function handleSessionDescription(config) {
-    console.log('Remote Session Description', config);
-    const { peerId, sessionDescription } = config;
-    const remoteDescription = new RTCSessionDescription(sessionDescription);
-    peerConnections[peerId]
-        .setRemoteDescription(remoteDescription)
-        .then(() => {
-            console.log('Set remote description done!');
-            if (sessionDescription.type == 'offer') {
-                console.log('Creating answer');
-                peerConnections[peerId]
-                    .createAnswer()
-                    .then((localDescription) => {
-                        console.log('Answer description is: ', localDescription);
-                        peerConnections[peerId]
-                            .setLocalDescription(localDescription)
-                            .then(() => {
-                                sendToServer('relaySDP', {
-                                    peerId: peerId,
-                                    sessionDescription: localDescription,
-                                });
-                                console.log('Answer setLocalDescription done!');
-                            })
-                            .catch((err) => {
-                                console.error('[Error] answer setLocalDescription', err);
-                            });
-                    })
-                    .catch((err) => {
-                        console.error('[Error] creating answer', err);
-                    });
-            }
-        })
-        .catch((err) => {
-            console.error('[Error] setRemoteDescription', err);
-        });
+    } else {
+        console.warn(`[SDP] Ignoring remote ${sessionDescription.type} in state ${pc.signalingState}`);
+    }
 }
 
 function handleIceCandidate(config) {
@@ -511,27 +527,17 @@ function handleIceCandidate(config) {
 }
 
 function handleDisconnect() {
-    console.log('Disconnected from signaling server');
-    for (let peerId in peerMediaElements) {
-        document.body.removeChild(peerMediaElements[peerId].parentNode);
-    }
-    for (let peerId in peerConnections) {
-        peerConnections[peerId].close();
-    }
-    peerConnections = {};
-    peerMediaElements = {};
-    dataChannels = {};
-
+    stopMediaStream(localMediaStream);
+    localMediaStream = null;
+    cleanupPeerConnections();
+    cleanupPeerMediaElements();
     saveLocalStorageConfig();
 }
 
 function handleRemovePeer(config) {
-    console.log('Signaling server said to remove peer:', config);
     const { peerId } = config;
-
-    if (peerId in peerMediaElements) document.body.removeChild(peerMediaElements[peerId].parentNode);
-    if (peerId in peerConnections) peerConnections[peerId].close();
-
+    removeElement(peerMediaElements[peerId]?.parentNode);
+    if (peerConnections[peerId]) peerConnections[peerId].close();
     delete dataChannels[peerId];
     delete peerConnections[peerId];
     delete peerMediaElements[peerId];
@@ -542,69 +548,54 @@ function handleRemovePeer(config) {
         elemDisplay(settings, false);
         elemDisplay(chat, false);
     }
-
-    console.log('Peers count: ' + Object.keys(peerConnections).length);
     playSound('leave');
 }
 
-function setupLocalMedia(callback, errorBack) {
-    if (localMediaStream != null) {
-        if (callback) callback();
-        return;
-    }
+async function setupLocalMedia(callback, errorBack) {
+    localMediaStream = null;
+
     console.log('Requesting access to local audio/video inputs');
 
-    const audioDeviceId = localStorageConfig.audio.devices.select.id || audioSource.value;
-    const videoDeviceId = localStorageConfig.video.devices.select.id || videoSource.value;
+    const audioDeviceId = localStorageConfig.audio.devices.select.id || (audioSource && audioSource.value);
+    const videoDeviceId = localStorageConfig.video.devices.select.id || (videoSource && videoSource.value);
 
     const audioConstraints = getAudioConstraints(audioDeviceId);
     const videoConstraints = getVideoConstraints(videoDeviceId);
+    const constraints = { audio: audioConstraints, video: videoConstraints };
 
-    navigator.mediaDevices
-        .getUserMedia({
-            audio: audioConstraints,
-            video: videoConstraints,
-        })
-        .then((stream) => {
-            setLocalMedia(stream);
-            camera = detectCameraFacingMode(stream);
-            if (callback) callback();
-        })
-        .catch((err) => {
-            console.error('[Error] access denied for audio/video', err);
-            handleMediaError('audio/video', err);
-            if (errorBack) errorBack();
-        });
+    try {
+        const stream = await getBestUserMedia(constraints);
+        setLocalMedia(stream);
+        if (hasVideoTrack(stream)) camera = detectCameraFacingMode(stream);
+        if (callback) callback();
+    } catch (err) {
+        console.error('[Error] setting up local media', err);
+        if (errorBack) errorBack();
+    }
 }
 
 async function enumerateDevices() {
-    await navigator.mediaDevices
-        .enumerateDevices()
-        .then((devices) => {
-            const videoDevices = devices.filter(
-                (device) => device.kind === 'videoinput' && device.deviceId !== 'default'
-            );
-            const audioDevices = devices.filter(
-                (device) => device.kind === 'audioinput' && device.deviceId !== 'default'
-            );
-            console.log('Devices', {
-                audioDevices: audioDevices,
-                videoDevices: videoDevices,
-            });
-            audioDevices.forEach(async (device) => {
-                await addChild(audioSource, device);
-                LS.DEVICES_COUNT.audio++;
-            });
-            videoDevices.forEach(async (device) => {
-                await addChild(videoSource, device);
-                LS.DEVICES_COUNT.video++;
-            });
-        })
-        .catch((err) => {
-            playSound('error');
-            console.error('[Error] enumerate devices audio/video', err);
-            popupMessage('error', 'Enumerate Devices', 'Unable to enumerate devices ' + err);
-        });
+    try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter((device) => device.kind === 'videoinput' && device.deviceId !== 'default');
+        const audioDevices = devices.filter((device) => device.kind === 'audioinput' && device.deviceId !== 'default');
+        removeAllChildren(audioSource);
+        removeAllChildren(videoSource);
+        LS.DEVICES_COUNT.audio = 0;
+        LS.DEVICES_COUNT.video = 0;
+        for (const device of audioDevices) {
+            await addChild(audioSource, device);
+            LS.DEVICES_COUNT.audio++;
+        }
+        for (const device of videoDevices) {
+            await addChild(videoSource, device);
+            LS.DEVICES_COUNT.video++;
+        }
+    } catch (err) {
+        playSound('error');
+        console.error('[Error] enumerate devices audio/video', err);
+        popupMessage('error', 'Enumerate Devices', 'Unable to enumerate devices ' + err);
+    }
 }
 
 async function addChild(source, device) {
@@ -614,11 +605,46 @@ async function addChild(source, device) {
     source.appendChild(option);
 }
 
+function createVideoElement(id, stream, muted = false) {
+    const video = document.createElement('video');
+    video.id = id;
+    video.playsInline = true;
+    video.autoplay = true;
+    video.controls = false;
+    video.muted = muted;
+    video.volume = muted ? 0 : 1;
+    video.poster = image.poster;
+    attachMediaStream(video, stream);
+    video.play().catch(() => {});
+    return video;
+}
+
+function createAudioElement(id, stream, muted = false) {
+    const audio = document.createElement('audio');
+    audio.id = id;
+    audio.autoplay = true;
+    audio.controls = false;
+    audio.muted = muted;
+    audio.volume = muted ? 0 : 1;
+    attachMediaStream(audio, stream);
+    audio.play().catch(() => {});
+    return audio;
+}
+
 function setLocalMedia(stream) {
-    console.log('Access granted to audio/video');
     localMediaStream = stream;
+
+    const hasVideo = hasVideoTrack(stream);
+    const hasAudio = hasAudioTrack(stream);
+
+    // Remove previous local video wrap if exists
+    const oldWrap = document.getElementById('myVideoWrap');
+    if (oldWrap && oldWrap.parentNode) {
+        oldWrap.parentNode.removeChild(oldWrap);
+    }
+
+    // Create elements
     const myVideoWrap = document.createElement('div');
-    const myLocalMedia = document.createElement('video');
     const myVideoHeader = document.createElement('div');
     const myVideoFooter = document.createElement('div');
     const myVideoPeerName = document.createElement('h4');
@@ -628,6 +654,16 @@ function setLocalMedia(stream) {
     const myVideoRotateBtn = document.createElement('button');
     const myAudioStatusIcon = document.createElement('button');
     const myVideoAvatarImage = document.createElement('img');
+
+    // Set attributes/classes
+    myVideoWrap.id = 'myVideoWrap';
+    myVideoWrap.className = 'myVideoWrap';
+    myVideoHeader.id = 'myVideoHeader';
+    myVideoHeader.className = 'videoHeader animate__animated animate__fadeInDown animate__faster';
+    myVideoFooter.id = 'myVideoFooter';
+    myVideoFooter.className = 'videoFooter';
+    myVideoPeerName.id = 'myVideoPeerName';
+    myVideoPeerName.innerText = peerName + ' (me)';
     myVideoDraggableBtn.id = 'myVideoDraggable';
     myVideoDraggableBtn.className = className.draggable;
     myVideoDraggableBtn.style.cursor = 'move';
@@ -637,64 +673,109 @@ function setLocalMedia(stream) {
     myVideoPiPBtn.className = className.pip;
     myVideoRotateBtn.id = 'myVideoRotate';
     myVideoRotateBtn.className = className.rotate;
-    myVideoHeader.id = 'myVideoHeader';
-    myVideoHeader.className = 'videoHeader animate__animated animate__fadeInDown animate__faster';
-    myVideoFooter.id = 'myVideoFooter';
-    myVideoFooter.className = 'videoFooter';
-    myVideoPeerName.id = 'myVideoPeerName';
-    myVideoPeerName.innerText = peerName + ' (me)';
     myAudioStatusIcon.id = 'myAudioStatusIcon';
-    myAudioStatusIcon.className = className.audioOn;
+    myAudioStatusIcon.className = hasAudio ? className.audioOn : className.audioOff;
     myVideoAvatarImage.id = 'myVideoAvatarImage';
     myVideoAvatarImage.setAttribute('src', image.camOff);
     myVideoAvatarImage.className = 'videoAvatarImage';
+
+    // Header buttons
     if (!isMobileDevice) myVideoHeader.appendChild(myVideoDraggableBtn);
-    myVideoHeader.appendChild(myFullScreenBtn);
-    myVideoHeader.appendChild(myVideoPiPBtn);
-    myVideoHeader.appendChild(myVideoRotateBtn);
+    if (hasVideo) {
+        myVideoHeader.appendChild(myFullScreenBtn);
+        if (isVideoPIPSupported) {
+            myVideoHeader.appendChild(myVideoPiPBtn);
+        }
+        myVideoHeader.appendChild(myVideoRotateBtn);
+    }
     myVideoHeader.appendChild(myAudioStatusIcon);
     myVideoFooter.appendChild(myVideoPeerName);
-    myLocalMedia.id = 'myVideo';
-    myLocalMedia.className = 'mirror';
-    myLocalMedia.playsInline = true;
-    myLocalMedia.autoplay = true;
-    myLocalMedia.muted = true;
-    myLocalMedia.volume = 0;
-    myLocalMedia.controls = false;
-    myLocalMedia.style.objectFit = localStorageConfig.video.settings.aspect_ratio ? 'contain' : 'cover';
-    myLocalMedia.poster = image.poster;
-    myVideoWrap.id = 'myVideoWrap';
-    myVideoWrap.className = 'myVideoWrap';
+
+    // Media element
+    let myLocalMedia;
+    if (hasVideo) {
+        myLocalMedia = createVideoElement('myVideo', stream, true);
+        myLocalMedia.className = isScreenStreaming ? '' : 'mirror';
+        myLocalMedia.style.objectFit = localStorageConfig.video.settings.aspect_ratio ? 'contain' : 'cover';
+        myLocalMedia.style.display = 'block';
+        myVideoAvatarImage.style.display = 'none';
+    } else if (hasAudio) {
+        myLocalMedia = createAudioElement('myAudio', stream, true);
+        myLocalMedia.style.display = 'block';
+        myVideoAvatarImage.style.display = 'block';
+    } else {
+        myLocalMedia = document.createElement('div');
+        myLocalMedia.style.display = 'none';
+        myVideoAvatarImage.style.display = 'block';
+    }
+
+    // Assemble
     myVideoWrap.appendChild(myVideoHeader);
     myVideoWrap.appendChild(myVideoFooter);
     myVideoWrap.appendChild(myVideoAvatarImage);
     myVideoWrap.appendChild(myLocalMedia);
     document.body.appendChild(myVideoWrap);
+
+    // Update references for later use
+    window.myVideo = myLocalMedia;
+    window.myVideoWrap = myVideoWrap;
+    window.myVideoAvatarImage = myVideoAvatarImage;
+    window.myAudioStatusIcon = myAudioStatusIcon;
+
     logStreamSettingsInfo('localMediaStream', localMediaStream);
-    attachMediaStream(myLocalMedia, localMediaStream);
-    handlePictureInPicture(myVideoPiPBtn, myLocalMedia);
-    handleVideoRotate(myVideoRotateBtn, myLocalMedia);
-    handleFullScreen(myFullScreenBtn, myVideoWrap, myLocalMedia);
+
+    // Feature handlers
+    if (hasVideo) {
+        handlePictureInPicture(myVideoPiPBtn, myLocalMedia);
+        handleVideoRotate(myVideoRotateBtn, myLocalMedia);
+        handleFullScreen(myFullScreenBtn, myVideoWrap, myLocalMedia);
+    }
     setPeerVideoAvatarImgName(myVideoAvatarImage, peerName);
-    setTippy(myFullScreenBtn, 'Toggle full screen', 'bottom');
-    setTippy(myVideoPiPBtn, 'Toggle picture in picture', 'bottom');
-    setTippy(myVideoRotateBtn, 'Rotate video', 'bottom');
+
+    // Tooltips
+    if (hasVideo) {
+        setTippy(myVideoPiPBtn, 'Toggle picture in picture', 'bottom');
+        setTippy(myVideoRotateBtn, 'Rotate video', 'bottom');
+        setTippy(myFullScreenBtn, 'Toggle full screen', 'bottom');
+    }
     setTippy(myAudioStatusIcon, 'Audio status', 'bottom');
     setTippy(myVideoPeerName, 'Username', 'top');
-    startSessionTime();
+
     if (!isMobileDevice) {
         makeDraggable(myVideoWrap, myVideoDraggableBtn);
     }
+
+    setLocalAudioStatus(hasAudio && localStorageConfig.audio.init.active ? stream.getAudioTracks()[0].enabled : false);
+    setLocalVideoStatus(hasVideo && localStorageConfig.video.init.active ? stream.getVideoTracks()[0].enabled : false);
 }
 
 function setRemoteMedia(stream, peers, peerId) {
     remoteMediaStream = stream;
+
+    console.log('Remote media stream tracks', remoteMediaStream.getTracks());
+    console.log('Remote peer ID', peerId);
+    console.log('Remote peers', peers);
+
+    // Remove previous remote video wrap if exists
+    const oldWrap = document.getElementById(peerId + '_remoteVideoWrap');
+    if (oldWrap && oldWrap.parentNode) {
+        oldWrap.parentNode.removeChild(oldWrap);
+    }
+
     const peerName = peers[peerId]['peerName'];
     const peerVideo = peers[peerId]['peerVideo'];
     const peerAudio = peers[peerId]['peerAudio'];
     const peerScreen = peers[peerId]['peerScreen'];
+
+    // Check for actual tracks
+    const videoTrack = stream.getVideoTracks().find((track) => track.enabled);
+    const audioTrack = stream.getAudioTracks().find((track) => track.enabled);
+
+    const hasVideo = !!videoTrack || !!peerVideo || !!peerScreen;
+    const hasAudio = !!audioTrack || !!peerAudio;
+
+    // UI elements
     const remoteVideoWrap = document.createElement('div');
-    const remoteMedia = document.createElement('video');
     const remoteVideoHeader = document.createElement('div');
     const remoteVideoFooter = document.createElement('div');
     const remoteVideoPeerName = document.createElement('h4');
@@ -703,6 +784,9 @@ function setRemoteMedia(stream, peers, peerId) {
     const remoteVideoRotateBtn = document.createElement('button');
     const remoteAudioStatusIcon = document.createElement('button');
     const remoteVideoAvatarImage = document.createElement('img');
+
+    remoteVideoWrap.id = peerId + '_remoteVideoWrap';
+    remoteVideoWrap.className = 'remoteVideoWrap';
     remoteVideoHeader.id = peerId + '_remoteVideoHeader';
     remoteVideoHeader.className = 'videoHeader animate__animated animate__fadeInDown animate__faster';
     remoteVideoFooter.id = peerId + '_remoteVideoFooter';
@@ -711,46 +795,74 @@ function setRemoteMedia(stream, peers, peerId) {
     remoteVideoPeerName.innerText = peerName;
     remoteFullScreenBtn.id = peerId + '_remoteFullScreen';
     remoteFullScreenBtn.className = className.fullScreenOn;
-    remoteVideoPiPBtn.id = '_remoteVideoPIP';
+    remoteVideoPiPBtn.id = peerId + '_remoteVideoPIP';
     remoteVideoPiPBtn.className = className.pip;
-    remoteVideoRotateBtn.id = '_remoteVideoRotate';
+    remoteVideoRotateBtn.id = peerId + '_remoteVideoRotate';
     remoteVideoRotateBtn.className = className.rotate;
     remoteAudioStatusIcon.id = peerId + '_remoteAudioStatus';
-    remoteAudioStatusIcon.className = className.audioOn;
+    remoteAudioStatusIcon.className = hasAudio ? className.audioOn : className.audioOff;
     remoteVideoAvatarImage.id = peerId + '_remoteVideoAvatar';
     remoteVideoAvatarImage.src = image.camOff;
     remoteVideoAvatarImage.className = 'videoAvatarImage';
-    remoteVideoHeader.appendChild(remoteFullScreenBtn);
-    remoteVideoHeader.appendChild(remoteVideoPiPBtn);
-    remoteVideoHeader.appendChild(remoteVideoRotateBtn);
+
+    // Header buttons
+    if (hasVideo) {
+        remoteVideoHeader.appendChild(remoteFullScreenBtn);
+        remoteVideoHeader.appendChild(remoteVideoPiPBtn);
+        remoteVideoHeader.appendChild(remoteVideoRotateBtn);
+    }
     remoteVideoHeader.appendChild(remoteAudioStatusIcon);
     remoteVideoFooter.appendChild(remoteVideoPeerName);
-    remoteMedia.id = peerId + '_remoteVideo';
-    remoteMedia.playsInline = true;
-    remoteMedia.autoplay = true;
-    remoteMedia.controls = false;
-    remoteMedia.style.objectFit = localStorageConfig.video.settings.aspect_ratio ? 'contain' : 'cover';
-    remoteMedia.poster = image.poster;
-    peerMediaElements[peerId] = remoteMedia;
-    remoteVideoWrap.id = peerId + '_remoteVideoWrap';
-    remoteVideoWrap.className = 'remoteVideoWrap';
+
+    // Media element
+    let remoteVideoElem = null;
+    let remoteAudioElem = null;
+
+    // Video element (if video track or screen sharing)
+    if (hasVideo) {
+        remoteVideoElem = createVideoElement(peerId + '_remoteVideo', stream, false);
+        remoteVideoElem.style.display = 'block';
+        remoteVideoAvatarImage.style.display = 'none';
+    }
+
+    // Audio element (if audio track)
+    if (hasAudio) {
+        remoteAudioElem = createAudioElement(peerId + '_remoteAudio', stream, false);
+        remoteAudioElem.style.display = hasVideo ? 'none' : 'block';
+    }
+
+    // If neither, show avatar only
+    if (!hasVideo && !hasAudio) {
+        remoteVideoAvatarImage.style.display = 'block';
+    }
+
+    // Assemble
     remoteVideoWrap.appendChild(remoteVideoHeader);
     remoteVideoWrap.appendChild(remoteVideoFooter);
     remoteVideoWrap.appendChild(remoteVideoAvatarImage);
-    remoteVideoWrap.appendChild(remoteMedia);
+    if (remoteVideoElem) remoteVideoWrap.appendChild(remoteVideoElem);
+    if (remoteAudioElem && !hasVideo) remoteVideoWrap.appendChild(remoteAudioElem);
     document.body.appendChild(remoteVideoWrap);
-    attachMediaStream(remoteMedia, remoteMediaStream);
-    handleFullScreen(remoteFullScreenBtn, remoteVideoWrap, remoteMedia);
-    handlePictureInPicture(remoteVideoPiPBtn, remoteMedia);
-    handleVideoRotate(remoteVideoRotateBtn, remoteMedia);
-    handleVideoZoom(remoteMedia, remoteVideoWrap, remoteVideoAvatarImage);
+
+    peerMediaElements[peerId] = hasVideo ? remoteVideoElem : hasAudio ? remoteAudioElem : remoteVideoAvatarImage;
+
+    // Feature handlers
+    if (hasVideo && remoteVideoElem) {
+        handleFullScreen(remoteFullScreenBtn, remoteVideoWrap, remoteVideoElem);
+        handlePictureInPicture(remoteVideoPiPBtn, remoteVideoElem);
+        handleVideoRotate(remoteVideoRotateBtn, remoteVideoElem);
+        handleVideoZoom(remoteVideoElem, remoteVideoWrap, remoteVideoAvatarImage);
+    }
+
+    setPeerVideoAvatarImgName(remoteVideoAvatarImage, peerName);
     setPeerVideoStatus(peerId, peerVideo);
     setPeerAudioStatus(peerId, peerAudio);
-    setPeerVideoAvatarImgName(remoteVideoAvatarImage, peerName);
-    if (peerVideo && peerScreen) setPeerScreenStatus(peerId, peerScreen);
-    setTippy(remoteFullScreenBtn, 'Toggle full screen', 'bottom');
-    setTippy(remoteVideoPiPBtn, 'Toggle picture in picture', 'bottom');
-    setTippy(remoteVideoRotateBtn, 'Rotate video', 'bottom');
+
+    if (hasVideo) {
+        setTippy(remoteFullScreenBtn, 'Toggle full screen', 'bottom');
+        setTippy(remoteVideoPiPBtn, 'Toggle picture in picture', 'bottom');
+        setTippy(remoteVideoRotateBtn, 'Rotate video', 'bottom');
+    }
     setTippy(remoteAudioStatusIcon, 'Audio status', 'bottom');
     setTippy(remoteVideoPeerName, 'Username', 'top');
 }
@@ -783,10 +895,10 @@ function handleEvents() {
         toggleHideMe();
     };
     initAudioBtn.onclick = (e) => {
-        setAudioStatus(!localMediaStream.getAudioTracks()[0].enabled, e);
+        if (hasAudioTrack(localMediaStream)) setLocalAudioStatus(!localMediaStream.getAudioTracks()[0].enabled, e);
     };
     initVideoBtn.onclick = (e) => {
-        setVideoStatus(!localMediaStream.getVideoTracks()[0].enabled, e);
+        if (hasVideoTrack(localMediaStream)) setLocalVideoStatus(!localMediaStream.getVideoTracks()[0].enabled, e);
     };
     initChatOpenBtn.onclick = () => {
         toggleChat();
@@ -798,10 +910,10 @@ function handleEvents() {
         toggleHideMe();
     };
     audioBtn.onclick = (e) => {
-        setAudioStatus(!localMediaStream.getAudioTracks()[0].enabled, e);
+        if (hasAudioTrack(localMediaStream)) setLocalAudioStatus(!localMediaStream.getAudioTracks()[0].enabled, e);
     };
     videoBtn.onclick = (e) => {
-        setVideoStatus(!localMediaStream.getVideoTracks()[0].enabled, e);
+        if (hasVideoTrack(localMediaStream)) setLocalVideoStatus(!localMediaStream.getVideoTracks()[0].enabled, e);
     };
     if (!isMobileDevice && (navigator.getDisplayMedia || navigator.mediaDevices.getDisplayMedia)) {
         initScreenShareBtn.onclick = async () => {
@@ -897,7 +1009,7 @@ function handleEvents() {
             if (!isPushToTalkActive) return;
             if (e.code === 'Space') {
                 if (isSpaceDown) return;
-                setAudioStatus(true, audioBtn.event);
+                setLocalAudioStatus(true, audioBtn.event);
                 isSpaceDown = true;
                 console.log('Push-to-talk: audio ON');
             }
@@ -906,7 +1018,7 @@ function handleEvents() {
             e.preventDefault();
             if (!isPushToTalkActive) return;
             if (e.code === 'Space') {
-                setAudioStatus(false, audioBtn.event);
+                setLocalAudioStatus(false, audioBtn.event);
                 isSpaceDown = false;
                 console.log('Push-to-talk: audio OFF');
             }
@@ -954,15 +1066,15 @@ function showWaitingUser() {
 }
 
 function toggleHideMe() {
-    const isVideoWrapHidden = myVideoWrap.style.display == 'none';
+    const isVideoWrapHidden = window.myVideoWrap.style.display == 'none';
     hideMeBtn.className = isVideoWrapHidden ? className.user : className.userOff;
     initHideMeBtn.className = isVideoWrapHidden ? className.user : className.userOff;
     if (isVideoWrapHidden) {
-        elemDisplay(myVideoWrap, true);
-        animateCSS(myVideoWrap, 'fadeInLeft');
+        elemDisplay(window.myVideoWrap, true);
+        animateCSS(window.myVideoWrap, 'fadeInLeft');
     } else {
-        animateCSS(myVideoWrap, 'fadeOutLeft').then((msg) => {
-            elemDisplay(myVideoWrap, false);
+        animateCSS(window.myVideoWrap, 'fadeOutLeft').then((msg) => {
+            elemDisplay(window.myVideoWrap, false);
         });
     }
     localStorageConfig.video.init.hide = !isVideoWrapHidden;
@@ -987,12 +1099,14 @@ function swapCamera() {
     navigator.mediaDevices
         .getUserMedia({ video: camVideo })
         .then((camStream) => {
-            localMediaStream.getVideoTracks()[0].stop();
+            if (hasVideoTrack(localMediaStream)) {
+                localMediaStream.getVideoTracks()[0].stop();
+            }
             refreshMyLocalVideoStream(camStream);
             refreshMyVideoStreamToPeers(camStream);
-            setVideoStatus(true);
+            setLocalVideoStatus(true);
             camera = detectCameraFacingMode(camStream);
-            handleCameraMirror(myVideo, camera);
+            handleCameraMirror(window.myVideo, camera);
         })
         .catch((err) => {
             console.error('[Error] to swapping camera', err);
@@ -1001,43 +1115,40 @@ function swapCamera() {
 }
 
 async function toggleScreenSharing() {
-    const constraints = {
-        audio: true,
-        video: true,
-    };
-    let screenMediaPromise = null;
+    const constraints = { audio: true, video: true };
     try {
+        let newStream;
         if (!isScreenStreaming) {
-            isMyAudioActiveBefore = localMediaStream.getAudioTracks()[0].enabled;
-            isMyVideoActiveBefore = localMediaStream.getVideoTracks()[0].enabled;
-            console.log('My audio/video status before screen sharing ', {
-                isMyAudioActiveBefore,
-                isMyVideoActiveBefore,
-            });
+            isMyAudioActiveBefore = localMediaStream?.getAudioTracks()[0]?.enabled ?? false;
+            isMyVideoActiveBefore = localMediaStream?.getVideoTracks()[0]?.enabled ?? false;
+            newStream = await getScreenWithMic(constraints);
+        } else {
+            newStream = await getBestUserMedia(constraints);
         }
-        screenMediaPromise = isScreenStreaming
-            ? await navigator.mediaDevices.getUserMedia(constraints)
-            : await navigator.mediaDevices.getDisplayMedia(constraints);
-        if (screenMediaPromise) {
-            localMediaStream.getVideoTracks()[0].stop();
+
+        if (newStream) {
             isScreenStreaming = !isScreenStreaming;
-            refreshMyAndPeersAudioVideoStream(screenMediaPromise);
-            setAudioStatus(isScreenStreaming);
-            setVideoStatus(isScreenStreaming);
-            setScreenStatus(isScreenStreaming);
-            myVideo.classList.toggle('mirror');
-            myVideo.style.objectFit =
-                isScreenStreaming || localStorageConfig.video.settings.aspect_ratio ? 'contain' : 'cover';
-            initScreenShareBtn.className = isScreenStreaming ? className.screenOff : className.screenOn;
-            screenShareBtn.className = isScreenStreaming ? className.screenOff : className.screenOn;
+            refreshMyAudioAndVideoStreamToPeers(newStream);
+            setLocalScreenStatus(isScreenStreaming);
+
+            // UI updates...
+            if (window.myVideo) {
+                window.myVideo.className = isScreenStreaming ? '' : 'mirror';
+                window.myVideo.style.objectFit =
+                    isScreenStreaming || localStorageConfig.video.settings.aspect_ratio ? 'contain' : 'cover';
+            }
+            if (initScreenShareBtn)
+                initScreenShareBtn.className = isScreenStreaming ? className.screenOff : className.screenOn;
+            if (screenShareBtn) screenShareBtn.className = isScreenStreaming ? className.screenOff : className.screenOn;
+
             if (!isScreenStreaming) {
-                if (isMyAudioActiveBefore) setAudioStatus(true);
-                if (isMyVideoActiveBefore) setVideoStatus(true);
+                setLocalAudioStatus(isMyAudioActiveBefore);
+                setLocalVideoStatus(isMyVideoActiveBefore);
             }
         }
     } catch (err) {
-        console.error('[Error] unable to share the screen', err);
-        popupMessage('error', 'Screen sharing', 'Unable to share the screen ' + err);
+        console.error('[Error] toggleScreenSharing', err);
+        isScreenStreaming = false;
     }
 }
 
@@ -1049,12 +1160,24 @@ function changeCamera(deviceId = false) {
             video: videoConstraints,
         })
         .then((camStream) => {
-            localMediaStream.getVideoTracks()[0].stop();
-            refreshMyLocalVideoStream(camStream);
-            refreshMyVideoStreamToPeers(camStream);
+            // Remove all existing video tracks from localMediaStream
+            if (localMediaStream) {
+                localMediaStream.getVideoTracks().forEach((track) => {
+                    track.stop();
+                    localMediaStream.removeTrack(track);
+                });
+            }
+            // Add the new video track to localMediaStream
+            const newVideoTrack = camStream.getVideoTracks()[0];
+            if (localMediaStream && newVideoTrack) {
+                localMediaStream.addTrack(newVideoTrack);
+            } else if (!localMediaStream && newVideoTrack) {
+                localMediaStream = new MediaStream([newVideoTrack]);
+            }
+            refreshMyLocalVideoStream(localMediaStream);
+            refreshMyVideoStreamToPeers(localMediaStream);
             camera = detectCameraFacingMode(camStream);
-            handleCameraMirror(myVideo, camera);
-            setVideoStatus(true);
+            handleCameraMirror(window.myVideo, camera);
         })
         .catch((err) => {
             console.error('[Error] changeCamera', err);
@@ -1068,10 +1191,22 @@ function changeMicrophone(deviceId = false) {
     navigator.mediaDevices
         .getUserMedia({ audio: audioConstraints })
         .then((micStream) => {
-            localMediaStream.getAudioTracks()[0].stop();
-            refreshMyLocalAudioStream(micStream);
-            refreshMyLocalAudioStreamToPeers(micStream);
-            setAudioStatus(true);
+            // Remove all existing audio tracks from localMediaStream
+            if (localMediaStream) {
+                localMediaStream.getAudioTracks().forEach((track) => {
+                    track.stop();
+                    localMediaStream.removeTrack(track);
+                });
+            }
+            // Add the new audio track to localMediaStream
+            const newAudioTrack = micStream.getAudioTracks()[0];
+            if (localMediaStream && newAudioTrack) {
+                localMediaStream.addTrack(newAudioTrack);
+            } else if (!localMediaStream && newAudioTrack) {
+                localMediaStream = new MediaStream([newAudioTrack]);
+            }
+            refreshMyLocalAudioStream(localMediaStream);
+            refreshMyAudioStreamToPeers(localMediaStream);
         })
         .catch((err) => {
             console.error('[Error] changeMicrophone', err);
@@ -1088,9 +1223,6 @@ function getAudioConstraints(deviceId = false) {
 
 function getVideoConstraints(deviceId = false) {
     let videoConstraints = true;
-
-    elemDisable(videoQualitySelect, localStorageConfig.video.settings.best_quality);
-    elemDisable(videoFpsSelect, localStorageConfig.video.settings.best_quality);
 
     if (localStorageConfig.video.settings.best_quality) {
         resetVideoConstraints();
@@ -1167,8 +1299,6 @@ function loadLocalStorageConfig() {
     switchMaxVideoQuality.checked = localStorageConfig.video.settings.best_quality;
     switchKeepAspectRatio.checked = localStorageConfig.video.settings.aspect_ratio;
     if (localStorageConfig.video.init.hide) initHideMeBtn.click();
-    if (!localStorageConfig.video.init.active) initVideoBtn.click();
-    if (!localStorageConfig.audio.init.active) initAudioBtn.click();
     if (
         !localStorageConfig.video.settings.best_quality &&
         (localStorageConfig.video.settings.quality_index || localStorageConfig.video.settings.fps_index) !== 0
@@ -1222,7 +1352,7 @@ function attachMediaStream(element, stream) {
     console.log('Success, media stream attached');
 }
 
-function setAudioStatus(active = true, e = false) {
+function setLocalAudioStatus(active = true, e = false) {
     console.log(`This PeerId ${thisPeerId} audio status`, active);
     isAudioStreaming = active;
     setAudioButtons(active, e);
@@ -1231,16 +1361,18 @@ function setAudioStatus(active = true, e = false) {
     saveLocalStorageConfig();
 }
 
-function setVideoStatus(active = true, e = false) {
+function setLocalVideoStatus(active = true, e = false) {
     console.log(`This PeerId ${thisPeerId} video status`, active);
     isVideoStreaming = active;
     setVideoButtons(active, e);
     emitPeerStatus('video', active);
     localStorageConfig.video.init.active = active;
     saveLocalStorageConfig();
+    elemDisable(videoQualitySelect, !active || localStorageConfig.video.settings.best_quality);
+    elemDisable(videoFpsSelect, !active || localStorageConfig.video.settings.best_quality);
 }
 
-function setScreenStatus(active = false, e = false) {
+function setLocalScreenStatus(active = false, e = false) {
     console.log(`This PeerId ${thisPeerId} screen status`, active);
     isScreenStreaming = active;
     setVideoButtons(active, e);
@@ -1248,19 +1380,23 @@ function setScreenStatus(active = false, e = false) {
 }
 
 function setAudioButtons(active, e = false) {
-    localMediaStream.getAudioTracks()[0].enabled = active;
+    if (localMediaStream.getAudioTracks()[0]) {
+        localMediaStream.getAudioTracks()[0].enabled = active;
+    }
     if (e) e.target.className = active ? className.audioOn : className.audioOff;
-    myAudioStatusIcon.className = active ? className.audioOn : className.audioOff;
-    audioBtn.className = active ? className.audioOn : className.audioOff;
-    initAudioBtn.className = active ? className.audioOn : className.audioOff;
+    if (window.myAudioStatusIcon) window.myAudioStatusIcon.className = active ? className.audioOn : className.audioOff;
+    if (audioBtn) audioBtn.className = active ? className.audioOn : className.audioOff;
+    if (initAudioBtn) initAudioBtn.className = active ? className.audioOn : className.audioOff;
 }
 
 function setVideoButtons(active, e = false) {
-    localMediaStream.getVideoTracks()[0].enabled = active;
+    if (localMediaStream.getVideoTracks()[0]) {
+        localMediaStream.getVideoTracks()[0].enabled = active;
+    }
     if (e) e.target.className = active ? className.videoOn : className.videoOff;
-    videoBtn.className = active ? className.videoOn : className.videoOff;
-    initVideoBtn.className = active ? className.videoOn : className.videoOff;
-    elemDisplay(myVideoAvatarImage, active ? false : true);
+    if (videoBtn) videoBtn.className = active ? className.videoOn : className.videoOff;
+    if (initVideoBtn) initVideoBtn.className = active ? className.videoOn : className.videoOff;
+    if (window.myVideoAvatarImage) elemDisplay(window.myVideoAvatarImage, active ? false : true);
 }
 
 function resetVideoConstraints() {
@@ -1300,59 +1436,49 @@ function refreshVideoConstraints() {
 }
 
 function refreshMyLocalVideoStream(stream) {
-    stream.getVideoTracks()[0].enabled = true;
-    const newStream = new MediaStream([stream.getVideoTracks()[0], localMediaStream.getAudioTracks()[0]]);
-    localMediaStream = newStream;
-    attachMediaStream(myVideo, localMediaStream);
+    localMediaStream = buildUniqueMediaStream(stream);
+    setLocalMedia(localMediaStream);
     logStreamSettingsInfo('refreshMyLocalVideoStream', localMediaStream);
+}
+
+function refreshMyLocalAudioStream(stream) {
+    localMediaStream = buildUniqueMediaStream(stream);
+    setLocalMedia(localMediaStream);
+    logStreamSettingsInfo('refreshMyLocalAudioStream', localMediaStream);
+}
+
+function replaceOrAddTrack(pc, kind, track, stream) {
+    let sender = pc.getSenders().find((s) => s.track && s.track.kind === kind);
+    if (sender) {
+        sender.replaceTrack(track);
+    } else if (track) {
+        pc.addTrack(track, stream);
+        if (typeof pc.onnegotiationneeded === 'function') pc.onnegotiationneeded();
+    }
 }
 
 function refreshMyVideoStreamToPeers(stream) {
     if (!thereIsPeerConnections()) return;
+    const videoTrack = hasVideoTrack(stream) ? stream.getVideoTracks()[0] : null;
     for (let peerId in peerConnections) {
-        let videoSender = peerConnections[peerId]
-            .getSenders()
-            .find((s) => (s.track ? s.track.kind === 'video' : false));
-        if (videoSender) videoSender.replaceTrack(stream.getVideoTracks()[0]);
+        replaceOrAddTrack(peerConnections[peerId], 'video', videoTrack, localMediaStream);
     }
 }
 
-function refreshMyLocalAudioStream(stream) {
-    stream.getAudioTracks()[0].enabled = true;
-    const newStream = new MediaStream([localMediaStream.getVideoTracks()[0], stream.getAudioTracks()[0]]);
-    localMediaStream = newStream;
-    attachMediaStream(myVideo, localMediaStream);
-    logStreamSettingsInfo('refreshMyLocalAudioStream', localMediaStream);
-}
-
-function refreshMyLocalAudioStreamToPeers(stream) {
+function refreshMyAudioStreamToPeers(stream) {
     if (!thereIsPeerConnections()) return;
+    const audioTrack = hasAudioTrack(stream) ? stream.getAudioTracks()[0] : null;
     for (let peerId in peerConnections) {
-        let audioSender = peerConnections[peerId]
-            .getSenders()
-            .find((s) => (s.track ? s.track.kind === 'audio' : false));
-        if (audioSender) audioSender.replaceTrack(stream.getAudioTracks()[0]);
+        replaceOrAddTrack(peerConnections[peerId], 'audio', audioTrack, localMediaStream);
     }
 }
 
-function refreshMyAndPeersAudioVideoStream(stream) {
-    const videoTrack = getEnabledTrack(stream, 'video');
-    const audioTabTrack = getEnabledTrack(stream, 'audio');
-    const audioTrack = getEnabledTrack(localMediaStream, 'audio');
-
-    refreshTrackState(videoTrack);
-    refreshTrackState(audioTabTrack);
-    refreshTrackState(audioTrack);
-
-    const tracksToInclude = [videoTrack, audioTabTrack, audioTrack].filter((track) => track !== null);
-
-    const newStream = new MediaStream(tracksToInclude);
-    localMediaStream = newStream;
-
-    attachMediaStream(myVideo, localMediaStream);
+function refreshMyAudioAndVideoStreamToPeers(stream) {
+    localMediaStream = buildUniqueMediaStream(stream);
+    setLocalMedia(localMediaStream);
     refreshMyVideoStreamToPeers(localMediaStream);
-    refreshMyLocalAudioStreamToPeers(localMediaStream);
-    logStreamSettingsInfo('refreshMyAndPeersAudioVideoStream', localMediaStream);
+    refreshMyAudioStreamToPeers(localMediaStream);
+    logStreamSettingsInfo('refreshMyAudioAndVideoStreamToPeers', localMediaStream);
 }
 
 function handlePictureInPicture(pipBtn, videoMedia) {
@@ -1555,10 +1681,9 @@ function sendMessage() {
         toggleChat();
         return;
     }
-    console.log(typeof chatInput.value);
     if (!chatInput.value) return;
-    chatInput.value = filterXSS(chatInput.value);
-    emitDcMsg(chatInput.value);
+    const safeMsg = safeXSS(chatInput.value);
+    emitDcMsg(safeMsg);
     chatInput.value = '';
     checkLineBreaks();
 }
@@ -1631,9 +1756,8 @@ function processMessage(message) {
 
 function handleMessage(config) {
     playSound('message');
-    const name = filterXSS(config.peerName);
-    const msg = filterXSS(config.msg);
-    console.log('Receive msg: ' + msg);
+    const name = safeXSS(config.peerName);
+    const msg = safeXSS(config.msg);
     if (chat.style.display == 'none' || chat.style.display == '') {
         elemDisplay(chat, true);
         animateCSS(chat, 'fadeInRight');
@@ -1648,6 +1772,10 @@ function checkLineBreaks() {
     }
 }
 
+// =====================================================
+// Handle Peer status
+// =====================================================
+
 function emitPeerStatus(element, active) {
     sendToServer('peerStatus', {
         roomId: roomId,
@@ -1660,11 +1788,11 @@ function emitPeerStatus(element, active) {
 function handlePeerStatus(config) {
     const { element, peerId, active } = config;
     switch (element) {
-        case 'video':
-            setPeerVideoStatus(peerId, active);
-            break;
         case 'audio':
             setPeerAudioStatus(peerId, active);
+            break;
+        case 'video':
+            setPeerVideoStatus(peerId, active);
             break;
         case 'screen':
             setPeerScreenStatus(peerId, active);
@@ -1688,24 +1816,40 @@ function handlePeerStatus(config) {
     }
 }
 
-function setPeerVideoStatus(peerId, active) {
-    console.log(`Remote PeerId ${peerId} video status`, active);
-    const peerVideoAvatarImage = document.getElementById(peerId + '_remoteVideoAvatar');
-    elemDisplay(peerVideoAvatarImage, active ? false : true);
-}
-
 function setPeerAudioStatus(peerId, active) {
     console.log(`Remote PeerId ${peerId} audio status`, active);
+    if (peersInfo[peerId]) {
+        peersInfo[peerId]['peerAudio'] = active;
+    }
     const peerAudioStatus = document.getElementById(peerId + '_remoteAudioStatus');
     if (peerAudioStatus) peerAudioStatus.className = active ? className.audioOn : className.audioOff;
 }
 
+function setPeerVideoStatus(peerId, active) {
+    console.log(`Remote PeerId ${peerId} video status`, active);
+    if (peersInfo[peerId]) {
+        peersInfo[peerId]['peerVideo'] = active;
+    }
+    updatePeerMediaDisplay(peerId, active, 'video');
+}
+
 function setPeerScreenStatus(peerId, active) {
     console.log(`Remote PeerId ${peerId} screen status`, active);
+    if (peersInfo[peerId]) {
+        peersInfo[peerId]['peerScreen'] = active;
+    }
+    updatePeerMediaDisplay(peerId, active, 'screen');
+}
+
+function updatePeerMediaDisplay(peerId, active, type) {
     const peerVideo = document.getElementById(peerId + '_remoteVideo');
     const peerVideoAvatarImage = document.getElementById(peerId + '_remoteVideoAvatar');
-    peerVideo.style.objectFit = active ? 'contain' : 'cover';
-    elemDisplay(peerVideoAvatarImage, active ? false : true);
+    if (peerVideoAvatarImage) elemDisplay(peerVideoAvatarImage, !active);
+    if (peerVideo) {
+        peerVideo.style.display = active ? 'block' : 'none';
+        peerVideo.style.objectFit =
+            type === 'screen' ? 'contain' : localStorageConfig.video.settings.aspect_ratio ? 'contain' : 'cover';
+    }
 }
 
 // =====================================================
@@ -1722,7 +1866,14 @@ function startRecording() {
     } else {
         try {
             audioRecorder = new MixedAudioRecorder();
-            const audioStreams = getAudioStreamFromVideoElements();
+
+            const audioStreamFromVideoElements = getAudioStreamFromVideoElements();
+            const audioStreamFromAudioElements = getAudioStreamFromAudioElements();
+            const audioStreams =
+                audioStreamFromVideoElements.getTracks().length > 0
+                    ? audioStreamFromVideoElements
+                    : audioStreamFromAudioElements;
+
             console.log('Recording Audio streams tracks --->', audioStreams.getTracks());
 
             const audioMixerStreams = audioRecorder.getMixedAudioStream(
@@ -1761,6 +1912,20 @@ function getAudioStreamFromVideoElements() {
     videoElements.forEach((video) => {
         if (video.srcObject) {
             const audioTracks = video.srcObject.getAudioTracks();
+            if (audioTracks.length > 0) {
+                audioStream.addTrack(audioTracks[0]);
+            }
+        }
+    });
+    return audioStream;
+}
+
+function getAudioStreamFromAudioElements() {
+    const audioElements = document.querySelectorAll('audio');
+    const audioStream = new MediaStream();
+    audioElements.forEach((audio) => {
+        if (audio.srcObject) {
+            const audioTracks = audio.srcObject.getAudioTracks();
             if (audioTracks.length > 0) {
                 audioStream.addTrack(audioTracks[0]);
             }
@@ -1834,9 +1999,10 @@ window.addEventListener(
     false
 );
 
-window.onbeforeunload = confirmExit;
-function confirmExit(e) {
-    console.log('onbeforeunload', e);
+window.onbeforeunload = function (e) {
     saveLocalStorageConfig();
     saveRecording();
-}
+    stopMediaStream(localMediaStream);
+    cleanupPeerConnections();
+    cleanupPeerMediaElements();
+};
