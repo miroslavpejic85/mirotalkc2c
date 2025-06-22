@@ -24,35 +24,45 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px;
-    background: var(--primary-color);
-    color: white;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px 0 0 0;
+    padding: 18px 20px 14px 20px;
+    background: linear-gradient(90deg, var(--primary-color) 70%, #2b2d36 100%);
+    color: #fff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px 0 0 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
 }
 
 .chat .header .title {
-    font-weight: bold;
-    font-size: 1.2rem;
+    font-weight: 700;
+    font-size: 1.25rem;
+    letter-spacing: 0.5px;
 }
 
 .chat .header .header-buttons {
     display: flex;
-    gap: 12px;
+    gap: 14px;
 }
 
 .chat .header button {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.08);
     border: none;
-    color: white;
-    font-size: 1.1rem;
+    color: #fff;
+    font-size: 1.2rem;
     cursor: pointer;
-    transition: color 0.2s ease;
+    border-radius: 50%;
+    width: 2.2rem;
+    height: 2.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition:
+        background 0.2s,
+        transform 0.2s;
 }
-
 .chat .header button:hover {
-    transform: scale(1.2);
-    transition: all 0.3s ease-in-out;
+    background: var(--secondary-color);
+    color: #fff;
+    transform: scale(1.15);
 }
 
 /* Chat Body */
