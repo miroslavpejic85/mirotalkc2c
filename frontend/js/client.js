@@ -1224,6 +1224,9 @@ function getAudioConstraints(deviceId = false) {
 function getVideoConstraints(deviceId = false) {
     let videoConstraints = true;
 
+    elemDisable(videoQualitySelect, localStorageConfig.video.settings.best_quality);
+    elemDisable(videoFpsSelect, localStorageConfig.video.settings.best_quality);
+
     if (localStorageConfig.video.settings.best_quality) {
         resetVideoConstraints();
         videoConstraints = {
@@ -1369,7 +1372,6 @@ function setLocalVideoStatus(active = true, e = false) {
     localStorageConfig.video.init.active = active;
     saveLocalStorageConfig();
     elemDisable(videoQualitySelect, !active || localStorageConfig.video.settings.best_quality);
-    elemDisable(videoFpsSelect, !active || localStorageConfig.video.settings.best_quality);
 }
 
 function setLocalScreenStatus(active = false, e = false) {
