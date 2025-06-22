@@ -67,65 +67,87 @@
 
 /* Chat Body */
 .chat .body {
-    padding: 10px;
-    background: var(--chat-bg);
+    flex: 1 1 auto;
+    padding: 18px 16px 12px 16px;
+    background: linear-gradient(120deg, #23272f 60%, #181a20 100%);
     overflow-y: auto;
-    height: 80vh;
-    flex-grow: 1;
-    transition: max-height 0.3s ease;
+    max-height: calc(100vh - 150px);
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-color) #23272f;
+    transition: background 0.3s;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
+.chat .body::-webkit-scrollbar {
+    width: 8px;
+}
+.chat .body::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 8px;
+}
+.chat .body::-webkit-scrollbar-track {
+    background: #23272f;
+}
+
+/* Message Bubble */
 .chat .body .msg {
     display: flex;
     flex-direction: column;
-    margin-bottom: 10px;
-    padding: 10px;
+    max-width: 80%;
+    margin-bottom: 6px;
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px);}
+    to { opacity: 1; transform: translateY(0);}
+}
+
+.chat .body .msg.sent {
+    align-self: flex-end;
+    text-align: right;
+}
+.chat .body .msg.received {
+    align-self: flex-start;
+    text-align: left;
 }
 
 .chat .body .msg .from {
-    font-weight: bold;
-    margin-bottom: 5px;
-    font-size: 0.9rem;
-    color: #ccc;
-}
-
-.chat .body .msg.sent .from {
-    align-self: flex-start;
-}
-
-.chat .body .msg.received .from {
-    align-self: flex-end;
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 0.92rem;
+    color: #b0b8c1;
+    opacity: 0.85;
 }
 
 .chat .body .msg .text {
-    word-break: break-word;
-    overflow-wrap: break-word;
-    white-space: pre-wrap;
-    padding: 10px;
-    border-radius: 12px;
-    background: var(--chat-bg);
-    color: var(--text-color);
-    word-wrap: break-word;
+    padding: 12px 18px;
+    border-radius: 18px;
+    background: linear-gradient(120deg, #495057 60%, #23272f 100%);
+    color: #fff;
+    font-size: 1.04rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
     user-select: text;
     overflow: auto;
-    scrollbar-width: thin;
-    scrollbar-color: #393939 #000000;
+    transition: background 0.2s;
+    word-break: break-word;
+    white-space: pre-wrap;
 }
 
 .chat .body .msg.sent .text {
-    background: #495057;
-    color: white;
-    border-radius: 12px 12px 12px 0;
+    background: linear-gradient(120deg, var(--primary-color) 70%, #495057 100%);
+    color: #fff;
+    border-radius: 18px 18px 6px 18px;
 }
-
 .chat .body .msg.received .text {
-    background: var(--primary-color);
-    color: white;
-    border-radius: 12px 12px 0 12px;
+    background: linear-gradient(120deg, #393e46 70%, #23272f 100%);
+    color: #fff;
+    border-radius: 18px 18px 18px 6px;
 }
-
 .chat .body .msg .text:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+    background: rgba(255,255,255,0.07);
 }
 
 /* Chat Footer */

@@ -495,6 +495,11 @@ function isValidEmail(email) {
     return emailRegex.test(email);
 }
 
+function getCurrentTimeString() {
+    const now = new Date();
+    return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
 async function playSound(name) {
     const sound = '../sounds/' + name + '.mp3';
     const audioToPlay = new Audio(sound);

@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.2.01
+ * @version 1.2.02
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -1712,9 +1712,10 @@ function appendMessage(name, msg) {
     const span = document.createElement('span');
     const p = document.createElement('pre');
     const messageClass = name === peerName ? 'sent' : 'received';
+    const timeNow = getCurrentTimeString();
     div.className = `msg ${messageClass}`;
     span.className = 'from';
-    span.innerText = name;
+    span.innerText = name + ' - ' + timeNow;
     p.className = 'text';
     p.innerHTML = processMessage(msg);
     div.appendChild(span);
@@ -1724,6 +1725,7 @@ function appendMessage(name, msg) {
     chatMessages.push({
         from: name,
         message: msg,
+        time: timeNow,
     });
     hljs.highlightAll();
 }
