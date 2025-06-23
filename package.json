@@ -1,12 +1,12 @@
 {
     "name": "mirotalkc2c",
-    "version": "1.2.03",
+    "version": "1.2.10",
     "description": "A free WebRTC Cam-2-Cam browser-based video calls",
     "main": "server.js",
     "scripts": {
         "start": "node backend/server.js",
         "start-dev": "nodemon backend/server.js",
-        "test": "echo \"Error: no test specified\" && exit 1",
+        "test": "mocha tests/*.js",
         "lint": "npx prettier --write .",
         "docker-build": "docker build --tag mirotalk/c2c:latest .",
         "docker-rmi": "docker images |grep '<none>' |awk '{print $3}' |xargs docker rmi",
@@ -41,12 +41,15 @@
         "colors": "^1.4.0",
         "compression": "^1.8.0",
         "cors": "^2.8.5",
+        "dompurify": "^3.2.6",
         "dotenv": "^16.5.0",
         "express": "^5.1.0",
         "express-openid-connect": "^2.18.1",
+        "he": "^1.2.0",
         "helmet": "^8.1.0",
         "httpolyglot": "0.1.2",
         "js-yaml": "^4.1.0",
+        "jsdom": "^26.1.0",
         "nodemailer": "^7.0.3",
         "socket.io": "^4.8.1",
         "swagger-ui-express": "5.0.1",
@@ -54,8 +57,10 @@
         "xss": "^1.0.15"
     },
     "devDependencies": {
+        "mocha": "^11.7.0",
         "node-fetch": "^3.3.2",
         "nodemon": "^3.1.10",
-        "prettier": "3.5.3"
+        "prettier": "3.6.0",
+        "should": "^13.2.3"
     }
 }

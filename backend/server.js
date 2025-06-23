@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.2.03
+ * @version 1.2.10
  */
 
 require('dotenv').config();
@@ -260,7 +260,7 @@ app.get('/join/', (req, res) => {
     if (Object.keys(req.query).length > 0) {
         //http://localhost:3000/join?room=test&name=test
         log.debug('[' + req.headers.host + ']' + ' request query', req.query);
-        const { room, name } = checkXSS('join', req.query);
+        const { room, name } = checkXSS(req.query);
         if (room && name) {
             // OIDC enabled not authorized user, allow join room only if exist
             if (OIDC.enabled && !req.oidc.isAuthenticated()) {
@@ -393,7 +393,7 @@ io.sockets.on('connect', (socket) => {
     sockets[socket.id] = socket;
 
     socket.on('join', (cfg) => {
-        const config = checkXSS(socket.id, cfg);
+        const config = checkXSS(cfg);
 
         log.debug('[' + socket.id + '] join ', config);
 
@@ -469,7 +469,7 @@ io.sockets.on('connect', (socket) => {
     });
 
     socket.on('peerStatus', (cfg) => {
-        const config = checkXSS(socket.id, cfg);
+        const config = checkXSS(cfg);
 
         const { roomId, peerName, element, active } = config;
 

@@ -1,4 +1,4 @@
-name: build
+name: CI
 
 on:
   push:
@@ -6,8 +6,26 @@ on:
       - main
 
 jobs:
-  publish:
+  test:
     runs-on: ubuntu-22.04 # LTS
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.x'  # LTS
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run unit tests
+        run: npm test
+
+  build:
+    runs-on: ubuntu-22.04 # LTS
+    needs: test  # This ensures the build job only runs if the test job succeeds
     steps:
       - name: Checkout
         uses: actions/checkout@v3
