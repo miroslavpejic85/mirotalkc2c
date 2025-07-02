@@ -15,7 +15,6 @@ COPY .env.template ./.env
 RUN apk add --no-cache \
     bash \
     vim \
-    && npm install \
     && npm ci --only=production --silent \
     && rm -rf /tmp/* /var/tmp/* /usr/share/doc/*
 
