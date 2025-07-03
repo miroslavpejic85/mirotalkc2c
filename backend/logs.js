@@ -48,14 +48,14 @@ module.exports = class Logs {
     }
 
     warn(msg, op = '') {
-        console.info(
+        console.warn(
             '[' + this.getDateTime() + '] [' + this.appName + '] ' + colors.yellow(msg),
             util.inspect(op, options)
         );
     }
 
     error(msg, op = '') {
-        console.info(
+        console.error(
             '[' + this.getDateTime() + '] [' + this.appName + '] ' + colors.red(msg),
             util.inspect(op, options)
         );
