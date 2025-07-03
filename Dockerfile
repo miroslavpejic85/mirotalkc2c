@@ -16,6 +16,7 @@ RUN apk add --no-cache \
     bash \
     vim \
     && npm ci --only=production --silent \
+    && npm cache clean --force \
     && rm -rf /tmp/* /var/tmp/* /usr/share/doc/*
 
 # Copy the application code
