@@ -5,24 +5,28 @@ const Logger = require('./logs');
 const log = new Logger('Sentry');
 
 const SENTRY_ENABLED = process.env.SENTRY_ENABLED === 'true';
+const SENTRY_LOG_LEVELS = (process.env.SENTRY_LOG_LEVELS || 'error').split(',').map(level => level.trim());
 const SENTRY_DSN = process.env.SENTRY_DSN;
-const SENTRY_TRACES_SAMPLE_RATE = parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE || '0.0');
+const SENTRY_TRACES_SAMPLE_RATE = parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE || '0.5');
 
 function patchConsoleForSentry() {
-    const originalWarn = console.warn;
-    const originalError = console.error;
-
-    console.warn = function (...args) {
-        SentryNode.captureMessage(args.join(' '), 'warning');
-        originalWarn.apply(console, args);
-    };
-
-    console.error = function (...args) {
-        args[0] instanceof Error
-            ? SentryNode.captureException(args[0])
-            : SentryNode.captureException(new Error(args.join(' ')));
-        originalError.apply(console, args);
-    };
+    const originalConsole = {};
+    SENTRY_LOG_LEVELS.forEach((level) => {
+        originalConsole[level] = console[level];
+        console[level] = function (...args) {
+            switch (level) {
+                case 'warn':
+                    SentryNode.captureMessage(args.join(' '), 'warning');
+                    break;
+                case 'error':
+                    args[0] instanceof Error
+                        ? SentryNode.captureException(args[0])
+                        : SentryNode.captureException(new Error(args.join(' ')));
+                    break;
+            }
+            originalConsole[level].apply(console, args);
+        };
+    });
 }
 
 function start() {
