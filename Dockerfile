@@ -7,7 +7,7 @@ WORKDIR /src
 # Set environment variables
 ENV NODE_ENV="production"
 
-# Copy package.json and .env dependencies
+# Copy package*.json and .env dependencies
 COPY package*.json ./
 COPY .env.template ./.env
 
