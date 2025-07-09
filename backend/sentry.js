@@ -5,7 +5,7 @@ const Logger = require('./logs');
 const log = new Logger('Sentry');
 
 const SENTRY_ENABLED = process.env.SENTRY_ENABLED === 'true';
-const SENTRY_LOG_LEVELS = (process.env.SENTRY_LOG_LEVELS || 'error').split(',').map(level => level.trim());
+const SENTRY_LOG_LEVELS = (process.env.SENTRY_LOG_LEVELS || 'error').split(',').map((level) => level.trim());
 const SENTRY_DSN = process.env.SENTRY_DSN;
 const SENTRY_TRACES_SAMPLE_RATE = parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE || '0.5');
 
