@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.2.15
+ * @version 1.2.16
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -1312,12 +1312,7 @@ function loadLocalStorageConfig() {
 
 function endCall() {
     saveLocalStorageConfig();
-    signalingSocket.disconnect();
-    if (surveyURL) {
-        giveMeFeedback();
-    } else {
-        redirectOnLeave();
-    }
+    surveyURL ? giveMeFeedback() : redirectOnLeave();
 }
 
 function giveMeFeedback() {
@@ -1325,6 +1320,10 @@ function giveMeFeedback() {
         allowOutsideClick: false,
         allowEscapeKey: false,
         showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonColor: 'green',
+        denyButtonColor: 'red',
+        cancelButtonColor: 'gray',
         background: swal.background,
         imageUrl: image.feedback,
         position: 'top',
@@ -1332,22 +1331,25 @@ function giveMeFeedback() {
         text: 'Do you want to rate your MiroTalk experience?',
         confirmButtonText: `Yes`,
         denyButtonText: `No`,
+        cancelButtonText: `Cancel`,
         showClass: { popup: 'animate__animated animate__fadeInDown' },
         hideClass: { popup: 'animate__animated animate__fadeOutUp' },
     }).then((result) => {
         if (result.isConfirmed) {
             redirectToSurvey();
-        } else {
+        } else if (result.isDenied) {
             redirectOnLeave();
         }
     });
 }
 
 function redirectToSurvey() {
+    signalingSocket.disconnect();
     surveyURL ? openURL(surveyURL) : openURL('/');
 }
 
 function redirectOnLeave() {
+    signalingSocket.disconnect();
     redirectURL ? openURL(redirectURL) : openURL('/');
 }
 

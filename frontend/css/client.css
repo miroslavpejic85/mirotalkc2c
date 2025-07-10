@@ -389,6 +389,10 @@ th {
 # Swal custom
 --------------------------------------------------------------*/
 
+.swal2-popup .swal2-styled:focus {
+    box-shadow: none !important;
+}
+
 .swal2-title,
 .swal2-content {
     background-color: var(--panel-color) !important;
