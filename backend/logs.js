@@ -1,15 +1,18 @@
 'use strict';
 
 const util = require('util');
-
 const colors = require('colors');
-
 colors.enable(); //colors.disable();
 
 const options = {
     depth: null,
     colors: true,
 };
+
+// JSON log environment variables
+const LOGS_JSON = process.env.LOGS_JSON ? process.env.LOGS_JSON === 'true' : false;
+const LOGS_JSON_PRETTY = process.env.LOGS_JSON_PRETTY ? process.env.LOGS_JSON_PRETTY === 'true' : false;
+
 module.exports = class Logs {
     constructor(appName = 'miroTalkC2C', debugOn = true) {
         this.appName = colors.yellow(appName);
@@ -23,42 +26,76 @@ module.exports = class Logs {
         };
     }
 
+    jsonLog(level, appName, msg, op, extra = {}) {
+        const logObj = {
+            timestamp: new Date().toISOString(),
+            level,
+            app: appName,
+            message: msg,
+            ...extra,
+        };
+        if (op && typeof op === 'object' && Object.keys(op).length > 0) {
+            logObj.data = op;
+        }
+        LOGS_JSON_PRETTY ? console.log(JSON.stringify(logObj, null, 2)) : console.log(JSON.stringify(logObj));
+    }
+
     debug(msg, op = '') {
         if (this.debugOn) {
             this.timeEnd = Date.now();
             this.timeElapsedMs = this.getFormatTime(Math.floor(this.timeEnd - this.timeStart));
-            console.debug(
-                '[' + this.getDateTime() + '] [' + this.appName + '] ' + msg,
-                util.inspect(op, options),
-                this.timeElapsedMs
-            );
+            if (LOGS_JSON) {
+                this.jsonLog('debug', this.appName, msg, op, { elapsed: this.timeElapsedMs });
+            } else {
+                console.debug(
+                    '[' + this.getDateTime() + '] [' + this.appName + '] ' + msg,
+                    util.inspect(op, options),
+                    this.timeElapsedMs
+                );
+            }
             this.timeStart = Date.now();
         }
     }
 
     log(msg, op = '') {
-        console.log('[' + this.getDateTime() + '] [' + this.appName + '] ' + msg, util.inspect(op, options));
+        if (LOGS_JSON) {
+            this.jsonLog('log', this.appName, msg, op);
+        } else {
+            console.log('[' + this.getDateTime() + '] [' + this.appName + '] ' + msg, util.inspect(op, options));
+        }
     }
 
     info(msg, op = '') {
-        console.info(
-            '[' + this.getDateTime() + '] [' + this.appName + '] ' + colors.green(msg),
-            util.inspect(op, options)
-        );
+        if (LOGS_JSON) {
+            this.jsonLog('info', this.appName, msg, op);
+        } else {
+            console.info(
+                '[' + this.getDateTime() + '] [' + this.appName + '] ' + colors.green(msg),
+                util.inspect(op, options)
+            );
+        }
     }
 
     warn(msg, op = '') {
-        console.warn(
-            '[' + this.getDateTime() + '] [' + this.appName + '] ' + colors.yellow(msg),
-            util.inspect(op, options)
-        );
+        if (LOGS_JSON) {
+            this.jsonLog('warn', this.appName, msg, op);
+        } else {
+            console.warn(
+                '[' + this.getDateTime() + '] [' + this.appName + '] ' + colors.yellow(msg),
+                util.inspect(op, options)
+            );
+        }
     }
 
     error(msg, op = '') {
-        console.error(
-            '[' + this.getDateTime() + '] [' + this.appName + '] ' + colors.red(msg),
-            util.inspect(op, options)
-        );
+        if (LOGS_JSON) {
+            this.jsonLog('error', this.appName, msg, op);
+        } else {
+            console.error(
+                '[' + this.getDateTime() + '] [' + this.appName + '] ' + colors.red(msg),
+                util.inspect(op, options)
+            );
+        }
     }
 
     getDateTime() {
@@ -79,7 +116,7 @@ module.exports = class Logs {
             time = Math.floor((ms / 1000 / 60) % 60);
             type = 'm';
         }
-        if (ms >= (3, 6e6)) {
+        if (ms >= 3600000) {
             time = Math.floor((ms / 1000 / 60 / 60) % 24);
             type = 'h';
         }
