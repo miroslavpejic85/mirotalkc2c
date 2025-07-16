@@ -21,6 +21,9 @@ class LocalStorage {
                         id: null,
                     },
                 },
+                settings: {
+                    noise_suppression: false,
+                },
             },
             speaker: {
                 devices: {

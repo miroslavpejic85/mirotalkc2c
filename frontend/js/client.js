@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.2.17
+ * @version 1.2.20
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -172,6 +172,7 @@ let isPushToTalkActive = false;
 let isSpaceDown = false;
 let isMyAudioActiveBefore = false;
 let isMyVideoActiveBefore = false;
+let noiseProcessor = null;
 let localMediaStream = null;
 let remoteMediaStream = null;
 let camera = 'user';
@@ -564,8 +565,24 @@ async function setupLocalMedia(callback, errorBack) {
     const constraints = { audio: audioConstraints, video: videoConstraints };
 
     try {
-        const stream = await getBestUserMedia(constraints);
+        let stream = await getBestUserMedia(constraints);
+
+        // Apply noise suppression to the stream if enabled
+        const originalStream = stream;
+        stream = await applyNoiseSuppressionToLocalStream(stream);
+
+        // Check if noise suppression was applied and if we have peer connections
+        const noiseSuppressionWasApplied = stream !== originalStream;
+        const hasPeerConnections = thereIsPeerConnections();
+
         setLocalMedia(stream);
+
+        // If noise suppression was applied and we have peer connections, refresh stream to peers
+        if (noiseSuppressionWasApplied && hasPeerConnections) {
+            refreshMyAudioStreamToPeers(stream);
+            console.log('Noise suppression applied during setup and stream updated to peers');
+        }
+
         if (hasVideoTrack(stream)) camera = detectCameraFacingMode(stream);
         if (callback) callback();
     } catch (err) {
@@ -1190,7 +1207,10 @@ function changeMicrophone(deviceId = false) {
 
     navigator.mediaDevices
         .getUserMedia({ audio: audioConstraints })
-        .then((micStream) => {
+        .then(async (micStream) => {
+            // Apply noise suppression to the new microphone stream
+            const processedMicStream = await applyNoiseSuppressionToLocalStream(micStream);
+
             // Remove all existing audio tracks from localMediaStream
             if (localMediaStream) {
                 localMediaStream.getAudioTracks().forEach((track) => {
@@ -1198,15 +1218,24 @@ function changeMicrophone(deviceId = false) {
                     localMediaStream.removeTrack(track);
                 });
             }
-            // Add the new audio track to localMediaStream
-            const newAudioTrack = micStream.getAudioTracks()[0];
+            // Add the new processed audio track to localMediaStream
+            const newAudioTrack = processedMicStream.getAudioTracks()[0];
             if (localMediaStream && newAudioTrack) {
                 localMediaStream.addTrack(newAudioTrack);
             } else if (!localMediaStream && newAudioTrack) {
                 localMediaStream = new MediaStream([newAudioTrack]);
             }
+
             refreshMyLocalAudioStream(localMediaStream);
-            refreshMyAudioStreamToPeers(localMediaStream);
+
+            // Send updated stream to all connected peers
+            const hasPeerConnections = thereIsPeerConnections();
+            if (hasPeerConnections) {
+                refreshMyAudioStreamToPeers(localMediaStream);
+                console.log('Microphone changed and stream updated to', Object.keys(peerConnections).length, 'peers');
+            } else {
+                console.log('Microphone changed (no peers connected)');
+            }
         })
         .catch((err) => {
             console.error('[Error] changeMicrophone', err);
@@ -1215,8 +1244,8 @@ function changeMicrophone(deviceId = false) {
 }
 
 function getAudioConstraints(deviceId = false) {
-    let audioConstraints = true;
-    if (deviceId) audioConstraints = { deviceId: deviceId };
+    let audioConstraints = {};
+    if (deviceId) audioConstraints.deviceId = deviceId;
     console.log('Audio constraints', audioConstraints);
     return audioConstraints;
 }
@@ -1994,6 +2023,90 @@ function stopRecordingTimer() {
 }
 
 // =====================================================
+// Noise Suppression Processor
+// =====================================================
+
+function stopNoiseProcessor() {
+    if (noiseProcessor) {
+        noiseProcessor.stopProcessing();
+        noiseProcessor = null;
+        console.log('Noise processor stopped and cleaned up');
+    } else {
+        console.log('No noise processor to stop');
+    }
+}
+
+function initNoiseProcessor() {
+    if (!noiseProcessor) {
+        const enabled = localStorageConfig?.audio?.settings?.noise_suppression ?? false;
+        noiseProcessor = new RNNoiseProcessor(enabled);
+        noiseProcessor.updateUI();
+        console.log('Noise processor initialized with enabled state:', noiseProcessor.noiseSuppressionEnabled);
+    }
+}
+
+async function applyNoiseSuppressionToLocalStream(stream) {
+    if (!stream || !stream.getAudioTracks().length) return stream;
+    initNoiseProcessor();
+    if (!noiseProcessor?.noiseSuppressionEnabled) return stream;
+    try {
+        return await noiseProcessor.applyNoiseSuppressionToStream(stream);
+    } catch (err) {
+        console.error('Noise suppression error:', err);
+        return stream;
+    }
+}
+
+async function toggleNoiseSuppressionForLocalStream() {
+    if (!localMediaStream || !localMediaStream.getAudioTracks().length) {
+        console.warn('No audio tracks in local media stream');
+        return;
+    }
+
+    initNoiseProcessor();
+    noiseProcessor.toggleNoiseSuppression();
+
+    const enabled = noiseProcessor.noiseSuppressionEnabled;
+    console.log(enabled ? '✅ Enabling noise suppression...' : '❌ Disabling noise suppression...');
+
+    const audioDeviceId = localStorageConfig.audio.devices.select.id || (audioSource && audioSource.value);
+    const audioConstraints = getAudioConstraints(audioDeviceId);
+    const hasPeers = thereIsPeerConnections();
+
+    try {
+        const newMicStream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
+        const processedStream = enabled ? await applyNoiseSuppressionToLocalStream(newMicStream) : newMicStream;
+
+        // Replace audio tracks in localMediaStream
+        if (localMediaStream) {
+            localMediaStream.getAudioTracks().forEach((track) => {
+                track.stop();
+                localMediaStream.removeTrack(track);
+            });
+        }
+        const newAudioTrack = processedStream.getAudioTracks()[0];
+        if (localMediaStream && newAudioTrack) {
+            localMediaStream.addTrack(newAudioTrack);
+        }
+
+        refreshMyLocalAudioStream(localMediaStream);
+
+        if (hasPeers) {
+            refreshMyAudioStreamToPeers(localMediaStream);
+            console.log(
+                `Noise suppression ${enabled ? 'enabled' : 'disabled'} and stream updated to`,
+                Object.keys(peerConnections).length,
+                'peers'
+            );
+        } else {
+            console.log(`Noise suppression ${enabled ? 'enabled' : 'disabled'} (no peers connected)`);
+        }
+    } catch (error) {
+        console.error(`Error ${enabled ? 'enabling' : 'disabling'} noise suppression:`, error);
+    }
+}
+
+// =====================================================
 // Handle window
 // =====================================================
 
@@ -2012,4 +2125,5 @@ window.onbeforeunload = function (e) {
     stopMediaStream(localMediaStream);
     cleanupPeerConnections();
     cleanupPeerMediaElements();
+    stopNoiseProcessor();
 };

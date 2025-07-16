@@ -54,6 +54,7 @@
         <script defer src="../js/recording.js"></script>
         <script defer src="../js/client.js"></script>
         <script defer src="../js/translate.js"></script>
+        <script defer src="../js/noise-processor.js"></script>
     </head>
 
     <body>
@@ -135,6 +136,12 @@ Waiting for users to join.
             <div id="google_translate_element"></div>
             <hr />
             <table id="settingsTable">
+                <tr id="noiseSuppressionDiv">
+                    <td>
+                        <span id="labelNoiseSuppression"> <i class="fas fa-ear-listen"></i> Noise suppression </span>
+                    </td>
+                    <td><input id="switchNoiseSuppression" class="toggle" type="checkbox" /></td>
+                </tr>
                 <tr id="maxVideoQualityDiv">
                     <td>
                         <span> <i class="fas fa-star"></i> Best quality </span>
