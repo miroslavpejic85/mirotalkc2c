@@ -1067,7 +1067,7 @@ function handleEvents() {
         }
     };
     chatInput.oninput = function () {
-        //if (isChatPasteTxt) return;
+        if (isChatPasteTxt) return;
         for (let i in chatInputEmoji) {
             let regex = new RegExp(i.replace(/([()[{*+.$^\\|?])/g, '\\$1'), 'gim');
             this.value = this.value.replace(regex, chatInputEmoji[i]);
@@ -1730,6 +1730,7 @@ function sendMessage() {
 
 function emitDcMsg(msg) {
     if (msg) {
+        isChatPasteTxt = false;
         console.log('Send msg: ' + msg);
         appendMessage(peerName, msg);
         Object.keys(dataChannels).map((peerId) =>
