@@ -3,11 +3,11 @@ services:
         image: mirotalk/c2c:latest
         container_name: mirotalkc2c
         hostname: mirotalkc2c
+        restart: unless-stopped
+        ports:
+            - '${PORT}:${PORT}'
         volumes:
             - .env:/src/.env:ro
             # Optional volumes for real-time updates:
             # - ./frontend/:/src/frontend/:ro
             # - ./backend/:/src/backend/:ro
-        restart: unless-stopped
-        ports:
-            - '${PORT}:${PORT}'
