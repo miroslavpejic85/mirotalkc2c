@@ -39,9 +39,10 @@ async function initHome() {
     userNameIn.value = filterXSS(await getUserName());
 
     randomRoomBtn.onclick = () => {
-        roomIdIn.value = ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-            (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+        roomIdIn.value = ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
+            (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)
         );
+        userNameIn.value = 'User_' + Math.floor(Math.random() * 1000000);
     };
 
     joinBtn.onclick = () => {
