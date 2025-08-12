@@ -32,34 +32,22 @@
     </head>
     <body>
         <form id="joinForm" autocomplete="off">
-            <div class="form-group">
-                <label for="roomIdInput">Room</label>
-                <div class="input-group">
-                    <input id="roomIdInput" type="text" name="room" placeholder="Room name" maxlength="36" required />
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="userNameInput">Username</label>
-                <input
-                    id="userNameInput"
-                    type="text"
-                    name="name"
-                    placeholder="Your email or name"
-                    maxlength="36"
-                    required
-                />
-            </div>
-            <div class="form-actions">
-                <button type="button" id="randomRoomBtn" title="Generate random room" aria-label="Random Room">
-                    <i class="fa fa-random"></i> Random
-                </button>
-                <button type="submit" id="joinBtn"><i class="fa fa-sign-in-alt"></i> Join</button>
-            </div>
-            <div class="form-footer">
-                <button type="button" id="supportBtn" tabindex="-1" aria-label="Support" disabled>
-                    © 2025 MiroTalk C2C, all rights reserved
-                </button>
-            </div>
+            <label for="room">Room</label>
+            <input id="roomIdInput" type="text" name="room" placeholder="Room name" maxlength="36" required />
+            <label for="username">Username</label>
+            <input
+                id="userNameInput"
+                type="text"
+                name="name"
+                placeholder="Your email or name"
+                maxlength="36"
+                required
+            />
+            <button type="button" id="randomRoomBtn" title="Generate random room" aria-label="Random Room">
+                <i class="fa fa-random"></i> Random
+            </button>
+            <button type="submit" id="joinBtn"><i class="fa fa-sign-in-alt"></i> Join</button>
+            <button id="supportBtn">© 2025 MiroTalk C2C, all rights reserved</button>
         </form>
     </body>
 </html>
