@@ -64,7 +64,7 @@ input:focus {
 button {
     display: block;
     margin-top: 25px;
-    width: 50%;
+    width: auto;
     padding: 12px;
     border: 0;
     border-radius: 4px;
@@ -86,6 +86,12 @@ button:hover {
         -1px 1px 0 0 rgb(255 255 255 / 50%),
         1px 1px 0 0 rgb(255 255 255 / 75%),
         -1px -1px 0 0 rgb(255 255 255 / 75%);
+}
+
+.buttons-container {
+    display: flex;
+    gap: 8px;
+    align-items: center;
 }
 
 #supportBtn {
