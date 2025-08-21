@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.2.31
+ * @version 1.2.32
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -1272,29 +1272,47 @@ function getVideoConstraints(deviceId = false) {
         const videoQuality = videoQualitySelect.value;
         const videoFrameRate = videoFpsSelect.value === 'default' ? 30 : parseInt(videoFpsSelect.value, 10);
 
-        const qualityMap = {
-            default: { width: { ideal: 1280 }, height: { ideal: 720 } },
-            qvga: { width: { exact: 320 }, height: { exact: 240 } },
-            vga: { width: { exact: 640 }, height: { exact: 480 } },
-            hd: { width: { exact: 1280 }, height: { exact: 720 } },
-            fhd: { width: { exact: 1920 }, height: { exact: 1080 } },
-            '2k': { width: { exact: 2560 }, height: { exact: 1440 } },
-            '4k': { width: { exact: 3840 }, height: { exact: 2160 } },
-            '6k': { width: { exact: 6144 }, height: { exact: 3456 } },
-            '8k': { width: { exact: 7680 }, height: { exact: 4320 } },
+        // Define base quality dimensions
+        const qualityDimensions = {
+            default: { width: 1280, height: 720 },
+            qvga: { width: 320, height: 240 },
+            vga: { width: 640, height: 480 },
+            hd: { width: 1280, height: 720 },
+            fhd: { width: 1920, height: 1080 },
+            '2k': { width: 2560, height: 1440 },
+            '4k': { width: 3840, height: 2160 },
+            '6k': { width: 6144, height: 3456 },
+            '8k': { width: 7680, height: 4320 },
         };
 
-        videoConstraints = qualityMap[videoQuality] || true;
+        // Helper function to create constraint type based on browser
+        const createConstraintType = (value) => ({
+            [isFirefox || videoQuality === 'default' ? 'ideal' : 'exact']: value,
+        });
 
+        // Build video constraints from dimensions
+        const dimensions = qualityDimensions[videoQuality];
+        if (dimensions) {
+            videoConstraints = {
+                width: createConstraintType(dimensions.width),
+                height: createConstraintType(dimensions.height),
+            };
+        }
+
+        // Handle FPS and UI state
         if (videoQuality === 'default') {
             videoFpsSelect.disabled = true;
             videoFpsSelect.selectedIndex = 0;
         } else if (videoConstraints !== true) {
-            videoConstraints.frameRate = videoFrameRate;
+            // Only add frameRate for non-Firefox browsers
+            if (!isFirefox) {
+                videoConstraints.frameRate = createConstraintType(videoFrameRate);
+            }
             videoFpsSelect.disabled = false;
         }
     }
 
+    // Add device constraint if specified
     if (deviceId) {
         videoConstraints = {
             ...videoConstraints,
@@ -1302,8 +1320,13 @@ function getVideoConstraints(deviceId = false) {
         };
     }
 
+    // Firefox-specific constraint cleanup
     if (isFirefox) {
-        delete videoConstraints.frameRate;
+        // Remove frameRate constraint as Firefox has inconsistent support
+        if (videoConstraints && typeof videoConstraints === 'object') {
+            delete videoConstraints.frameRate;
+        }
+        console.log('Firefox: Using ideal constraints instead of exact for better compatibility');
     }
 
     console.log('Video constraints', videoConstraints);
@@ -1338,7 +1361,7 @@ function loadLocalStorageConfig() {
     if (localStorageConfig.video.init.hide) initHideMeBtn.click();
     if (
         !localStorageConfig.video.settings.best_quality &&
-        (localStorageConfig.video.settings.quality_index || localStorageConfig.video.settings.fps_index) !== 0
+        (localStorageConfig.video.settings.quality_index !== 0 || localStorageConfig.video.settings.fps_index !== 0)
     ) {
         refreshVideoConstraints();
     }
@@ -1447,8 +1470,19 @@ function resetVideoConstraints() {
 }
 
 function refreshVideoConstraints() {
-    localMediaStream
-        .getVideoTracks()[0]
+    // Check if localMediaStream exists and has video tracks
+    if (!localMediaStream || !hasVideoTrack(localMediaStream)) {
+        console.warn('Cannot refresh video constraints: no video track available');
+        return;
+    }
+
+    const videoTrack = localMediaStream.getVideoTracks()[0];
+    if (!videoTrack) {
+        console.warn('Cannot refresh video constraints: video track is undefined');
+        return;
+    }
+
+    videoTrack
         .applyConstraints(getVideoConstraints(videoSource.value))
         .then(() => {
             logStreamSettingsInfo('refreshVideoConstraints', localMediaStream);
