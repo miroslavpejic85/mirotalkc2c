@@ -31,25 +31,57 @@
         <script defer src="../js/home.js"></script>
     </head>
     <body>
-        <form id="joinForm" autocomplete="off">
-            <label for="room">Room</label>
-            <input id="roomIdInput" type="text" name="room" placeholder="Room name" maxlength="36" required />
-            <label for="username">Username</label>
-            <input
-                id="userNameInput"
-                type="text"
-                name="name"
-                placeholder="Your email or name"
-                maxlength="36"
-                required
-            />
-            <div class="buttons-container">
-                <button type="button" id="randomRoomBtn" title="Generate random room" aria-label="Random Room">
-                    <i class="fa fa-random"></i>
-                </button>
-                <button type="submit" id="joinBtn"><i class="fa fa-sign-in-alt"></i> Join</button>
+        <form id="joinForm" autocomplete="off" class="join-form">
+            <div class="form-header">
+                <h2><i class="fas fa-video"></i> Start Your Video Call</h2>
+                <p>Enter a room name and your username to begin</p>
             </div>
-            <button id="supportBtn">© 2025 MiroTalk C2C, all rights reserved</button>
+
+            <div class="input-group">
+                <label for="room"><i class="fas fa-home"></i> Room Name</label>
+                <div class="input-container">
+                    <input
+                        id="roomIdInput"
+                        type="text"
+                        name="room"
+                        placeholder="Enter room name (e.g., meeting-room)"
+                        maxlength="36"
+                        required
+                    />
+                    <button
+                        type="button"
+                        id="randomRoomBtn"
+                        class="input-btn"
+                        title="Generate random room"
+                        aria-label="Generate Random Room"
+                    >
+                        <i class="fa fa-random"></i>
+                    </button>
+                </div>
+                <small class="input-help">Choose a unique room name or generate a random one</small>
+            </div>
+
+            <div class="input-group">
+                <label for="username"><i class="fas fa-user"></i> Your Name</label>
+                <input
+                    id="userNameInput"
+                    type="text"
+                    name="name"
+                    placeholder="Enter your name or email"
+                    maxlength="36"
+                    required
+                />
+                <small class="input-help">This will be shown to other participants</small>
+            </div>
+
+            <div class="action-buttons">
+                <button type="submit" id="joinBtn" class="join-button">
+                    <i class="fa fa-sign-in-alt"></i>
+                    <span>Join Video Call</span>
+                </button>
+            </div>
+
+            <button id="supportBtn" class="support-btn">© 2025 MiroTalk C2C - Support the Project</button>
         </form>
     </body>
 </html>

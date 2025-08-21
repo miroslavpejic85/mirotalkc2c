@@ -53,6 +53,7 @@ async function initHome() {
             window.localStorage.name = userNameIn.value;
         }
     };
+
     supportBtn.onclick = () => {
         window.open('https://codecanyon.net/user/miroslavpejic85', '_blank');
     };

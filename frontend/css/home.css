@@ -1,113 +1,205 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap');
 
-:root {
-    --primary-color: #202123;
-    --secondary-color: #45494c;
-    --text-color: #f5f5f5;
-    --box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 1);
-}
-
 body {
     display: flex;
     box-sizing: border-box;
     min-height: 100vh;
     justify-content: center;
     align-items: center;
-    background-color: var(--primary-color);
-    font-family: 'Montserrat';
+    background: #202123;
+    font-family: 'Montserrat', sans-serif;
+    margin: 0;
+    padding: 20px;
 }
 
-form {
-    width: 240px;
-    padding: 10px 50px 40px 25px;
-    color: var(--text-color);
+/* Join Form */
+.join-form {
+    background: #45494c;
     border-radius: 1rem;
-    background-color: var(--secondary-color);
-    box-shadow: var(--box-shadow);
-}
-
-form:focus-within {
-    position: relative;
-}
-
-label {
-    display: block;
-    margin-top: 20px;
-    font-weight: bold;
-    font-size: 14px;
-}
-
-input {
-    margin-top: 20px;
+    padding: 30px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 1);
     width: 100%;
-    padding: 12px;
-    border: 0;
-    border-radius: 4px;
-    background-color: var(--primary-color);
-    color: var(--text-color);
-    font-size: 16px;
-    outline: none;
+    max-width: 400px;
+    margin: 0 auto;
 }
 
-input:focus {
-    box-shadow:
-        0 1px 0 0 rgb(255 255 255 / 25%),
-        0 -1px 0 0 rgb(255 255 255 / 25%),
-        1px 0 0 0 rgb(255 255 255 / 25%),
-        -1px 0 0 0 rgb(255 255 255 / 25%),
-        1px -1px 0 0 rgb(255 255 255 / 50%),
-        -1px 1px 0 0 rgb(255 255 255 / 50%),
-        1px 1px 0 0 rgb(255 255 255 / 75%),
-        -1px -1px 0 0 rgb(255 255 255 / 75%);
+.form-header {
+    text-align: center;
+    margin-bottom: 30px;
 }
 
-button {
-    display: block;
-    margin-top: 25px;
-    width: auto;
-    padding: 12px;
-    border: 0;
-    border-radius: 4px;
-    background-color: var(--primary-color);
-    color: var(--text-color);
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    outline: none;
-}
-
-button:hover {
-    box-shadow:
-        0 1px 0 0 rgb(255 255 255 / 25%),
-        0 -1px 0 0 rgb(255 255 255 / 25%),
-        1px 0 0 0 rgb(255 255 255 / 25%),
-        -1px 0 0 0 rgb(255 255 255 / 25%),
-        1px -1px 0 0 rgb(255 255 255 / 50%),
-        -1px 1px 0 0 rgb(255 255 255 / 50%),
-        1px 1px 0 0 rgb(255 255 255 / 75%),
-        -1px -1px 0 0 rgb(255 255 255 / 75%);
-}
-
-.buttons-container {
+.form-header h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #f5f5f5;
+    margin-bottom: 8px;
     display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.form-header p {
+    color: #f5f5f5;
+    opacity: 0.7;
+    font-size: 0.95rem;
+}
+
+.input-group {
+    margin-bottom: 25px;
+}
+
+.input-group label {
+    display: flex;
+    align-items: center;
     gap: 8px;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #f5f5f5;
+}
+
+.input-container {
+    position: relative;
+    display: flex;
     align-items: center;
 }
 
-#supportBtn {
-    padding: 0px;
-    margin-top: 40px;
+.input-group input {
     width: 100%;
-    color: #bbbbbb;
-    background-color: transparent;
-    font-size: 0.7em;
-    font-weight: bold;
-    text-align: left;
-    border-radius: 5px;
-    transition: 0.2s ease-in;
-    cursor: pointer;
+    padding: 15px 18px;
+    border: 1px solid #45494c;
+    border-radius: 8px;
+    background: #202123;
+    color: #f5f5f5;
+    font-size: 1rem;
+    outline: none;
+    font-family: 'Montserrat', sans-serif;
+    box-sizing: border-box;
 }
-#supportBtn:hover {
-    transform: scale(0.9);
-    box-shadow: none;
+
+/* Ensure username input has same styling as room input */
+#userNameInput {
+    width: 100%;
+    padding: 15px 18px;
+    border: 1px solid #45494c;
+    border-radius: 8px;
+    background: #202123;
+    color: #f5f5f5;
+    font-size: 1rem;
+    outline: none;
+    font-family: 'Montserrat', sans-serif;
+    box-sizing: border-box;
+}
+
+.input-group input:focus,
+#userNameInput:focus {
+    border-color: #376df9;
+    box-shadow: 0 0 5px rgba(55, 109, 249, 0.3);
+}
+
+.input-btn {
+    position: absolute;
+    right: 8px;
+    background: #376df9;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.input-btn:hover {
+    background: #2a5bd9;
+}
+
+.input-help {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.8rem;
+    color: #f5f5f5;
+    opacity: 0.6;
+}
+
+.action-buttons {
+    margin-top: 30px;
+}
+
+.join-button {
+    width: 100%;
+    padding: 18px 24px;
+    border: none;
+    border-radius: 8px;
+    background: #376df9;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.join-button:hover {
+    background: #2a5bd9;
+}
+
+.support-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px solid #45494c;
+    border-radius: 8px;
+    padding: 12px 24px;
+    margin-top: 20px;
+    color: #f5f5f5;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.support-btn:hover {
+    background: #202123;
+    border-color: #376df9;
+}
+
+.support-btn i {
+    color: #ff6b6b;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .join-form {
+        padding: 20px;
+        margin: 20px;
+    }
+
+    .input-group input,
+    #userNameInput {
+        padding: 12px 15px;
+    }
+
+    .join-button {
+        padding: 15px 20px;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .join-form {
+        padding: 15px;
+    }
+
+    .form-header h2 {
+        font-size: 1.3rem;
+    }
 }
