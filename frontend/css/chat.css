@@ -44,25 +44,35 @@
 }
 
 .chat .header button {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.1);
     border: none;
     color: #fff;
     font-size: 1.2rem;
     cursor: pointer;
     border-radius: 50%;
-    width: 2.2rem;
-    height: 2.2rem;
+    width: 2.4rem;
+    height: 2.4rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition:
-        background 0.2s,
-        transform 0.2s;
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.2),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
+
 .chat .header button:hover {
-    background: var(--secondary-color);
     color: #fff;
-    transform: scale(1.15);
+    transform: translateY(-1px) scale(1.05);
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.chat .header button:hover::before {
+    opacity: 1;
 }
 
 /* Chat Body */
@@ -196,31 +206,36 @@
 }
 
 .chat .footer .footer-buttons button {
-    width: 2.2rem;
-    height: 2.2rem;
+    width: 2.4rem;
+    height: 2.4rem;
     border: none;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--secondary-color) 70%, #23272f 100%);
+    background: linear-gradient(135deg, var(--secondary-color) 0%, rgba(43, 45, 54, 0.9) 100%);
     color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.25rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition:
-        background 0.2s,
-        box-shadow 0.2s,
-        transform 0.15s;
+    cursor: pointer;
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.25),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     flex-shrink: 0;
 }
 
 .chat .footer .footer-buttons button:hover {
-    background: linear-gradient(135deg, var(--primary-color) 80%, var(--secondary-color) 100%);
     color: #fff;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
-    transform: scale(1.12);
-    outline: 2px solid var(--primary-color);
-    outline-offset: 2px;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.35),
+        0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.chat .footer .footer-buttons button:hover::before {
+    opacity: 1;
 }
 
 .chatEmojiPicker {

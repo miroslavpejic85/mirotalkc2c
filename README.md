@@ -200,3 +200,5 @@ Try also [MiroTalk WEB](https://github.com/miroslavpejic85/mirotalkwebrtc) a pla
 </details>
 
 ---
+
+![Star History Chart](https://app.repohistory.com/api/svg?repo=miroslavpejic85/mirotalkc2c&type=Date&background=0D1117&color=62C3F8)
