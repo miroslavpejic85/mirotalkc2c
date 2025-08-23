@@ -112,9 +112,10 @@ body {
     transform: translateY(-2px) scale(1.05);
     -webkit-transform: translateY(-2px) scale(1.05);
     -moz-transform: translateY(-2px) scale(1.05);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
     box-shadow:
-        0 8px 20px rgba(0, 0, 0, 0.35),
-        0 0 0 1px rgba(255, 255, 255, 0.2);
+        0 4px 10px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.15);
 }
 
 #waitingDivContainer button:hover::before {
@@ -181,8 +182,9 @@ body {
     transform: translateY(-2px) scale(1.05);
     -webkit-transform: translateY(-2px) scale(1.05);
     -moz-transform: translateY(-2px) scale(1.05);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
     box-shadow:
-        0 8px 20px rgba(0, 0, 0, 0.35),
+        0 4px 10px rgba(0, 0, 0, 0.3),
         0 0 0 1px rgba(255, 255, 255, 0.15);
 }
 
