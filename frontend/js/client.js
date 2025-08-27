@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.2.35
+ * @version 1.2.36
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -1145,8 +1145,16 @@ async function toggleScreenSharing() {
             isMyAudioActiveBefore = localMediaStream?.getAudioTracks()[0]?.enabled ?? false;
             isMyVideoActiveBefore = localMediaStream?.getVideoTracks()[0]?.enabled ?? false;
             newStream = await getScreenWithMic(constraints);
+            newStream = await applyNoiseSuppressionWithLogging(
+                newStream,
+                '✅ Noise suppression applied to screen sharing audio'
+            );
         } else {
             newStream = await getBestUserMedia(constraints);
+            newStream = await applyNoiseSuppressionWithLogging(
+                newStream,
+                '✅ Noise suppression restored after screen sharing'
+            );
         }
 
         if (newStream) {
@@ -2095,6 +2103,22 @@ async function applyNoiseSuppressionToLocalStream(stream) {
         console.error('Noise suppression error:', err);
         return stream;
     }
+}
+
+async function applyNoiseSuppressionWithLogging(stream, logMessage) {
+    if (!stream || !stream.getAudioTracks().length) {
+        return stream;
+    }
+
+    const originalStream = stream;
+    const processedStream = await applyNoiseSuppressionToLocalStream(stream);
+
+    // If noise suppression was applied, log it
+    if (processedStream !== originalStream) {
+        console.log(logMessage);
+    }
+
+    return processedStream;
 }
 
 async function toggleNoiseSuppressionForLocalStream() {
