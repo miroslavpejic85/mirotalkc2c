@@ -247,7 +247,7 @@
     position: absolute;
     bottom: 70px;
     left: 5px;
-    background: var(--chat-bg);
+    background: transparent;
     border-radius: 8px;
     display: none;
     padding: 10px;
