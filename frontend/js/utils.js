@@ -421,6 +421,22 @@ function animateCSS(element, animation, prefix = 'animate__') {
     });
 }
 
+function handleClickOutside(targetElement, triggerElement, callback, minWidth = 0) {
+    document.addEventListener('click', (e) => {
+        if (minWidth && window.innerWidth > minWidth) return;
+        let el = e.target;
+        let shouldExclude = false;
+        while (el) {
+            if (el instanceof HTMLElement && (el === targetElement || el === triggerElement)) {
+                shouldExclude = true;
+                break;
+            }
+            el = el.parentElement;
+        }
+        if (!shouldExclude) callback();
+    });
+}
+
 function makeDraggable(element, dragObj) {
     let pos1 = 0,
         pos2 = 0,
