@@ -245,8 +245,8 @@
 
 .chatEmojiPicker {
     position: absolute;
-    bottom: 90px;
-    left: 10px;
+    bottom: 70px;
+    left: 5px;
     background: var(--chat-bg);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
@@ -257,6 +257,14 @@
 
 .chatEmojiPicker.show {
     display: block;
+}
+
+.chatEmojiPicker em-emoji-picker {
+    --rgb-background: 30, 32, 36;
+    --rgb-accent: 0, 123, 255;
+    --rgb-border: 255, 255, 255, 0.1;
+    --rgb-color: 255, 255, 255;
+    --border-radius: 8px;
 }
 
 /* Responsive for mobile */
@@ -284,5 +292,9 @@
         width: 2.5rem;
         height: 2.5rem;
         font-size: 1.3rem;
+    }
+
+    .chatEmojiPicker {
+        bottom: 90px;
     }
 }
