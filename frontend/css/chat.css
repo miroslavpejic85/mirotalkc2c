@@ -180,30 +180,33 @@
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.chat .footer textarea {
-    flex-grow: 1;
-    padding: 5px;
+.chat .footer .footer-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 10px;
+    width: 100%;
+}
+
+.chat .footer .footer-buttons textarea {
+    flex: 1;
+    padding: 8px 12px;
     height: 20px;
     border: var(--border);
-    border-radius: 5px;
+    border-radius: 8px;
     background: #2b2d36;
     color: var(--text-color);
     resize: none;
     font-size: 1rem;
     transition: height 0.3s ease;
+    min-width: 0;
 }
 
-.chat .footer textarea:focus {
+.chat .footer .footer-buttons textarea:focus {
     border-color: var(--primary-color);
     height: 60px;
     outline: none;
     box-shadow: 0 0 5px #000000;
-}
-
-.chat .footer .footer-buttons {
-    display: flex;
-    gap: 8px;
-    margin: 10px;
 }
 
 .chat .footer .footer-buttons button {
@@ -242,13 +245,14 @@
 
 .chatEmojiPicker {
     position: absolute;
-    bottom: 70px;
-    right: 10px;
+    bottom: 90px;
+    left: 10px;
     background: var(--chat-bg);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     display: none;
     padding: 10px;
+    z-index: 10;
 }
 
 .chatEmojiPicker.show {
@@ -270,13 +274,13 @@
         font-size: 1rem;
     }
 
-    .chat .footer textarea {
+    .chat .footer .footer-buttons textarea {
         height: 35px;
         font-size: 0.9rem;
+        padding: 10px 12px;
     }
 
     .chat .footer .footer-buttons button {
-        padding: 10px;
         width: 2.5rem;
         height: 2.5rem;
         font-size: 1.3rem;
