@@ -74,12 +74,16 @@ body {
 
 #waitingDiv h1,
 #loadingDiv h1 {
-    font-size: 30px;
+    font-size: 40px;
 }
 
 #waitingDiv pre,
 #loadingDiv pre {
-    font-size: 15px;
+    font-size: 16px;
+}
+
+.loading-img {
+    width: 290px;
 }
 
 .grid-buttons {
