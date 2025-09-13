@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.2.39
+ * @version 1.2.40
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -56,6 +56,8 @@ const chatCloseBtn = document.getElementById('chatCloseBtn');
 const chatInput = document.getElementById('chatInput');
 const chatEmojiBtn = document.getElementById('chatEmojiBtn');
 const chatSendBtn = document.getElementById('chatSendBtn');
+const chatFileBtn = document.getElementById('chatFileBtn');
+const chatFileInput = document.getElementById('chatFileInput');
 const chatEmoji = document.getElementById('chatEmoji');
 const recordingLabel = document.getElementById('recordingLabel');
 const recordingBtn = document.getElementById('recordingBtn');
@@ -189,6 +191,10 @@ let peerConnections = {};
 let peerMediaElements = {};
 let dataChannels = {};
 
+let incomingFileMeta = null;
+let incomingFileBuffer = [];
+let incomingFileReceived = 0;
+
 let myVideo;
 let myVideoWrap;
 let myVideoAvatarImage;
@@ -230,6 +236,7 @@ function thereIsPeerConnections() {
 document.addEventListener('DOMContentLoaded', function () {
     initClient();
     handleChatEmojiPicker();
+    handleChatFileSharing();
 });
 
 function initClient() {
@@ -405,22 +412,46 @@ function handleOnIceCandidate(peerId) {
 }
 
 async function handleRTCDataChannels(peerId) {
+    // Handle incoming datachannels (created by remote peer)
     peerConnections[peerId].ondatachannel = (event) => {
         console.log('Datachannel event peerId: ' + peerId, event);
-        event.channel.onmessage = (msg) => {
-            let config = {};
+        const channel = event.channel;
+        channel.onmessage = (msg) => {
+            if (typeof msg.data === 'string') {
+                try {
+                    handleIncomingDataChannelMessage(msg.data);
+                } catch (err) {
+                    console.log('Datachannel error', err);
+                }
+            } else if (msg.data instanceof ArrayBuffer) {
+                handleIncomingDataChannelMessage(msg.data);
+            }
+        };
+        channel.onopen = (event) => {
+            console.log('Remote DataChannel open for peerId: ' + peerId, event);
+        };
+        dataChannels[peerId] = channel;
+    };
+
+    // Create our own datachannel for sending
+    const dc = peerConnections[peerId].createDataChannel('mt_c2c_dc');
+    dc.binaryType = 'arraybuffer';
+
+    dc.onmessage = (msg) => {
+        if (typeof msg.data === 'string') {
             try {
-                config = JSON.parse(filterXSS(msg.data));
-                handleIncomingDataChannelMessage(config);
+                handleIncomingDataChannelMessage(msg.data);
             } catch (err) {
                 console.log('Datachannel error', err);
             }
-        };
+        } else if (msg.data instanceof ArrayBuffer) {
+            handleIncomingDataChannelMessage(msg.data);
+        }
     };
-    dataChannels[peerId] = peerConnections[peerId].createDataChannel('mt_c2c_dc');
-    dataChannels[peerId].onopen = (event) => {
+    dc.onopen = (event) => {
         console.log('DataChannels created for peerId: ' + peerId, event);
     };
+    dataChannels[peerId] = dc;
 }
 
 function handleOnTrack(peerId) {
@@ -886,13 +917,78 @@ function setRemoteMedia(stream, peers, peerId) {
 }
 
 function handleIncomingDataChannelMessage(config) {
-    switch (config.type) {
-        case 'chat':
-            handleMessage(config);
-            break;
-        default:
-            break;
+    // If receiving file meta (JSON string)
+    if (typeof config === 'string') {
+        try {
+            const meta = JSON.parse(config);
+            if (meta.type === 'file') {
+                incomingFileMeta = meta;
+                incomingFileBuffer = [];
+                incomingFileReceived = 0;
+                return;
+            }
+            // If it's a chat message
+            if (meta.type === 'chat') {
+                handleMessage(meta);
+                return;
+            }
+        } catch (e) {
+            // Not JSON, ignore
+        }
     }
+
+    // If receiving file data (ArrayBuffer or Blob)
+    if (incomingFileMeta && (config instanceof ArrayBuffer || config instanceof Blob)) {
+        // Convert Blob to ArrayBuffer
+        if (config instanceof Blob) {
+            if (config.size === 0) return;
+            blobToArrayBuffer(config)
+                .then((arrayBuffer) => {
+                    handleFileChunk(arrayBuffer);
+                })
+                .catch((error) => {
+                    console.error('Error converting Blob to ArrayBuffer', error);
+                });
+            return;
+        } else if (config instanceof ArrayBuffer) {
+            if (config.byteLength === 0) return;
+            handleFileChunk(config);
+            return;
+        }
+    }
+}
+
+// Assemble file chunks and display when complete
+function handleFileChunk(arrayBuffer) {
+    incomingFileBuffer.push(arrayBuffer);
+    incomingFileReceived += arrayBuffer.byteLength;
+    if (incomingFileReceived >= incomingFileMeta.fileSize) {
+        const blob = new Blob(incomingFileBuffer, { type: incomingFileMeta.fileType });
+        appendFileMessage(
+            'Peer',
+            incomingFileMeta.fileName,
+            incomingFileMeta.fileSize,
+            incomingFileMeta.fileType,
+            blob
+        );
+        incomingFileMeta = null;
+        incomingFileBuffer = [];
+        incomingFileReceived = 0;
+    }
+}
+
+function blobToArrayBuffer(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const arrayBuffer = reader.result;
+            resolve(arrayBuffer);
+        };
+        reader.onerror = () => {
+            reject(new Error('Error reading Blob as ArrayBuffer'));
+        };
+        reader.readAsArrayBuffer(blob);
+    });
 }
 
 function handleEvents() {
@@ -1757,6 +1853,73 @@ function handleChatEmojiPicker() {
     });
 }
 
+function handleChatFileSharing() {
+    // File sharing button logic
+    if (chatFileBtn && chatFileInput) {
+        chatFileBtn.onclick = () => chatFileInput.click();
+        chatFileInput.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            // Read file as ArrayBuffer
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                const arrayBuffer = event.target.result;
+                // Send file meta first
+                const meta = {
+                    type: 'file',
+                    fileName: file.name,
+                    fileSize: file.size,
+                    fileType: file.type,
+                };
+                Object.keys(dataChannels).forEach((peerId) => {
+                    if (dataChannels[peerId].readyState === 'open') {
+                        dataChannels[peerId].send(JSON.stringify(meta));
+                        // Send file in chunks (64KB)
+                        const chunkSize = 64 * 1024;
+                        for (let offset = 0; offset < arrayBuffer.byteLength; offset += chunkSize) {
+                            const chunk = arrayBuffer.slice(offset, offset + chunkSize);
+                            dataChannels[peerId].send(chunk);
+                        }
+                    }
+                });
+                // Show file in own chat
+                appendFileMessage(peerName, file.name, file.size, file.type, arrayBuffer);
+            };
+            reader.readAsArrayBuffer(file);
+            // Reset input
+            chatFileInput.value = '';
+        };
+    }
+}
+
+function appendFileMessage(name, fileName, fileSize, fileType, fileData) {
+    if (name !== peerName) showChat();
+    const div = document.createElement('div');
+    const span = document.createElement('span');
+    const a = document.createElement('a');
+    const messageClass = name === peerName ? 'sent' : 'received';
+    const timeNow = getCurrentTimeString();
+    div.className = `msg ${messageClass}`;
+    span.className = 'from';
+    span.innerText = name + ' - ' + timeNow;
+    a.className = 'file-link';
+    a.innerText = `📎 ${fileName} (${Math.round(fileSize / 1024)} KB)`;
+    a.style.color = '#3391FF';
+    if (fileData instanceof Blob) {
+        a.href = URL.createObjectURL(fileData);
+        a.download = fileName;
+    } else {
+        // ArrayBuffer
+        const blob = new Blob([fileData], { type: fileType });
+        a.href = URL.createObjectURL(blob);
+        a.download = fileName;
+    }
+    div.appendChild(span);
+    div.appendChild(a);
+    chatBody.appendChild(div);
+    chatBody.scrollTop = chatBody.scrollHeight;
+}
+
 function sendMessage() {
     if (!thereIsPeerConnections()) {
         popupMessage(
@@ -1845,14 +2008,18 @@ function processMessage(message) {
 }
 
 function handleMessage(config) {
-    playSound('message');
     const name = safeXSS(config.peerName);
     const msg = safeXSS(config.msg);
+    showChat();
+    appendMessage(name, msg);
+}
+
+function showChat() {
+    playSound('message');
     if (chat.style.display == 'none' || chat.style.display == '') {
         elemDisplay(chat, true);
         animateCSS(chat, 'fadeInRight');
     }
-    appendMessage(name, msg);
 }
 
 function checkLineBreaks() {
