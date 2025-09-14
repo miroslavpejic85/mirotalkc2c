@@ -66,14 +66,25 @@
 
             <div class="input-group">
                 <label for="username"><i class="fas fa-user"></i> Your Name</label>
-                <input
-                    id="userNameInput"
-                    type="text"
-                    name="name"
-                    placeholder="Enter your name or email"
-                    maxlength="36"
-                    required
-                />
+                <div class="input-container">
+                    <input
+                        id="userNameInput"
+                        type="text"
+                        name="name"
+                        placeholder="Enter your name or email"
+                        maxlength="36"
+                        required
+                    />
+                    <button
+                        type="button"
+                        id="randomUserBtn"
+                        class="input-btn"
+                        title="Generate random user"
+                        aria-label="Generate Random User"
+                    >
+                        <i class="fa fa-random"></i>
+                    </button>
+                </div>
                 <small class="input-help">This will be shown to other participants</small>
             </div>
 

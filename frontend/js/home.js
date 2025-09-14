@@ -8,6 +8,7 @@ const roomId = filterXSS(new URLSearchParams(window.location.search).get('room')
 const roomIdIn = document.getElementById('roomIdInput');
 const userNameIn = document.getElementById('userNameInput');
 const randomRoomBtn = document.getElementById('randomRoomBtn');
+const randomUserBtn = document.getElementById('randomUserBtn');
 const joinBtn = document.getElementById('joinBtn');
 const supportBtn = document.getElementById('supportBtn');
 
@@ -42,6 +43,9 @@ async function initHome() {
         roomIdIn.value = ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
             (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)
         );
+    };
+
+    randomUserBtn.onclick = () => {
         userNameIn.value = 'User_' + Math.floor(Math.random() * 1000000);
     };
 
