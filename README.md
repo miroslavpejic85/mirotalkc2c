@@ -119,7 +119,7 @@ Open [http://localhost:8080](http://localhost:8080) in your browser.
 
 <br/>
 
-[![Hetzner](frontend/images/Hetzner.png)](https://hetzner.cloud/?ref=XdRifCzCK3bn)
+[![Hetzner](frontend/images/hetzner.png)](https://hetzner.cloud/?ref=XdRifCzCK3bn)
 
 This application is running for `demonstration purposes` on [Hetzner](https://www.hetzner.com/), one of `the best` [cloud providers](https://www.hetzner.com/cloud) and [dedicated root servers](https://www.hetzner.com/dedicated-rootserver).
 
