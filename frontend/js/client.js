@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.2.49
+ * @version 1.2.50
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -94,6 +94,7 @@ const className = {
     fullScreenOn: 'fas fa-expand',
     fullScreenOff: 'fas fa-compress',
     pip: 'fas fa-images',
+    focus: 'fas fa-eye',
     rotate: 'fas fa-rotate-right',
 };
 
@@ -700,6 +701,7 @@ function setLocalMedia(stream) {
     const myVideoDraggableBtn = document.createElement('button');
     const myFullScreenBtn = document.createElement('button');
     const myVideoPiPBtn = document.createElement('button');
+    const myVideoFocusBtn = document.createElement('button');
     const myVideoRotateBtn = document.createElement('button');
     const myAudioStatusIcon = document.createElement('button');
     const myVideoAvatarImage = document.createElement('img');
@@ -720,6 +722,8 @@ function setLocalMedia(stream) {
     myFullScreenBtn.className = className.fullScreenOn;
     myVideoPiPBtn.id = 'myVideoPIP';
     myVideoPiPBtn.className = className.pip;
+    myVideoFocusBtn.id = 'myVideoFocus';
+    myVideoFocusBtn.className = className.focus;
     myVideoRotateBtn.id = 'myVideoRotate';
     myVideoRotateBtn.className = className.rotate;
     myAudioStatusIcon.id = 'myAudioStatusIcon';
@@ -731,6 +735,7 @@ function setLocalMedia(stream) {
     // Header buttons
     if (!isMobileDevice) myVideoHeader.appendChild(myVideoDraggableBtn);
     if (hasVideo) {
+        myVideoHeader.appendChild(myVideoFocusBtn);
         myVideoHeader.appendChild(myFullScreenBtn);
         if (isVideoPIPSupported) {
             myVideoHeader.appendChild(myVideoPiPBtn);
@@ -775,6 +780,7 @@ function setLocalMedia(stream) {
 
     // Feature handlers
     if (hasVideo) {
+        handleVideoFocusMode(myVideoFocusBtn, myVideoWrap, myLocalMedia);
         handlePictureInPicture(myVideoPiPBtn, myLocalMedia);
         handleVideoRotate(myVideoRotateBtn, myLocalMedia);
         handleFullScreen(myFullScreenBtn, myVideoWrap, myLocalMedia);
@@ -784,6 +790,7 @@ function setLocalMedia(stream) {
     // Tooltips
     if (hasVideo) {
         setTippy(myVideoPiPBtn, 'Toggle picture in picture', 'bottom');
+        setTippy(myVideoFocusBtn, 'Toggle Focus mode', 'bottom');
         setTippy(myVideoRotateBtn, 'Rotate video', 'bottom');
         setTippy(myFullScreenBtn, 'Toggle full screen', 'bottom');
     }
@@ -829,6 +836,7 @@ function setRemoteMedia(stream, peers, peerId) {
     const remoteVideoFooter = document.createElement('div');
     const remoteVideoPeerName = document.createElement('h4');
     const remoteFullScreenBtn = document.createElement('button');
+    const remoteVideoFocusBtn = document.createElement('button');
     const remoteVideoPiPBtn = document.createElement('button');
     const remoteVideoRotateBtn = document.createElement('button');
     const remoteAudioStatusIcon = document.createElement('button');
@@ -844,6 +852,8 @@ function setRemoteMedia(stream, peers, peerId) {
     remoteVideoPeerName.innerText = peerName;
     remoteFullScreenBtn.id = peerId + '_remoteFullScreen';
     remoteFullScreenBtn.className = className.fullScreenOn;
+    remoteVideoFocusBtn.id = peerId + '_remoteVideoFocus';
+    remoteVideoFocusBtn.className = className.focus;
     remoteVideoPiPBtn.id = peerId + '_remoteVideoPIP';
     remoteVideoPiPBtn.className = className.pip;
     remoteVideoRotateBtn.id = peerId + '_remoteVideoRotate';
@@ -856,6 +866,7 @@ function setRemoteMedia(stream, peers, peerId) {
 
     // Header buttons
     if (hasVideo) {
+        remoteVideoHeader.appendChild(remoteVideoFocusBtn);
         remoteVideoHeader.appendChild(remoteFullScreenBtn);
         remoteVideoHeader.appendChild(remoteVideoPiPBtn);
         remoteVideoHeader.appendChild(remoteVideoRotateBtn);
@@ -897,6 +908,7 @@ function setRemoteMedia(stream, peers, peerId) {
 
     // Feature handlers
     if (hasVideo && remoteVideoElem) {
+        handleVideoFocusMode(remoteVideoFocusBtn, remoteVideoWrap, remoteVideoElem);
         handleFullScreen(remoteFullScreenBtn, remoteVideoWrap, remoteVideoElem);
         handlePictureInPicture(remoteVideoPiPBtn, remoteVideoElem);
         handleVideoRotate(remoteVideoRotateBtn, remoteVideoElem);
@@ -908,6 +920,7 @@ function setRemoteMedia(stream, peers, peerId) {
     setPeerAudioStatus(peerId, peerAudio);
 
     if (hasVideo) {
+        setTippy(remoteVideoFocusBtn, 'Focus video', 'bottom');
         setTippy(remoteFullScreenBtn, 'Toggle full screen', 'bottom');
         setTippy(remoteVideoPiPBtn, 'Toggle picture in picture', 'bottom');
         setTippy(remoteVideoRotateBtn, 'Rotate video', 'bottom');
@@ -1692,6 +1705,44 @@ function handlePictureInPicture(pipBtn, videoMedia) {
         }
     } else {
         elemDisplay(pipBtn, false);
+    }
+}
+
+function handleVideoFocusMode(videoFocusBtn, videoWrap, media) {
+    if (videoFocusBtn) {
+        const allVideoWraps = document.querySelectorAll('.myVideoWrap, .remoteVideoWrap');
+        let isFocusMode = false;
+        videoFocusBtn.addEventListener('click', (e) => {
+            isFocusMode = !isFocusMode;
+            e.target.style.color = isFocusMode ? 'lime' : 'white';
+            if (isFocusMode) {
+                videoWrap.style.position = 'fixed';
+                videoWrap.style.top = '0';
+                videoWrap.style.left = '0';
+                videoWrap.style.width = '100%';
+                videoWrap.style.height = '100%';
+                videoWrap.style.zIndex = '9999';
+                media.setAttribute('focus-mode', 'true');
+                allVideoWraps.forEach((wrap) => {
+                    if (wrap.id !== videoWrap.id) {
+                        wrap.style.display = 'none';
+                    }
+                });
+            } else {
+                videoWrap.style.position = '';
+                videoWrap.style.top = '';
+                videoWrap.style.left = '';
+                videoWrap.style.width = '';
+                videoWrap.style.height = '';
+                videoWrap.style.zIndex = '';
+                media.removeAttribute('focus-mode');
+                allVideoWraps.forEach((wrap) => {
+                    if (wrap.id !== videoWrap.id) {
+                        wrap.style.display = 'block';
+                    }
+                });
+            }
+        });
     }
 }
 
