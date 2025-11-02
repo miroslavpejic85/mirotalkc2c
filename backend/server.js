@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.2.50
+ * @version 1.2.51
  */
 
 require('dotenv').config();
@@ -469,6 +469,22 @@ io.sockets.on('connect', (socket) => {
             removePeerFrom(channel);
         }
         log.debug('[' + socket.id + '] disconnected', { reason: reason });
+
+        // Extra cleanup: ensure socket is removed from all channels and peers
+        for (let channel in channels) {
+            if (channels[channel] && channels[channel][socket.id]) {
+                delete channels[channel][socket.id];
+                log.debug('[' + socket.id + '] cleaned up from channel [' + channel + ']');
+            }
+        }
+
+        for (let channel in peers) {
+            if (peers[channel] && peers[channel][socket.id]) {
+                delete peers[channel][socket.id];
+                log.debug('[' + socket.id + '] cleaned up from peers [' + channel + ']');
+            }
+        }
+
         delete sockets[socket.id];
     });
 
@@ -507,20 +523,24 @@ io.sockets.on('connect', (socket) => {
     });
 
     async function addPeerTo(channel) {
-        for (let id in channels[channel]) {
-            await channels[channel][id].emit('addPeer', {
-                peerId: socket.id,
-                peers: peers[channel],
-                shouldCreateOffer: false,
-                iceServers: iceServers,
-            });
-            socket.emit('addPeer', {
-                peerId: id,
-                peers: peers[channel],
-                shouldCreateOffer: true,
-                iceServers: iceServers,
-            });
-            log.debug('[' + socket.id + '] emit addPeer [' + id + ']');
+        try {
+            for (let id in channels[channel]) {
+                await channels[channel][id].emit('addPeer', {
+                    peerId: socket.id,
+                    peers: peers[channel],
+                    shouldCreateOffer: false,
+                    iceServers: iceServers,
+                });
+                socket.emit('addPeer', {
+                    peerId: id,
+                    peers: peers[channel],
+                    shouldCreateOffer: true,
+                    iceServers: iceServers,
+                });
+                log.debug('[' + socket.id + '] emit addPeer [' + id + ']');
+            }
+        } catch (error) {
+            log.error('[' + socket.id + '] Error in addPeerTo', error);
         }
     }
 
@@ -530,24 +550,31 @@ io.sockets.on('connect', (socket) => {
             return;
         }
 
-        delete socket.channels[channel];
-        delete channels[channel][socket.id];
-        delete peers[channel][socket.id];
+        try {
+            delete socket.channels[channel];
+            delete channels[channel][socket.id];
+            delete peers[channel][socket.id];
 
-        if (Object.keys(peers[channel]).length == 0) {
-            delete peers[channel];
-        }
+            // Clean up empty channel to prevent memory leak
+            if (Object.keys(peers[channel]).length == 0) {
+                delete peers[channel];
+                delete channels[channel];
+                log.debug('[' + socket.id + '] Channel [' + channel + '] is now empty and removed');
+            }
 
-        const activeRooms = getActiveRooms();
+            const activeRooms = getActiveRooms();
 
-        log.info('[RemovePeer] - active rooms and peers count', activeRooms);
+            log.info('[RemovePeer] - active rooms and peers count', activeRooms);
 
-        log.debug('[RemovePeer] - connected peers grp by roomId', peers);
+            log.debug('[RemovePeer] - connected peers grp by roomId', peers);
 
-        for (let id in channels[channel]) {
-            await channels[channel][id].emit('removePeer', { peerId: socket.id });
-            socket.emit('removePeer', { peerId: id });
-            log.debug('[' + socket.id + '] emit removePeer [' + id + ']');
+            for (let id in channels[channel]) {
+                await channels[channel][id].emit('removePeer', { peerId: socket.id });
+                socket.emit('removePeer', { peerId: id });
+                log.debug('[' + socket.id + '] emit removePeer [' + id + ']');
+            }
+        } catch (error) {
+            log.error('[' + socket.id + '] Error in removePeerFrom', error);
         }
     }
 
