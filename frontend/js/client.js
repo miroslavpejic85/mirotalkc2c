@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.2.51
+ * @version 1.2.52
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -167,6 +167,7 @@ const osVersion = result.os.version;
 const browserName = result.browser.name;
 const browserVersion = result.browser.version;
 const isFirefox = browserName.toLowerCase().includes('firefox');
+const isSafari = browserName.toLowerCase().includes('safari');
 
 let isVideoStreaming = false;
 let isAudioStreaming = false;
@@ -1374,7 +1375,10 @@ function getAudioConstraints(deviceId = null) {
         sampleRate: 48000,
         channelCount: 1,
     };
-    if (deviceId) audioConstraints.deviceId = { exact: deviceId };
+    // Safari and Firefox work better with 'ideal' instead of 'exact'
+    if (deviceId) {
+        audioConstraints.deviceId = isSafari || isFirefox ? { ideal: deviceId } : { exact: deviceId };
+    }
     console.log('Audio constraints', audioConstraints);
     return audioConstraints;
 }
@@ -1411,7 +1415,7 @@ function getVideoConstraints(deviceId = false) {
 
         // Helper function to create constraint type based on browser
         const createConstraintType = (value) => ({
-            [isFirefox || videoQuality === 'default' ? 'ideal' : 'exact']: value,
+            [isFirefox || isSafari || videoQuality === 'default' ? 'ideal' : 'exact']: value,
         });
 
         // Build video constraints from dimensions
@@ -1428,8 +1432,8 @@ function getVideoConstraints(deviceId = false) {
             videoFpsSelect.disabled = true;
             videoFpsSelect.selectedIndex = 0;
         } else if (videoConstraints !== true) {
-            // Only add frameRate for non-Firefox browsers
-            if (!isFirefox) {
+            // Only add frameRate for non-Firefox and non-Safari browsers
+            if (!isFirefox && !isSafari) {
                 videoConstraints.frameRate = createConstraintType(videoFrameRate);
             }
             videoFpsSelect.disabled = false;
@@ -1440,17 +1444,19 @@ function getVideoConstraints(deviceId = false) {
     if (deviceId) {
         videoConstraints = {
             ...videoConstraints,
-            deviceId: { exact: deviceId },
+            deviceId: isSafari || isFirefox ? { ideal: deviceId } : { exact: deviceId },
         };
     }
 
-    // Firefox-specific constraint cleanup
-    if (isFirefox) {
-        // Remove frameRate constraint as Firefox has inconsistent support
+    // Firefox and Safari-specific constraint cleanup
+    if (isFirefox || isSafari) {
+        // Remove frameRate constraint as Firefox and Safari have inconsistent support
         if (videoConstraints && typeof videoConstraints === 'object') {
             delete videoConstraints.frameRate;
         }
-        console.log('Firefox: Using ideal constraints instead of exact for better compatibility');
+        console.log(
+            `${isSafari ? 'Safari' : 'Firefox'}: Using ideal constraints instead of exact for better compatibility`
+        );
     }
 
     console.log('Video constraints', videoConstraints);
