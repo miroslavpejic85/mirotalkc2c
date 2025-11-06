@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.2.52
+ * @version 1.2.53
  */
 
 require('dotenv').config();
@@ -40,6 +40,7 @@ const packageJson = require('../package.json');
 
 // Email alerts and notifications
 const nodemailer = require('./lib/nodemailer');
+const { env } = require('process');
 
 // Sentry
 sentry.start();
@@ -361,6 +362,7 @@ function getServerConfig(tunnelHttps = false) {
         apiKeySecret: apiKeySecret,
         mattermost: mattermostCfg.enabled ? mattermostCfg : false,
         redirectURL: redirectURL,
+        environment: process.env.NODE_ENV || 'development',
         app_version: packageJson.version,
         nodeVersion: process.versions.node,
     };
