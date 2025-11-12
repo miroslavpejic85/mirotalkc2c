@@ -1373,7 +1373,7 @@ function getAudioConstraints(deviceId = null) {
         autoGainControl: true,
         noiseSuppression: false, // Use RNNoise instead
         sampleRate: 48000,
-        channelCount: 1,
+        channelCount: 2,
     };
     // Safari and Firefox work better with 'ideal' instead of 'exact'
     if (deviceId) {
