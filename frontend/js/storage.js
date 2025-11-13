@@ -22,7 +22,7 @@ class LocalStorage {
                     },
                 },
                 settings: {
-                    noise_suppression: false,
+                    noise_suppression: true, // Noise suppression using RNNoise
                 },
             },
             speaker: {
