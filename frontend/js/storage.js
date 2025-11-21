@@ -63,8 +63,7 @@ class LocalStorage {
     }
 
     setConfig(config) {
-        this.C2C_CONFIG = config;
-        this.setItem('C2C_CONFIG', JSON.stringify(this.C2C_CONFIG));
+        this.setItem('C2C_CONFIG', JSON.stringify(config));
     }
 
     getItem(key) {
@@ -72,6 +71,9 @@ class LocalStorage {
     }
 
     getConfig() {
-        return JSON.parse(this.getItem('C2C_CONFIG'));
+        const config = this.getItem('C2C_CONFIG');
+        if (config) return JSON.parse(config);
+        this.setConfig(this.C2C_CONFIG);
+        return JSON.parse(JSON.stringify(this.C2C_CONFIG));
     }
 }

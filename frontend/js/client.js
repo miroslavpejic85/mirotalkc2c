@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.2.55
+ * @version 1.2.56
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -43,6 +43,7 @@ const videoFpsDiv = document.getElementById('videoFpsDiv');
 const videoFpsSelect = document.getElementById('videoFpsSelect');
 const maxVideoQualityDiv = document.getElementById('maxVideoQualityDiv');
 const pushToTalkDiv = document.getElementById('pushToTalkDiv');
+const switchNoiseSuppression = document.getElementById('switchNoiseSuppression');
 const switchMaxVideoQuality = document.getElementById('switchMaxVideoQuality');
 const switchKeepAspectRatio = document.getElementById('switchKeepAspectRatio');
 const switchPushToTalk = document.getElementById('switchPushToTalk');
@@ -69,7 +70,7 @@ const roomURL = window.location.origin + '/?room=' + roomId;
 
 const LS = new LocalStorage();
 
-const localStorageConfig = LS.getConfig() || LS.C2C_CONFIG;
+const localStorageConfig = LS.getConfig();
 
 console.log('Local Storage Config', localStorageConfig);
 
@@ -1486,6 +1487,7 @@ function loadLocalStorageConfig() {
     videoQualitySelect.selectedIndex = localStorageConfig.video.settings.quality_index;
     videoFpsSelect.selectedIndex = localStorageConfig.video.settings.fps_index;
     audioSource.selectedIndex = localStorageConfig.audio.devices.select.index;
+    switchNoiseSuppression.checked = localStorageConfig.audio.settings.noise_suppression;
     switchMaxVideoQuality.checked = localStorageConfig.video.settings.best_quality;
     switchKeepAspectRatio.checked = localStorageConfig.video.settings.aspect_ratio;
     if (localStorageConfig.video.init.hide) initHideMeBtn.click();
