@@ -74,6 +74,6 @@ class LocalStorage {
         const config = this.getItem('C2C_CONFIG');
         if (config) return JSON.parse(config);
         this.setConfig(this.C2C_CONFIG);
-        return JSON.parse(JSON.stringify(this.C2C_CONFIG));
+        return this.C2C_CONFIG;
     }
 }
