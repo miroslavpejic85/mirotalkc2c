@@ -1487,7 +1487,7 @@ function loadLocalStorageConfig() {
     videoQualitySelect.selectedIndex = localStorageConfig.video.settings.quality_index;
     videoFpsSelect.selectedIndex = localStorageConfig.video.settings.fps_index;
     audioSource.selectedIndex = localStorageConfig.audio.devices.select.index;
-    switchNoiseSuppression.checked = localStorageConfig.audio.settings.noise_suppression;
+    switchNoiseSuppression.checked = localStorageConfig?.audio?.settings?.noise_suppression ?? true;
     switchMaxVideoQuality.checked = localStorageConfig.video.settings.best_quality;
     switchKeepAspectRatio.checked = localStorageConfig.video.settings.aspect_ratio;
     if (localStorageConfig.video.init.hide) initHideMeBtn.click();
@@ -2326,7 +2326,7 @@ function stopNoiseProcessor() {
 
 function initNoiseProcessor() {
     if (!noiseProcessor) {
-        const enabled = localStorageConfig?.audio?.settings?.noise_suppression ?? false;
+        const enabled = localStorageConfig?.audio?.settings?.noise_suppression ?? true;
         noiseProcessor = new RNNoiseProcessor(enabled);
         noiseProcessor.updateUI();
         console.log('Noise processor initialized with enabled state:', noiseProcessor.noiseSuppressionEnabled);
