@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.2.56
+ * @version 1.2.57
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -51,6 +51,7 @@ const sessionTime = document.getElementById('sessionTime');
 const chat = document.getElementById('chat');
 const chatOpenBtn = document.getElementById('chatOpenBtn');
 const chatBody = document.getElementById('chatBody');
+const chatEmptyNotice = document.getElementById('chatEmptyNotice');
 const chatSaveBtn = document.getElementById('chatSaveBtn');
 const chatCleanBtn = document.getElementById('chatCleanBtn');
 const chatCloseBtn = document.getElementById('chatCloseBtn');
@@ -1884,11 +1885,12 @@ function cleanChat() {
         hideClass: { popup: 'animate__animated animate__fadeOutUp' },
     }).then((result) => {
         if (result.isConfirmed) {
-            const chatBodyMessages = chatBody.firstChild;
-            while (chatBody.firstChild) {
-                chatBody.removeChild(chatBody.firstChild);
-            }
+            const messages = chatBody.querySelectorAll('.msg');
+            messages.forEach((msg) => chatBody.removeChild(msg));
+
             chatMessages = [];
+
+            showChatEmptyNoticeIfNoMessages();
             playSound('delete');
         }
     });
@@ -2044,6 +2046,7 @@ function appendMessage(name, msg) {
         time: timeNow,
     });
     hljs.highlightAll();
+    showChatEmptyNoticeIfNoMessages();
 }
 
 function processMessage(message) {
@@ -2094,6 +2097,11 @@ function checkLineBreaks() {
     if (getLineBreaks(chatInput.value) > 0 || chatInput.value.length > 50) {
         chatInput.style.height = '150px';
     }
+}
+
+function showChatEmptyNoticeIfNoMessages() {
+    const messages = chatBody.querySelectorAll('.msg');
+    messages.length === 0 ? chatEmptyNotice.classList.remove('hidden') : chatEmptyNotice.classList.add('hidden');
 }
 
 // =====================================================
