@@ -1987,6 +1987,7 @@ function appendFileMessage(name, fileName, fileSize, fileType, fileData) {
     div.appendChild(a);
     chatBody.appendChild(div);
     chatBody.scrollTop = chatBody.scrollHeight;
+    showChatEmptyNoticeIfNoMessages();
 }
 
 function sendMessage() {
