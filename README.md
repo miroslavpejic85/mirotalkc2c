@@ -90,6 +90,48 @@ Open [http://localhost:8080](http://localhost:8080) in your browser.
 
 </details>
 
+<details open>
+<summary>Self-Hosting</summary>
+
+</br>
+
+![setup](/frontend/images/self-hosting.png)
+
+## **Requirements**
+
+- A clean server running **Ubuntu 22.04 or 24.04 LTS**
+- **Root access** to the Server
+- A **domain or subdomain** pointing to your server’s public IPv4
+
+---
+
+## Note
+
+When **prompted**, simply **enter your domain or subdomain**. Then wait for the installation to complete.
+
+```bash
+# Install MiroTalk C2C
+wget -qO c2c-install.sh https://docs.mirotalk.com/scripts/c2c/c2c-install.sh \
+  && chmod +x c2c-install.sh \
+  && ./c2c-install.sh
+```
+
+```bash
+# Uninstall MiroTalk C2C
+wget -qO c2c-uninstall.sh https://docs.mirotalk.com/scripts/c2c/c2c-uninstall.sh \
+  && chmod +x c2c-uninstall.sh \
+  && ./c2c-uninstall.sh
+```
+
+```bash
+# Update MiroTalk BRO
+wget -qO bro-update.sh https://docs.mirotalk.com/scripts/bro/bro-update.sh \
+  && chmod +x bro-update.sh \
+  && ./bro-update.sh
+```
+
+</details>
+
 <details>
 <summary>Documentations</summary>
 
