@@ -2429,8 +2429,10 @@ window.addEventListener(
         resetVideoZoom();
         let resizeTimeout;
         window.addEventListener('resize', () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(resetVideoZoom, 100);
+            if (resizeTimeout) cancelAnimationFrame(resizeTimeout);
+            resizeTimeout = requestAnimationFrame(function () {
+                resetVideoZoom();
+            });
         });
     },
     false
