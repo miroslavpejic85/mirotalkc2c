@@ -47,10 +47,22 @@ class RNNoiseProcessor {
         try {
             this.updateStatus('🎤 Starting audio processing...', 'info');
 
-            this.mediaStream = mediaStream;
-            this.audioContext = new AudioContext();
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
             const sampleRate = this.audioContext.sampleRate;
             this.updateStatus(`🎵 Audio context created with sample rate: ${sampleRate}Hz`, 'info');
+
+            if (this.audioContext.state === 'suspended') {
+                try {
+                    await this.audioContext.resume();
+                } catch (e) {
+                    // ignore
+                }
+            }
+
+            this.mediaStream = mediaStream;
+            if (!this.mediaStream.getAudioTracks().length) {
+                throw new Error('No audio tracks found in the provided media stream');
+            }
 
             console.log('Loading AudioWorklet module...');
             await this.audioContext.audioWorklet.addModule('./js/noise-suppression-processor.js');
@@ -99,6 +111,9 @@ class RNNoiseProcessor {
         } catch (error) {
             console.error('Error in startProcessing:', error);
             this.updateStatus('❌ Error: ' + error.message, 'error');
+            this.isProcessing = false;
+            this.stopProcessing();
+            return null;
         }
     }
 
@@ -130,10 +145,17 @@ class RNNoiseProcessor {
     }
 
     stopProcessing() {
-        if (this.mediaStream) {
-            this.mediaStream.getTracks().forEach((track) => track.stop());
-            this.mediaStream = null;
-        }
+        this.mediaStream = null;
+
+        try {
+            this.sourceNode?.disconnect();
+        } catch (e) {}
+        try {
+            this.workletNode?.disconnect();
+        } catch (e) {}
+        try {
+            this.destinationNode?.stream?.getTracks?.().forEach((t) => t.stop());
+        } catch (e) {}
 
         if (this.audioContext && this.audioContext.state !== 'closed') {
             this.audioContext.close();
