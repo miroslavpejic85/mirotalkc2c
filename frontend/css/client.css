@@ -709,6 +709,10 @@ hr {
     justify-items: center;
 }
 
+.orange {
+    color: orange !important;
+}
+
 /*
 z-index:
     0 waitingDivContainer
