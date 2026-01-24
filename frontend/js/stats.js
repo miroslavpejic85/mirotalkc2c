@@ -2,6 +2,13 @@
 
 // https://github.com/mikecao/umami
 
+const umami = true;
+
+if (!umami) {
+    console.warn('Umami is disabled');
+		return;
+}
+
 const script = document.createElement('script');
 script.setAttribute('async', '');
 script.setAttribute('src', 'https://stats.mirotalk.com/script.js');
