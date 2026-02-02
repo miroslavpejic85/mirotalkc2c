@@ -6,7 +6,7 @@ const umami = true;
 
 if (!umami) {
     console.warn('Umami is disabled');
-		return;
+    return;
 }
 
 const script = document.createElement('script');
