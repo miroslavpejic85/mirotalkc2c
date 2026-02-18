@@ -17,6 +17,25 @@ class RNNoiseProcessor {
         this.setNoiseSuppressionEnabled(noiseSuppressionEnabled);
     }
 
+    /**
+     * Check if AudioWorklet and WebAssembly are supported.
+     * Mobile browsers may lack AudioWorklet or restrict synchronous WASM compilation.
+     * @returns {boolean}
+     */
+    static isSupported() {
+        try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            const hasAudioWorklet = AudioCtx && 'audioWorklet' in AudioCtx.prototype;
+            const hasWebAssembly =
+                typeof WebAssembly === 'object' &&
+                typeof WebAssembly.Module === 'function' &&
+                typeof WebAssembly.Instance === 'function';
+            return !!(hasAudioWorklet && hasWebAssembly);
+        } catch (e) {
+            return false;
+        }
+    }
+
     initializeUI() {
         this.elements = {
             labelNoiseSuppression: document.getElementById('labelNoiseSuppression'),
@@ -146,6 +165,11 @@ class RNNoiseProcessor {
 
     stopProcessing() {
         this.mediaStream = null;
+
+        // Signal the worklet to free WASM memory before disconnecting
+        try {
+            this.workletNode?.port?.postMessage({ type: 'destroy' });
+        } catch (e) {}
 
         try {
             this.sourceNode?.disconnect();

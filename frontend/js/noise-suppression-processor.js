@@ -37,6 +37,11 @@ class RNNoiseProcessor extends AudioWorkletProcessor {
                 case 'enable':
                     this.enabled = enabled;
                     break;
+                case 'destroy':
+                    this.destroy();
+                    break;
+                default:
+                    console.warn('Unknown message type:', type);
             }
         };
     }
