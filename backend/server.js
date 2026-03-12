@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.2.78
+ * @version 1.2.79
  */
 
 require('dotenv').config();
@@ -211,28 +211,32 @@ app.use((err, req, res, next) => {
 
 // OpenID Connect - Dynamically set baseURL based on incoming host and protocol
 if (OIDC.enabled) {
-    const getDynamicConfig = (host, protocol) => {
-        const baseURL = `${protocol}://${host}`;
+    const authMiddlewareCache = new Map();
 
-        const config = OIDC.baseUrlDynamic
-            ? {
-                  ...OIDC.config,
-                  baseURL,
-              }
-            : OIDC.config;
+    const getAuthMiddleware = (host, protocol) => {
+        if (!OIDC.baseUrlDynamic) {
+            if (!authMiddlewareCache.has('static')) {
+                log.debug('OIDC baseURL', OIDC.config.baseURL);
+                authMiddlewareCache.set('static', auth(OIDC.config));
+            }
+            return authMiddlewareCache.get('static');
+        }
 
-        log.debug('OIDC baseURL', config.baseURL);
-
-        return config;
+        const key = `${protocol}://${host}`;
+        if (!authMiddlewareCache.has(key)) {
+            const config = { ...OIDC.config, baseURL: key };
+            log.debug('OIDC baseURL', config.baseURL);
+            authMiddlewareCache.set(key, auth(config));
+        }
+        return authMiddlewareCache.get(key);
     };
 
-    // Apply the authentication middleware using dynamic baseURL configuration
+    // Apply the cached authentication middleware
     app.use((req, res, next) => {
         const host = req.headers.host;
         const protocol = req.protocol === 'https' ? 'https' : 'http';
-        const dynamicOIDCConfig = getDynamicConfig(host, protocol);
         try {
-            auth(dynamicOIDCConfig)(req, res, next);
+            getAuthMiddleware(host, protocol)(req, res, next);
         } catch (err) {
             log.error('OIDC Auth Middleware Error', err);
             process.exit(1);
