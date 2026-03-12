@@ -8,20 +8,26 @@ const SENTRY_ENABLED = process.env.SENTRY_ENABLED === 'true';
 const SENTRY_LOG_LEVELS = (process.env.SENTRY_LOG_LEVELS || 'error').split(',').map((level) => level.trim());
 const SENTRY_DSN = process.env.SENTRY_DSN;
 const SENTRY_TRACES_SAMPLE_RATE = parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE || '0.5');
+const ANSI_REGEX = /\u001b\[[0-9;]*m/g;
+
+function stripAnsi(str) {
+    return typeof str === 'string' ? str.replace(ANSI_REGEX, '') : str;
+}
 
 function patchConsoleForSentry() {
     const originalConsole = {};
     SENTRY_LOG_LEVELS.forEach((level) => {
         originalConsole[level] = console[level];
         console[level] = function (...args) {
+            const cleanArgs = args.map(stripAnsi);
             switch (level) {
                 case 'warn':
-                    SentryNode.captureMessage(args.join(' '), 'warning');
+                    SentryNode.captureMessage(cleanArgs.join(' '), 'warning');
                     break;
                 case 'error':
                     args[0] instanceof Error
                         ? SentryNode.captureException(args[0])
-                        : SentryNode.captureException(new Error(args.join(' ')));
+                        : SentryNode.captureException(new Error(cleanArgs.join(' ')));
                     break;
             }
             originalConsole[level].apply(console, args);
