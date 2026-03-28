@@ -441,15 +441,39 @@ video::-webkit-media-controls {
 }
 
 #settings select {
-    margin-top: 15px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    margin-top: 10px;
     width: 100%;
-    height: 40px;
+    height: auto;
     max-width: 280px;
-    border-radius: 5px;
-    background-color: var(--secondary-color);
+    padding: 10px 36px 10px 14px;
+    border: 1px solid var(--secondary-color);
+    border-radius: 8px;
+    background-color: var(--primary-color);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23f5f5f5' d='M1.41 0L6 4.58 10.59 0 12 1.41l-6 6-6-6z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
     color: var(--text-color);
+    font-family: 'Montserrat', sans-serif;
     font-size: 0.9rem;
     cursor: pointer;
+    box-sizing: border-box;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+#settings select:hover {
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+#settings select:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(55, 109, 249, 0.2);
 }
 
 #settings span {
@@ -579,8 +603,37 @@ th {
 }
 
 #google_translate_element select {
-    background: var(--secondary-color) !important;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 100%;
+    max-width: 280px;
+    padding: 10px 36px 10px 14px !important;
+    border: 1px solid var(--secondary-color) !important;
+    border-radius: 8px !important;
+    background-color: var(--primary-color) !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23f5f5f5' d='M1.41 0L6 4.58 10.59 0 12 1.41l-6 6-6-6z'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 12px center !important;
+    background-size: 12px !important;
     color: var(--text-color) !important;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.9rem;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+#google_translate_element select:hover {
+    border-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+#google_translate_element select:focus {
+    outline: none;
+    border-color: var(--accent-color) !important;
+    box-shadow: 0 0 0 3px rgba(55, 109, 249, 0.2) !important;
 }
 
 /*--------------------------------------------------------------
