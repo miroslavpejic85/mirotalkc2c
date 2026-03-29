@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.2.84
+ * @version 1.2.85
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -80,7 +80,6 @@ const image = {
     camOff: '../images/camOff.png',
     feedback: '../images/feedback.png',
     forbidden: '../images/forbidden.png',
-    poster: '../images/loader.gif',
 };
 
 const className = {
@@ -668,10 +667,17 @@ function createVideoElement(id, stream, muted = false) {
     video.controls = false;
     video.muted = muted;
     video.volume = muted ? 0 : 1;
-    video.poster = image.poster;
     attachMediaStream(video, stream);
     video.play().catch(() => {});
     return video;
+}
+
+function createVideoSpinner() {
+    const spinner = document.createElement('div');
+    spinner.className = 'video-spinner';
+    spinner.innerHTML =
+        '<div class="loading-spinner"><div class="spinner-ring"></div><img class="spinner-logo" src="../images/logo.svg" alt="logo" /></div>';
+    return spinner;
 }
 
 function createAudioElement(id, stream, muted = false) {
@@ -758,6 +764,9 @@ function setLocalMedia(stream) {
         myLocalMedia.style.objectFit = localStorageConfig.video.settings.aspect_ratio ? 'contain' : 'cover';
         myLocalMedia.style.display = 'block';
         myVideoAvatarImage.style.display = 'none';
+        const myVideoSpinner = createVideoSpinner();
+        myVideoWrap.appendChild(myVideoSpinner);
+        myLocalMedia.addEventListener('playing', () => myVideoSpinner.remove(), { once: true });
     } else if (hasAudio) {
         myLocalMedia = createAudioElement('myAudio', stream, true);
         myLocalMedia.style.display = 'block';
@@ -888,6 +897,9 @@ function setRemoteMedia(stream, peers, peerId) {
         remoteVideoElem = createVideoElement(peerId + '_remoteVideo', stream, false);
         remoteVideoElem.style.display = 'block';
         remoteVideoAvatarImage.style.display = 'none';
+        const remoteVideoSpinner = createVideoSpinner();
+        remoteVideoWrap.appendChild(remoteVideoSpinner);
+        remoteVideoElem.addEventListener('playing', () => remoteVideoSpinner.remove(), { once: true });
     }
 
     // Audio element (if audio track)
