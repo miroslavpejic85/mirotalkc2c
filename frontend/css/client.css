@@ -22,7 +22,7 @@
     --video-obj-fit: cover;
     --my-video-wrap-width: 360px; /* Safari */
     --my-video-wrap-height: 205px;
-    --settings-width: 280px;
+    --settings-width: 350px;
     --btn-hover-scale: scale(1.1);
     --box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 1);
     /* toggle button colors */
@@ -55,14 +55,80 @@ body {
 
 #waitingDivContainer {
     position: absolute;
-    z-index: 0;
+    z-index: 2;
     display: none;
     width: 100%;
     height: 100%;
+    pointer-events: none;
 }
 
-#loadingDiv,
-#waitingDiv {
+#waitingOverlayTop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    pointer-events: auto;
+}
+
+.waiting-status {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 24px;
+    border-radius: 50px;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.waiting-status .waiting-dots {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 0;
+}
+
+.waiting-status .dot {
+    width: 8px;
+    height: 8px;
+}
+
+.waiting-label {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+}
+
+#waitingOverlayBottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    padding: 20px 16px;
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+    pointer-events: auto;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.3) 60%, transparent 100%);
+}
+
+.waiting-buttons {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    gap: clamp(6px, 1.5vw, 12px);
+    max-width: 100%;
+}
+
+#loadingDiv {
     min-width: 290px;
     padding: 30px;
     color: #ffffff;
@@ -73,12 +139,10 @@ body {
     box-shadow: var(--box-shadow);
 }
 
-#waitingDiv h1,
 #loadingDiv h1 {
     font-size: 40px;
 }
 
-#waitingDiv pre,
 #loadingDiv pre {
     font-size: 16px;
 }
@@ -176,50 +240,125 @@ body {
 }
 
 .grid-buttons {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr); /* 4 equal-width columns */
-    gap: 10px; /* Space between buttons */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
 }
 
-#waitingDivContainer button {
-    width: 3.2rem;
-    height: 3.2rem;
-    font-size: 1.3rem;
+/*--------------------------------------------------------------
+# Shared action button styles (waiting + in-call)
+--------------------------------------------------------------*/
+
+.action-btn {
+    width: clamp(2.2rem, 8vw, 3.4rem);
+    height: clamp(2.2rem, 8vw, 3.4rem);
+    font-size: clamp(0.9rem, 2.8vw, 1.3rem);
+    flex-shrink: 1;
+    min-width: 0;
     padding: 5px;
     border: none;
-    border-radius: 50px;
-    background: linear-gradient(135deg, #232427 0%, #18191c 100%);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     text-align: center;
     color: var(--btn-color);
     cursor: pointer;
     box-shadow:
-        0 4px 12px rgba(0, 0, 0, 0.25),
-        0 0 0 1px rgba(255, 255, 255, 0.1);
-    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        0 4px 16px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     position: relative;
     overflow: hidden;
 }
 
-#waitingDivContainer button:hover {
+.action-btn:hover {
     color: var(--hover-color);
-    transform: translateY(-2px) scale(1.05);
-    -webkit-transform: translateY(-2px) scale(1.05);
-    -moz-transform: translateY(-2px) scale(1.05);
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    transform: translateY(-2px) scale(1.08);
+    -webkit-transform: translateY(-2px) scale(1.08);
+    -moz-transform: translateY(-2px) scale(1.08);
+    background: rgba(255, 255, 255, 0.22);
     box-shadow:
-        0 4px 10px rgba(0, 0, 0, 0.3),
-        0 0 0 1px rgba(255, 255, 255, 0.15);
+        0 6px 20px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-#waitingDivContainer button:hover::before {
+.action-btn:hover::before {
     opacity: 1;
 }
 
-#waitingDivContainer button:active {
+.action-btn:active {
     transform: translateY(0px) scale(1.02);
     box-shadow:
         0 2px 8px rgba(0, 0, 0, 0.3),
         0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.action-btn:focus {
+    outline: none;
+    box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.35),
+        0 0 0 2px var(--primary-color),
+        0 0 0 4px rgba(255, 255, 255, 0.1);
+}
+
+/* Full-screen video preview in waiting state */
+.myVideoWrap.waitingFullScreen {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    border: none !important;
+    border-radius: 0 !important;
+    z-index: 1 !important;
+}
+
+.myVideoWrap.waitingFullScreen .videoHeader {
+    display: none !important;
+}
+
+.myVideoWrap.waitingFullScreen .videoFooter {
+    display: none !important;
+}
+
+.myVideoWrap.waitingFullScreen video {
+    border-radius: 0;
+    object-fit: cover;
+}
+
+.myVideoWrap.waitingFullScreen .videoAvatarImage {
+    width: 15vh;
+    height: 15vh;
+}
+
+/* Mobile: responsive buttons for touch */
+@media (max-width: 600px) {
+    .waiting-buttons {
+        gap: clamp(4px, 1.2vw, 8px);
+    }
+
+    .waiting-label {
+        font-size: 0.8rem;
+    }
+
+    #waitingOverlayBottom {
+        padding: 16px 8px;
+        padding-bottom: max(16px, env(safe-area-inset-bottom));
+    }
+}
+
+@media (max-width: 380px) {
+    .waiting-buttons {
+        gap: 3px;
+    }
+
+    .waiting-buttons .action-btn {
+        width: 2rem;
+        height: 2rem;
+        font-size: 0.85rem;
+    }
 }
 
 /*--------------------------------------------------------------
@@ -243,61 +382,10 @@ body {
     width: 100%;
     bottom: 0;
     display: none;
-    text-align: center;
+    justify-content: center;
+    align-items: center;
+    gap: clamp(6px, 1.5vw, 12px);
     background: transparent;
-}
-
-#buttonsBar button {
-    width: 2.8rem;
-    height: 2.8rem;
-    padding: 10px;
-    border: none;
-    border-radius: 50px;
-    background: linear-gradient(135deg, var(--secondary-color) 0%, rgba(43, 45, 54, 0.9) 100%);
-    color: var(--btn-color);
-    text-align: center;
-    font-size: 1.2rem;
-    cursor: pointer;
-    box-shadow:
-        0 4px 12px rgba(0, 0, 0, 0.25),
-        0 0 0 1px rgba(255, 255, 255, 0.08);
-    position: relative;
-    overflow: hidden;
-    -webkit-transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    -moz-transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    -ms-transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    -o-transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-#buttonsBar button:hover {
-    color: var(--hover-color);
-    transform: translateY(-2px) scale(1.05);
-    -webkit-transform: translateY(-2px) scale(1.05);
-    -moz-transform: translateY(-2px) scale(1.05);
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-    box-shadow:
-        0 4px 10px rgba(0, 0, 0, 0.3),
-        0 0 0 1px rgba(255, 255, 255, 0.15);
-}
-
-#buttonsBar button:hover::before {
-    opacity: 1;
-}
-
-#buttonsBar button:active {
-    transform: translateY(0px) scale(1.02);
-    box-shadow:
-        0 2px 8px rgba(0, 0, 0, 0.3),
-        0 0 0 1px rgba(255, 255, 255, 0.1);
-}
-
-#buttonsBar button:focus {
-    outline: none;
-    box-shadow:
-        0 8px 20px rgba(0, 0, 0, 0.35),
-        0 0 0 2px var(--primary-color),
-        0 0 0 4px rgba(255, 255, 255, 0.1);
 }
 
 .fa-user-slash,
@@ -309,7 +397,7 @@ body {
 
 /* Responsive for mobile */
 @media (max-width: 320px) {
-    #buttonsBar button {
+    #buttonsBar .action-btn {
         font-size: 0.8rem;
         width: 1.5rem;
         height: 1.5rem;
@@ -500,75 +588,137 @@ video::-webkit-media-controls {
 #settings {
     position: absolute;
     z-index: 7;
-    top: 0px;
-    right: 0px;
+    top: 0;
+    right: 0;
     display: none;
-    background: var(--primary-color);
+    background: rgba(var(--primary-color-rgb), 0.92);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     width: var(--settings-width);
     height: 100%;
-    padding: 20px;
-    border: var(--border);
-    border-radius: var(--border-radius) 0% 0%;
-    overflow: auto;
+    padding: 0;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--border-radius) 0 0 0;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
-#settings button {
-    display: inline;
-    border: none;
-    float: right;
-    background: rgba(43, 45, 54, 0.8);
-    color: var(--btn-color);
-    font-size: 1rem;
-    padding: 8px 12px;
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    box-shadow:
-        0 2px 6px rgba(0, 0, 0, 0.2),
-        0 0 0 1px rgba(255, 255, 255, 0.08);
-    transition: all 0.3s ease;
-    margin: 2px;
+/* Header */
+.settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    position: sticky;
+    top: 0;
+    background: rgba(var(--primary-color-rgb), 0.95);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    z-index: 1;
 }
 
-#settings button:hover {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-    color: #fff;
-    transform: translateY(-1px);
-    box-shadow:
-        0 4px 10px rgba(0, 0, 0, 0.3),
-        0 0 0 1px rgba(255, 255, 255, 0.15);
-}
-
-#settings label {
-    display: inline-block;
-    margin-right: 10px;
-    margin-top: 15px;
-    font-weight: bold;
+.settings-title {
+    font-size: 0.95rem;
+    font-weight: 600;
     color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-#settings label i {
-    margin-right: 5px;
+.settings-title i {
+    font-size: 0.85rem;
+    opacity: 0.7;
+}
+
+#settings .settings-header button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    float: none;
+    border: none;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-color);
+    font-size: 0.85rem;
+    padding: 0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: none;
+    margin: 0;
+}
+
+#settings .settings-header button:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: none;
+    box-shadow: none;
+}
+
+/* Sections */
+.settings-section {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.settings-section:last-child {
+    border-bottom: none;
+}
+
+.settings-section-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.settings-section-title i {
+    font-size: 0.7rem;
+}
+
+/* Fields (label + select) */
+.settings-field {
+    margin-bottom: 12px;
+}
+
+.settings-field:last-child {
+    margin-bottom: 0;
+}
+
+.settings-field label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.65);
+    margin-bottom: 6px;
 }
 
 #settings select {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    margin-top: 10px;
+    margin-top: 0;
     width: 100%;
     height: auto;
-    max-width: 280px;
-    padding: 10px 36px 10px 14px;
-    border: 1px solid var(--secondary-color);
+    max-width: 100%;
+    padding: 10px 36px 10px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-    background-color: var(--primary-color);
+    background-color: rgba(0, 0, 0, 0.3);
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23f5f5f5' d='M1.41 0L6 4.58 10.59 0 12 1.41l-6 6-6-6z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 12px center;
-    background-size: 12px;
+    background-size: 10px;
     color: var(--text-color);
     font-family: 'Montserrat', sans-serif;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     cursor: pointer;
     box-sizing: border-box;
     transition:
@@ -577,42 +727,87 @@ video::-webkit-media-controls {
 }
 
 #settings select:hover {
-    border-color: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
 #settings select:focus {
     outline: none;
     border-color: var(--accent-color);
-    box-shadow: 0 0 0 3px rgba(55, 109, 249, 0.2);
+    box-shadow: 0 0 0 3px rgba(55, 109, 249, 0.15);
 }
 
-#settings span {
+/* Toggle rows */
+.settings-toggle-row {
     display: flex;
-    justify-content: center;
     align-items: center;
-    width: 100%;
+    justify-content: space-between;
+    padding: 8px 0;
 }
 
-/*--------------------------------------------------------------
-# My settings table
---------------------------------------------------------------*/
+.settings-toggle-row + .settings-toggle-row {
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
 
-#settingsTable {
-    margin-top: 20px;
-    width: 100%;
+.settings-toggle-row label {
+    font-size: 0.85rem;
+    font-weight: 500;
     color: var(--text-color);
-    color: #fff;
-    border-collapse: collapse;
-    border-style: hidden;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
-#settingsTable td,
-th {
-    padding: 10px;
-    text-align: left;
-    border: var(--border);
+
+.settings-toggle-row label i {
+    font-size: 0.8rem;
+    opacity: 0.6;
+    width: 16px;
+    text-align: center;
 }
-#settingsTable tr td span i {
-    margin-right: 5px;
+
+/* Info rows (recording, session time) */
+.settings-info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+}
+
+.settings-info-row + .settings-info-row {
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.settings-info-row label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.settings-info-row label i {
+    font-size: 0.8rem;
+    opacity: 0.6;
+    width: 16px;
+    text-align: center;
+}
+
+.settings-info-row span {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+    display: inline;
+    width: auto;
+    justify-content: flex-end;
+}
+
+/* Settings: full screen on mobile */
+@media (max-width: 768px) {
+    #settings {
+        width: 100%;
+        border-left: none;
+        border-radius: 0;
+    }
 }
 
 /*--------------------------------------------------------------
@@ -878,7 +1073,8 @@ hr {
 
 /*
 z-index:
-    0 waitingDivContainer
+    1 myVideoWrap (waitingFullScreen)
+    2 waitingDivContainer (overlay)
     1 video avatar img
     2 videoHeader
         - full screen mode

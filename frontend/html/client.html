@@ -76,112 +76,127 @@ access to use this app.
         </div>
 
         <div id="waitingDivContainer" class="fadeIn">
-            <div id="waitingDiv" class="center">
-                <div class="header">
-                    <h1 class="pulsate">Waiting</h1>
-                    <pre>
-Waiting for users to join.
-                    </pre>
+            <div id="waitingOverlayTop">
+                <div class="waiting-status">
                     <div class="waiting-dots">
                         <span class="dot"></span>
                         <span class="dot"></span>
                         <span class="dot"></span>
                     </div>
+                    <span class="waiting-label">Waiting for participant</span>
                 </div>
-                <div class="grid-buttons">
-                    <button id="shareRoomBtn" class="fas fa-share-nodes"></button>
-                    <button id="copyRoomBtn" class="fas fa-copy"></button>
-                    <button id="initHideMeBtn" class="fas fa-user"></button>
-                    <button id="initVideoBtn" class="fas fa-video"></button>
-                    <button id="initAudioBtn" class="fas fa-microphone"></button>
-                    <button id="initScreenShareBtn" class="fas fa-desktop"></button>
-                    <button id="initChatOpenBtn" class="fas fa-comments"></button>
-                    <button id="initSettingsBtn" class="fas fa-cogs"></button>
-                    <button id="initLeaveBtn" class="fas fa-phone-slash red"></button>
+            </div>
+            <div id="waitingOverlayBottom">
+                <div class="waiting-buttons">
+                    <button id="shareRoomBtn" class="action-btn fas fa-share-nodes"></button>
+                    <button id="copyRoomBtn" class="action-btn fas fa-copy"></button>
+                    <button id="initHideMeBtn" class="action-btn fas fa-user"></button>
+                    <button id="initVideoBtn" class="action-btn fas fa-video"></button>
+                    <button id="initAudioBtn" class="action-btn fas fa-microphone"></button>
+                    <button id="initScreenShareBtn" class="action-btn fas fa-desktop"></button>
+                    <button id="initChatOpenBtn" class="action-btn fas fa-comments"></button>
+                    <button id="initSettingsBtn" class="action-btn fas fa-cogs"></button>
+                    <button id="initLeaveBtn" class="action-btn fas fa-phone-slash red"></button>
                 </div>
             </div>
         </div>
 
         <div id="buttonsBar">
-            <button id="hideMeBtn" class="fas fa-user"></button>
-            <button id="videoBtn" class="fas fa-video"></button>
-            <button id="audioBtn" class="fas fa-microphone"></button>
-            <button id="swapCameraBtn" class="fas fa-camera-rotate"></button>
-            <button id="screenShareBtn" class="fas fa-desktop"></button>
-            <button id="recordingBtn" class="fas fa-record-vinyl"></button>
-            <button id="chatOpenBtn" class="fas fa-comments"></button>
-            <button id="settingsBtn" class="fas fa-cogs"></button>
-            <button id="leaveBtn" class="fas fa-phone-slash red"></button>
+            <button id="hideMeBtn" class="action-btn fas fa-user"></button>
+            <button id="videoBtn" class="action-btn fas fa-video"></button>
+            <button id="audioBtn" class="action-btn fas fa-microphone"></button>
+            <button id="swapCameraBtn" class="action-btn fas fa-camera-rotate"></button>
+            <button id="screenShareBtn" class="action-btn fas fa-desktop"></button>
+            <button id="recordingBtn" class="action-btn fas fa-record-vinyl"></button>
+            <button id="chatOpenBtn" class="action-btn fas fa-comments"></button>
+            <button id="settingsBtn" class="action-btn fas fa-cogs"></button>
+            <button id="leaveBtn" class="action-btn fas fa-phone-slash red"></button>
         </div>
 
         <div id="settings">
-            <button id="settingsCloseBtn" class="fas fa-times"></button>
-            <label for="videoSource"><i class="fas fa-video"></i> Camera</label>
-            <select id="videoSource"></select>
-            <label><i class="fas fa-image"></i> Video quality</label>
-            <select id="videoQualitySelect">
-                <option value="default">Default</option>
-                <option value="qvga">QVGA</option>
-                <option value="vga">VGA</option>
-                <option value="hd">HD</option>
-                <option value="fhd">FULL HD</option>
-                <option value="2k">2K</option>
-                <option value="4k">4K</option>
-                <option value="6k">6K</option>
-                <option value="8k">8K</option>
-            </select>
-            <div id="videoFpsDiv">
-                <label><i class="fas fa-gauge"></i> Video frame rate</label>
-                <select id="videoFpsSelect">
-                    <option value="default">Default</option>
-                    <option value="60">60 fps</option>
-                    <option value="30">30 fps</option>
-                    <option value="15">15 fps</option>
-                    <option value="5">5 fps</option>
-                </select>
+            <div class="settings-header">
+                <span class="settings-title"><i class="fas fa-cogs"></i> Settings</span>
+                <button id="settingsCloseBtn" class="fas fa-times"></button>
             </div>
-            <label for="audioSource"><i class="fas fa-microphone"></i> Microphone</label>
-            <select id="audioSource"></select>
-            <label><i class="fa-solid fa-language"></i> Language</label>
-            <div id="google_translate_element"></div>
-            <hr />
-            <table id="settingsTable">
-                <tr id="noiseSuppressionDiv">
-                    <td>
-                        <label id="labelNoiseSuppression"> <i class="fas fa-ear-listen"></i> Noise suppression </label>
-                    </td>
-                    <td><input id="switchNoiseSuppression" class="toggle" type="checkbox" /></td>
-                </tr>
-                <tr id="maxVideoQualityDiv">
-                    <td>
-                        <label> <i class="fas fa-star"></i> Best quality </label>
-                    </td>
-                    <td><input id="switchMaxVideoQuality" class="toggle" type="checkbox" /></td>
-                </tr>
-                <tr id="aspectRatioDiv">
-                    <td>
-                        <label> <i class="fas fa-display"></i> Aspect ratio </label>
-                    </td>
-                    <td><input id="switchKeepAspectRatio" class="toggle" type="checkbox" /></td>
-                </tr>
-                <tr id="pushToTalkDiv">
-                    <td>
-                        <label> <i class="fas fa-hand-pointer"></i> Push to talk </label>
-                    </td>
-                    <td><input id="switchPushToTalk" class="toggle" type="checkbox" /></td>
-                </tr>
-                <tr id="recordingDiv">
-                    <td><label id="recordingLabel">🔴 Recording </label></td>
-                    <td><span id="recordingTime">0s</span></td>
-                </tr>
-                <tr>
-                    <td>
-                        <label> <i class="fas fa-clock"></i> Session time </label>
-                    </td>
-                    <td><span class="notranslate" id="sessionTime">0s</span></td>
-                </tr>
-            </table>
-            <hr />
+
+            <div class="settings-section">
+                <div class="settings-section-title"><i class="fas fa-video"></i> Video</div>
+                <div class="settings-field">
+                    <label for="videoSource">Camera</label>
+                    <select id="videoSource"></select>
+                </div>
+                <div class="settings-field">
+                    <label>Quality</label>
+                    <select id="videoQualitySelect">
+                        <option value="default">Default</option>
+                        <option value="qvga">QVGA</option>
+                        <option value="vga">VGA</option>
+                        <option value="hd">HD</option>
+                        <option value="fhd">FULL HD</option>
+                        <option value="2k">2K</option>
+                        <option value="4k">4K</option>
+                        <option value="6k">6K</option>
+                        <option value="8k">8K</option>
+                    </select>
+                </div>
+                <div id="videoFpsDiv" class="settings-field">
+                    <label>Frame rate</label>
+                    <select id="videoFpsSelect">
+                        <option value="default">Default</option>
+                        <option value="60">60 fps</option>
+                        <option value="30">30 fps</option>
+                        <option value="15">15 fps</option>
+                        <option value="5">5 fps</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-section-title"><i class="fas fa-microphone"></i> Audio</div>
+                <div class="settings-field">
+                    <label for="audioSource">Microphone</label>
+                    <select id="audioSource"></select>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-section-title"><i class="fa-solid fa-language"></i> Language</div>
+                <div class="settings-field">
+                    <div id="google_translate_element"></div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-section-title"><i class="fas fa-sliders"></i> Preferences</div>
+                <div id="noiseSuppressionDiv" class="settings-toggle-row">
+                    <label id="labelNoiseSuppression"><i class="fas fa-ear-listen"></i> Noise suppression</label>
+                    <input id="switchNoiseSuppression" class="toggle" type="checkbox" />
+                </div>
+                <div id="maxVideoQualityDiv" class="settings-toggle-row">
+                    <label><i class="fas fa-star"></i> Best quality</label>
+                    <input id="switchMaxVideoQuality" class="toggle" type="checkbox" />
+                </div>
+                <div id="aspectRatioDiv" class="settings-toggle-row">
+                    <label><i class="fas fa-display"></i> Aspect ratio</label>
+                    <input id="switchKeepAspectRatio" class="toggle" type="checkbox" />
+                </div>
+                <div id="pushToTalkDiv" class="settings-toggle-row">
+                    <label><i class="fas fa-hand-pointer"></i> Push to talk</label>
+                    <input id="switchPushToTalk" class="toggle" type="checkbox" />
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-section-title"><i class="fas fa-info-circle"></i> Session</div>
+                <div id="recordingDiv" class="settings-info-row">
+                    <label id="recordingLabel">🔴 Recording</label>
+                    <span id="recordingTime">0s</span>
+                </div>
+                <div class="settings-info-row">
+                    <label><i class="fas fa-clock"></i> Session time</label>
+                    <span class="notranslate" id="sessionTime">0s</span>
+                </div>
+            </div>
         </div>
 
         <div id="chat" class="chat">

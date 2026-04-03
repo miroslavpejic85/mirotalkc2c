@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.2.86
+ * @version 1.2.90
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -344,7 +344,7 @@ function handleAddPeer(config) {
         return console.warn('Peer already connected', peerId);
     }
 
-    elemDisplay(buttonsBar, true);
+    elemDisplay(buttonsBar, true, 'flex');
     animateCSS(buttonsBar, 'fadeInUp');
 
     const peerConnection = new RTCPeerConnection({ iceServers: iceServers });
@@ -362,6 +362,7 @@ function handleAddPeer(config) {
 
     if (thereIsPeerConnections()) {
         elemDisplay(waitingDivContainer, false);
+        if (window.myVideoWrap) window.myVideoWrap.classList.remove('waitingFullScreen');
     }
     handleBodyEvents();
 
@@ -585,6 +586,7 @@ function handleRemovePeer(config) {
         elemDisplay(buttonsBar, false);
         elemDisplay(settings, false);
         elemDisplay(chat, false);
+        if (window.myVideoWrap) window.myVideoWrap.classList.add('waitingFullScreen');
     }
     playSound('leave');
 }
@@ -789,6 +791,11 @@ function setLocalMedia(stream) {
     window.myVideoWrap = myVideoWrap;
     window.myVideoAvatarImage = myVideoAvatarImage;
     window.myAudioStatusIcon = myAudioStatusIcon;
+
+    // Re-apply full-screen waiting state if still in waiting room
+    if (waitingDivContainer.style.display !== 'none' && waitingDivContainer.style.display !== '') {
+        myVideoWrap.classList.add('waitingFullScreen');
+    }
 
     logStreamSettingsInfo('localMediaStream', localMediaStream);
 
@@ -1212,12 +1219,13 @@ function handleEvents() {
 function showWaitingUser() {
     elemDisplay(loadingDivContainer, false);
     elemDisplay(waitingDivContainer, true);
+    if (window.myVideoWrap) window.myVideoWrap.classList.add('waitingFullScreen');
 }
 
 function toggleHideMe() {
     const isVideoWrapHidden = window.myVideoWrap.style.display == 'none';
-    hideMeBtn.className = isVideoWrapHidden ? className.user : className.userOff;
-    initHideMeBtn.className = isVideoWrapHidden ? className.user : className.userOff;
+    hideMeBtn.className = 'action-btn ' + (isVideoWrapHidden ? className.user : className.userOff);
+    initHideMeBtn.className = 'action-btn ' + (isVideoWrapHidden ? className.user : className.userOff);
     if (isVideoWrapHidden) {
         elemDisplay(window.myVideoWrap, true);
         animateCSS(window.myVideoWrap, 'fadeInLeft');
@@ -1301,8 +1309,11 @@ async function toggleScreenSharing() {
                     isScreenStreaming || localStorageConfig.video.settings.aspect_ratio ? 'contain' : 'cover';
             }
             if (initScreenShareBtn)
-                initScreenShareBtn.className = isScreenStreaming ? className.screenOff : className.screenOn;
-            if (screenShareBtn) screenShareBtn.className = isScreenStreaming ? className.screenOff : className.screenOn;
+                initScreenShareBtn.className =
+                    'action-btn ' + (isScreenStreaming ? className.screenOff : className.screenOn);
+            if (screenShareBtn)
+                screenShareBtn.className =
+                    'action-btn ' + (isScreenStreaming ? className.screenOff : className.screenOn);
 
             if (!isScreenStreaming) {
                 setLocalAudioStatus(isMyAudioActiveBefore);
@@ -1605,8 +1616,8 @@ function setAudioButtons(active, e = false) {
     }
     if (e) e.target.className = active ? className.audioOn : className.audioOff;
     if (window.myAudioStatusIcon) window.myAudioStatusIcon.className = active ? className.audioOn : className.audioOff;
-    if (audioBtn) audioBtn.className = active ? className.audioOn : className.audioOff;
-    if (initAudioBtn) initAudioBtn.className = active ? className.audioOn : className.audioOff;
+    if (audioBtn) audioBtn.className = 'action-btn ' + (active ? className.audioOn : className.audioOff);
+    if (initAudioBtn) initAudioBtn.className = 'action-btn ' + (active ? className.audioOn : className.audioOff);
 }
 
 function setVideoButtons(active, e = false) {
@@ -1614,8 +1625,8 @@ function setVideoButtons(active, e = false) {
         localMediaStream.getVideoTracks()[0].enabled = active;
     }
     if (e) e.target.className = active ? className.videoOn : className.videoOff;
-    if (videoBtn) videoBtn.className = active ? className.videoOn : className.videoOff;
-    if (initVideoBtn) initVideoBtn.className = active ? className.videoOn : className.videoOff;
+    if (videoBtn) videoBtn.className = 'action-btn ' + (active ? className.videoOn : className.videoOff);
+    if (initVideoBtn) initVideoBtn.className = 'action-btn ' + (active ? className.videoOn : className.videoOff);
     if (window.myVideoAvatarImage) elemDisplay(window.myVideoAvatarImage, active ? false : true);
 }
 

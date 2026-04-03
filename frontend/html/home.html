@@ -36,18 +36,21 @@
     <body>
         <form id="joinForm" autocomplete="off" class="join-form">
             <div class="form-header">
-                <h2><i class="fas fa-video"></i> Start Your Video Call</h2>
-                <p>Enter a room name and your username to begin</p>
+                <div class="form-logo">
+                    <img src="../images/logo.svg" alt="MiroTalk" />
+                </div>
+                <h2>Start a Video Call</h2>
+                <p>Connect face-to-face, instantly</p>
             </div>
 
             <div class="input-group">
-                <label for="room"><i class="fas fa-home"></i> Room Name</label>
+                <label for="room"><i class="fas fa-door-open"></i> Room</label>
                 <div class="input-container">
                     <input
                         id="roomIdInput"
                         type="text"
                         name="room"
-                        placeholder="Enter room name (e.g., meeting-room)"
+                        placeholder="e.g. my-meeting"
                         maxlength="36"
                         required
                     />
@@ -61,17 +64,16 @@
                         <i class="fa fa-random"></i>
                     </button>
                 </div>
-                <small class="input-help">Choose a unique room name or generate a random one</small>
             </div>
 
             <div class="input-group">
-                <label for="username"><i class="fas fa-user"></i> Your Name</label>
+                <label for="username"><i class="fas fa-user"></i> Name</label>
                 <div class="input-container">
                     <input
                         id="userNameInput"
                         type="text"
                         name="name"
-                        placeholder="Enter your name or email"
+                        placeholder="Your display name"
                         maxlength="36"
                         required
                     />
@@ -85,17 +87,16 @@
                         <i class="fa fa-random"></i>
                     </button>
                 </div>
-                <small class="input-help">This will be shown to other participants</small>
             </div>
 
-            <div class="action-buttons">
-                <button type="submit" id="joinBtn" class="join-button">
-                    <i class="fa fa-sign-in-alt"></i>
-                    <span>Join Video Call</span>
-                </button>
-            </div>
+            <button type="submit" id="joinBtn" class="join-button">
+                <i class="fas fa-video"></i>
+                <span>Join Call</span>
+            </button>
 
-            <button id="supportBtn" class="support-btn">© 2026 MiroTalk C2C, all rights reserved</button>
+            <div class="form-divider"><span>or share this room link after joining</span></div>
+
+            <button id="supportBtn" class="support-btn">&copy; 2026 MiroTalk C2C</button>
         </form>
     </body>
 </html>

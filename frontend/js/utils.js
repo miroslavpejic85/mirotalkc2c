@@ -338,7 +338,7 @@ function handleBodyEvents() {
     document.body.onmousemove = () => {
         if (buttonsBar.style.display == 'none' && waitingDivContainer.style.display == 'none') {
             toggleClassElements('videoHeader', true);
-            elemDisplay(buttonsBar, true);
+            elemDisplay(buttonsBar, true, 'flex');
             animateCSS(buttonsBar, 'fadeInUp');
         }
     };
