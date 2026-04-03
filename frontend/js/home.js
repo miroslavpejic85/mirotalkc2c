@@ -40,13 +40,15 @@ async function initHome() {
     userNameIn.value = filterXSS(await getUserName());
 
     randomRoomBtn.onclick = () => {
-        roomIdIn.value = ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
-            (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)
+        const finalValue = ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
+            (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16),
         );
+        shuffleText(roomIdIn, finalValue);
     };
 
     randomUserBtn.onclick = () => {
-        userNameIn.value = 'User_' + Math.floor(Math.random() * 1000000);
+        const finalValue = 'User_' + Math.floor(Math.random() * 1000000);
+        shuffleText(userNameIn, finalValue);
     };
 
     joinBtn.onclick = () => {
@@ -64,6 +66,35 @@ async function initHome() {
 
     !config.support && elementDisplay(supportBtn, false);
     //...
+}
+
+function shuffleText(input, finalValue, duration = 600) {
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    const steps = 10;
+    const interval = duration / steps;
+    let step = 0;
+
+    input.classList.add('shuffle-active');
+
+    const timer = setInterval(() => {
+        step++;
+        const progress = step / steps;
+        let display = '';
+        for (let i = 0; i < finalValue.length; i++) {
+            if (i < finalValue.length * progress) {
+                display += finalValue[i];
+            } else {
+                display += chars[Math.floor(Math.random() * chars.length)];
+            }
+        }
+        input.value = display;
+
+        if (step >= steps) {
+            clearInterval(timer);
+            input.value = finalValue;
+            setTimeout(() => input.classList.remove('shuffle-active'), 300);
+        }
+    }, interval);
 }
 
 function elementDisplay(elem, display) {
