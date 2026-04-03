@@ -832,10 +832,23 @@ video::-webkit-media-controls {
 
 .swal2-popup {
     border: var(--border) !important;
+    border-radius: var(--border-radius) !important;
     background-color: var(--primary-color) !important;
 }
 
+.swal2-popup .swal2-styled.swal2-confirm,
+.swal2-popup .swal2-styled.swal2-cancel,
+.swal2-popup .swal2-styled.swal2-deny {
+    border-radius: 0.5rem;
+}
+
+.swal2-container {
+    backdrop-filter: blur(4px);
+}
+
 .swal2-timer-progress-bar-container {
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+    overflow: hidden;
     background: #376df9;
 }
 
