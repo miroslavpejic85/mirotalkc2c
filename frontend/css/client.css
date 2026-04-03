@@ -138,6 +138,43 @@ body {
     }
 }
 
+/* Waiting dots animation */
+.waiting-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 25px;
+}
+
+.waiting-dots .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #fff;
+    animation: waiting-bounce 1.4s ease-in-out infinite;
+}
+
+.waiting-dots .dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.waiting-dots .dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes waiting-bounce {
+    0%,
+    80%,
+    100% {
+        opacity: 0.3;
+        transform: scale(0.8);
+    }
+    40% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+}
+
 .grid-buttons {
     display: grid;
     grid-template-columns: repeat(5, 1fr); /* 4 equal-width columns */
