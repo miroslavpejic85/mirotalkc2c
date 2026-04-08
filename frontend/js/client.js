@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.2.92
+ * @version 1.2.93
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -286,7 +286,7 @@ function handleConnect() {
             handleCameraMirror(window.myVideo, camera);
             handleEvents();
             loadLocalStorageConfig();
-            initNoiseProcessor();
+            await initNoiseProcessor();
             showWaitingUser();
             joinToChannel();
         });
@@ -2369,13 +2369,21 @@ function stopNoiseProcessor() {
     }
 }
 
-function initNoiseProcessor() {
+async function initNoiseProcessor() {
     if (!noiseProcessor) {
         if (!RNNoiseProcessor.isSupported()) {
             console.warn('RNNoise is not supported on this browser, skipping noise processor initialization');
             elemDisplay(noiseSuppressionDiv, false);
             return;
         }
+
+        const supports48k = await RNNoiseProcessor.isSampleRateSupported();
+        if (!supports48k) {
+            console.warn('RNNoise: device does not support 48 kHz sample rate, skipping.');
+            elemDisplay(noiseSuppressionDiv, false);
+            return;
+        }
+
         const enabled = localStorageConfig?.audio?.settings?.noise_suppression ?? false;
         noiseProcessor = new RNNoiseProcessor(enabled);
         noiseProcessor.updateUI();
@@ -2386,7 +2394,7 @@ function initNoiseProcessor() {
 async function applyNoiseSuppressionToLocalStream(stream) {
     if (!stream || !stream.getAudioTracks().length) return stream;
     if (!RNNoiseProcessor.isSupported()) return stream;
-    initNoiseProcessor();
+    await initNoiseProcessor();
     if (!noiseProcessor?.noiseSuppressionEnabled) return stream;
     try {
         return await noiseProcessor.applyNoiseSuppressionToStream(stream);
@@ -2422,7 +2430,7 @@ async function toggleNoiseSuppressionForLocalStream() {
         return;
     }
 
-    initNoiseProcessor();
+    await initNoiseProcessor();
     noiseProcessor.toggleNoiseSuppression();
 
     const enabled = noiseProcessor.noiseSuppressionEnabled;

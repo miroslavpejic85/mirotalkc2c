@@ -36,6 +36,23 @@ class RNNoiseProcessor {
         }
     }
 
+    /**
+     * Probe whether the device actually supports a 48 kHz sample rate.
+     * Creates a temporary AudioContext, checks the real rate, then closes it.
+     * @returns {Promise<boolean>}
+     */
+    static async isSampleRateSupported() {
+        try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            const ctx = new AudioCtx({ sampleRate: 48000 });
+            const actual = ctx.sampleRate;
+            await ctx.close();
+            return actual === 48000;
+        } catch (e) {
+            return false;
+        }
+    }
+
     initializeUI() {
         this.elements = {
             labelNoiseSuppression: document.getElementById('labelNoiseSuppression'),
@@ -66,9 +83,9 @@ class RNNoiseProcessor {
         try {
             this.updateStatus('🎤 Starting audio processing...', 'info');
 
+            // 48 kHz support is verified by isSampleRateSupported() at init.
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const sampleRate = this.audioContext.sampleRate;
-            this.updateStatus(`🎵 Audio context created with sample rate: ${sampleRate}Hz`, 'info');
+            this.updateStatus(`🎵 Audio context created with sample rate: ${this.audioContext.sampleRate}Hz`, 'info');
 
             if (this.audioContext.state === 'suspended') {
                 try {
@@ -138,6 +155,11 @@ class RNNoiseProcessor {
 
     async loadWasmBuffer() {
         try {
+            if (!this.workletNode) {
+                this.updateStatus('⚠️ Worklet node not available, skipping WASM load', 'warning');
+                return;
+            }
+
             this.updateStatus('📦 Loading RNNoise sync module...', 'info');
 
             console.log('Fetching rnnoise-sync.js...');
@@ -150,6 +172,11 @@ class RNNoiseProcessor {
             const jsContent = await jsResponse.text();
             console.log('rnnoise-sync.js loaded, size:', jsContent.length);
             this.updateStatus('📦 Sending sync module to worklet...', 'info');
+
+            if (!this.workletNode) {
+                this.updateStatus('⚠️ Worklet node disconnected before WASM could be sent', 'warning');
+                return;
+            }
 
             this.workletNode.port.postMessage({
                 type: 'sync-module',
