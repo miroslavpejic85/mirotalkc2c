@@ -124,9 +124,9 @@ wget -qO c2c-uninstall.sh https://docs.mirotalk.com/scripts/c2c/c2c-uninstall.sh
 ```
 
 ```bash
-# Update MiroTalk BRO
-wget -qO bro-update.sh https://docs.mirotalk.com/scripts/c2c/c2c-update.sh \
-  && chmod +x bro-update.sh \
+# Update MiroTalk C2C
+wget -qO c2c-update.sh https://docs.mirotalk.com/scripts/c2c/c2c-update.sh \
+  && chmod +x c2c-update.sh \
   && ./c2c-update.sh
 ```
 
