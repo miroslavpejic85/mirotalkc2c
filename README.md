@@ -22,13 +22,13 @@
 <p align="center"><strong>MiroTalk C2C</strong> is a <strong>self-hosted, open-source</strong> platform for <strong>real-time cam-2-cam video calls and screen sharing</strong> using direct <strong>peer-to-peer WebRTC connections</strong>. End-to-end encrypted, embeddable in any website with a <a href="https://docs.mirotalk.com/mirotalk-c2c/integration/" target="_blank">simple iframe</a>.</p>
 
 <p align="center">
-    <a href="https://c2c.mirotalk.com"><img src="https://img.shields.io/badge/🚀_Try_Live_Demo-blue?style=for-the-badge" alt="Try Live Demo"></a>
+    <a href="https://c2c.mirotalk.com"><img src="https://img.shields.io/badge/Try_Live_Demo-blue?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Try Live Demo"></a>
     &nbsp;
-    <a href="https://docs.mirotalk.com/mirotalk-c2c/self-hosting/"><img src="https://img.shields.io/badge/📖_Documentation-green?style=for-the-badge" alt="Documentation"></a>
+    <a href="https://docs.mirotalk.com/mirotalk-c2c/self-hosting/"><img src="https://img.shields.io/badge/Documentation-green?style=for-the-badge&logo=readthedocs&logoColor=white" alt="Documentation"></a>
     &nbsp;
-    <a href="https://discord.gg/rgGYfeYW3N"><img src="https://img.shields.io/badge/💬_Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
+    <a href="https://discord.gg/rgGYfeYW3N"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
     &nbsp;
-    <a href="https://github.com/sponsors/miroslavpejic85"><img src="https://img.shields.io/badge/❤️_Sponsor-ea4aaa?style=for-the-badge" alt="Sponsor"></a>
+    <a href="https://github.com/sponsors/miroslavpejic85"><img src="https://img.shields.io/badge/Sponsor-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="Sponsor"></a>
 </p>
 
 <br />
@@ -150,7 +150,7 @@ To obtain a [MiroTalk C2C license](https://docs.mirotalk.com/license/licensing-o
 </details>
 
 <details open>
-<summary>Support the project</summary>
+<summary>❤️ Support the project</summary>
 
 <br/>
 
