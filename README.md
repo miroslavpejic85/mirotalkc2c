@@ -19,7 +19,7 @@
 
 <br />
 
-<p align="center"><strong>MiroTalk C2C</strong> is a <strong>self-hosted, open-source</strong> platform for <strong>real-time cam-2-cam video calls and screen sharing</strong> using direct <strong>peer-to-peer WebRTC connections</strong>. End-to-end encrypted, embeddable in any website with a <a href="https://github.com/miroslavpejic85/mirotalkc2c/issues/2#issuecomment-1340587150" target="_blank">simple iframe</a>.</p>
+<p align="center"><strong>MiroTalk C2C</strong> is a <strong>self-hosted, open-source</strong> platform for <strong>real-time cam-2-cam video calls and screen sharing</strong> using direct <strong>peer-to-peer WebRTC connections</strong>. End-to-end encrypted, embeddable in any website with a <a href="https://docs.mirotalk.com/mirotalk-c2c/integration/" target="_blank">simple iframe</a>.</p>
 
 <p align="center">
     <a href="https://c2c.mirotalk.com"><img src="https://img.shields.io/badge/🚀_Try_Live_Demo-blue?style=for-the-badge" alt="Try Live Demo"></a>
