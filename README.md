@@ -170,7 +170,7 @@ Do you find MiroTalk C2C indispensable for your needs? Join us in supporting thi
 
 If you like this project, please star it - every star helps more people discover this project!
 
-[![Star History Chart](https://api.star-history.com/svg?repos=miroslavpejic85/mirotalkc2c&type=Date)](https://star-history.com/#miroslavpejic85/mirotalkc2c&Date)
+![Star History Chart](https://app.repohistory.com/api/svg?repo=miroslavpejic85/mirotalkc2c&type=Date&background=0D1117&color=62C3F8)
 
 ---
 
