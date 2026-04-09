@@ -1,220 +1,147 @@
 <h1 align="center">MiroTalk C2C</h1>
 
+<h3 align="center">WebRTC peer-to-peer video calls and screen sharing with end-to-end encryption, easily embeddable in any website via iframe</h3>
+
 <br />
 
 <div align="center">
 
+[![GitHub Stars](https://img.shields.io/github/stars/miroslavpejic85/mirotalkc2c?style=social)](https://github.com/miroslavpejic85/mirotalkc2c/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/miroslavpejic85/mirotalkc2c?style=social)](https://github.com/miroslavpejic85/mirotalkc2c/network/members)
+
+<a href="https://choosealicense.com/licenses/agpl-3.0/">![License: AGPLv3](https://img.shields.io/badge/License-AGPLv3_Open_Source-blue.svg)</a>
+<a href="https://hub.docker.com/r/mirotalk/c2c">![Docker Pulls](https://img.shields.io/docker/pulls/mirotalk/c2c)</a>
+<a href="https://github.com/miroslavpejic85/mirotalkc2c/commits/master">![Last Commit](https://img.shields.io/github/last-commit/miroslavpejic85/mirotalkc2c)</a>
+<a href="https://discord.gg/rgGYfeYW3N">![Discord](https://img.shields.io/badge/Discord-Community-5865F2?logo=discord&logoColor=white)</a>
 <a href="https://www.linkedin.com/in/miroslav-pejic-976a07101/">![Author](https://img.shields.io/badge/Author-Miroslav_Pejic-brightgreen.svg)</a>
-<a href="https://choosealicense.com/licenses/agpl-3.0/">![License: AGPLv3](https://img.shields.io/badge/License-AGPLv3_Open_Surce-blue.svg)</a>
-<a href="https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005">![License: Regular](https://img.shields.io/badge/License-Regular_Private_Use-lightblue.svg)</a>
-<a href="https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005">![License: Extended](https://img.shields.io/badge/License-Extended_Commercial_Use-darkgreen.svg)</a>
-<a href="https://discord.gg/rgGYfeYW3N">![Community](https://img.shields.io/badge/Community-forum-pink.svg)</a>
 
 </div>
 
-<p align="center">Free WebRTC Real-Time Cam-2-Cam Video Calls & Screen Sharing, End-to-End Encrypted, to embed in any website with a <a href="https://github.com/miroslavpejic85/mirotalkc2c/issues/2#issuecomment-1340587150" target="_blank">simple iframe.</a></p>
+<br />
 
-<hr />
+<p align="center"><strong>MiroTalk C2C</strong> is a <strong>self-hosted, open-source</strong> platform for <strong>real-time cam-2-cam video calls and screen sharing</strong> using direct <strong>peer-to-peer WebRTC connections</strong>. End-to-end encrypted, embeddable in any website with a <a href="https://github.com/miroslavpejic85/mirotalkc2c/issues/2#issuecomment-1340587150" target="_blank">simple iframe</a>.</p>
 
 <p align="center">
-    <a href="https://c2c.mirotalk.com">Explore MiroTalk C2C</a>
+    <a href="https://c2c.mirotalk.com"><img src="https://img.shields.io/badge/🚀_Try_Live_Demo-blue?style=for-the-badge" alt="Try Live Demo"></a>
+    &nbsp;
+    <a href="https://docs.mirotalk.com/mirotalk-c2c/self-hosting/"><img src="https://img.shields.io/badge/📖_Documentation-green?style=for-the-badge" alt="Documentation"></a>
+    &nbsp;
+    <a href="https://discord.gg/rgGYfeYW3N"><img src="https://img.shields.io/badge/💬_Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
+    &nbsp;
+    <a href="https://github.com/sponsors/miroslavpejic85"><img src="https://img.shields.io/badge/❤️_Sponsor-ea4aaa?style=for-the-badge" alt="Sponsor"></a>
+</p>
+
+<br />
+
+<p align="center">
+    <a href="https://c2c.mirotalk.com">
+        <img src="frontend/images/ui.png" alt="MiroTalk C2C - Cam-2-Cam Video Calls">
+    </a>
 </p>
 
 <hr />
 
-<p align="center">
-    <a href="https://c2c.mirotalk.com"><img src="./frontend/images/ui.png"></a>
-</p>
-
-<hr />
-
-<strong>
-    <p align="center">
-        Join our Community for questions, help, support, ideas, and discussions on <a href='https://discord.gg/rgGYfeYW3N'>Discord</a>
-    </p>
-</strong>
-
-<hr />
+<br />
 
 <details open>
-<summary>Quick start</summary>
-
-![nodejs](frontend/images/nodejs.png)
-
-Install [NodeJs](https://nodejs.org/en/blog/release/v18.16.0).
-
-```bash
-# Clone the project repo
-$ git clone https://github.com/miroslavpejic85/mirotalkc2c.git
-# Go to project dir
-$ cd mirotalkc2c
-# Copy .env.template in .env and edit it if needed
-$ cp .env.template .env
-# Install dependencies
-$ npm install
-# Start the server
-$ npm start
-```
-
-Open [http://localhost:8080](http://localhost:8080) in your browser.
-
-</details>
-
-<details open>
-<summary>Docker</summary>
+<summary>⚡ Quick start</summary>
 
 <br/>
 
-![docker](./frontend/images/docker.png)
-
-Repository: [Docker hub](https://hub.docker.com/r/mirotalk/c2c)
-
-Install [docker](https://docs.docker.com/engine/install/) and [docker-compose](https://docs.docker.com/compose/install/).
+**Start in 5 commands:**
 
 ```bash
-# Clone the project repo
-$ git clone https://github.com/miroslavpejic85/mirotalkc2c.git
-# Go to project dir
-$ cd mirotalkc2c
-# Copy .env.template in .env and edit it if needed
-$ cp .env.template .env
-# Copy docker-compose.template.yml in docker-compose.yml and edit it if needed
-$ cp docker-compose.template.yml docker-compose.yml
-# Get official image from Docker Hub
-$ docker pull mirotalk/c2c:latest
-# Create and start containers
-$ docker-compose up
+git clone https://github.com/miroslavpejic85/mirotalkc2c.git
+cd mirotalkc2c
+cp .env.template .env
+npm install
+npm start
 ```
 
-Open [http://localhost:8080](http://localhost:8080) in your browser.
-
-</details>
-
-<details open>
-<summary>Self-Hosting</summary>
-
-</br>
-
-![setup](/frontend/images/self-hosting.png)
-
-## **Requirements**
-
-- A clean server running **Ubuntu 22.04 or 24.04 LTS**
-- **Root access** to the Server
-- A **domain or subdomain** pointing to your server’s public IPv4
-
----
-
-## Note
-
-When **prompted**, simply **enter your domain or subdomain**. Then wait for the installation to complete.
-
-```bash
-# Install MiroTalk C2C
-wget -qO c2c-install.sh https://docs.mirotalk.com/scripts/c2c/c2c-install.sh \
-  && chmod +x c2c-install.sh \
-  && ./c2c-install.sh
-```
-
-```bash
-# Uninstall MiroTalk C2C
-wget -qO c2c-uninstall.sh https://docs.mirotalk.com/scripts/c2c/c2c-uninstall.sh \
-  && chmod +x c2c-uninstall.sh \
-  && ./c2c-uninstall.sh
-```
-
-```bash
-# Update MiroTalk C2C
-wget -qO c2c-update.sh https://docs.mirotalk.com/scripts/c2c/c2c-update.sh \
-  && chmod +x c2c-update.sh \
-  && ./c2c-update.sh
-```
+Open [http://localhost:8080](http://localhost:8080) - done!
 
 </details>
 
 <details>
-<summary>Documentations</summary>
-
-<br>
-
-- `Ngrok/HTTPS:` You can start a video conference directly from your local PC and make it accessible from any device outside your network by following [these instructions](docs/ngrok.md), or expose it directly on [HTTPS](backend/ssl/README.md).
-
-- `Stun/Turn:` Install your own [Stun & Turn](https://docs.mirotalk.com/coturn/stun-turn/) by following [this instructions](./docs/coturn.md).
-
-- `Self-hosting:` For `self-hosting MiroTalk C2C` on your own dedicated server, please refer to [this comprehensive guide](docs/self-hosting.md). It will provide you with all the necessary instructions to get your MiroTalk C2C instance up and running smoothly.
-
-- `Rest API:` The [API documentation](https://docs.mirotalk.com/mirotalk-c2c/api/) uses [swagger](https://swagger.io/) at http://localhost:8080/api/v1/docs or check it on live [here](https://c2c.mirotalk.com/api/v1/docs).
-
-    ```bash
-    # The response will give you a entrypoint / Room URL for your meeting.
-    $ curl -X POST "http://localhost:8080/api/v1/meeting" -H "authorization: mirotalkc2c_default_secret" -H "Content-Type: application/json"
-    $ curl -X POST "https://c2c.mirotalk.com/api/v1/meeting" -H "authorization: mirotalkc2c_default_secret" -H "Content-Type: application/json"
-    # The response will give you a entrypoint / URL for the direct join to the meeting.
-    $ curl -X POST "http://localhost:8080/api/v1/join" -H "authorization: mirotalkc2c_default_secret" -H "Content-Type: application/json" --data '{"room":"test","name":"mirotalkc2c"}'
-    $ curl -X POST "https://c2c.mirotalk.com/api/v1/join" -H "authorization: mirotalkc2c_default_secret" -H "Content-Type: application/json" --data '{"room":"test","name":"mirotalkc2c"}'
-    ```
-
-</details>
-
-<details open>
-<summary>Hetzner, Netcup, Hostinger & Contabo</summary>
+<summary>🐳 Docker</summary>
 
 <br/>
 
-[![Hetzner](frontend/images/hetzner.png)](https://hetzner.cloud/?ref=XdRifCzCK3bn)
+![docker](frontend/images/docker.png)
 
-This application is running for `demonstration purposes` on [Hetzner](https://www.hetzner.com/), one of `the best` [cloud providers](https://www.hetzner.com/cloud) and [dedicated root servers](https://www.hetzner.com/dedicated-rootserver).
+**Prerequisites:** Install [Docker Engine](https://docs.docker.com/engine/install/) and [Docker Compose](https://docs.docker.com/compose/install/) - Image available on [Docker Hub](https://hub.docker.com/r/mirotalk/c2c)
 
----
+```bash
+git clone https://github.com/miroslavpejic85/mirotalkc2c.git
+cd mirotalkc2c
+cp .env.template .env
+cp docker-compose.template.yml docker-compose.yml
+docker-compose pull    # optional: pull official image
+docker-compose up      # add -d to run in background
+```
 
-👉 Use [my personal link](https://hetzner.cloud/?ref=XdRifCzCK3bn) to receive `€⁠20 IN CLOUD CREDITS`.
+Open [http://localhost:8080](http://localhost:8080) - done!
 
----
-
-[![Netcup](frontend/images/netcup.png)](https://www.netcup.com/en/?ref=309627)
-
-Unlock `enterprise-grade performance` at a price you won’t believe.
-Scalable, reliable, and built for businesses that demand more.
-
-👉 [Power Meets Value with Netcup Root Server](https://www.netcup.com/en/?ref=309627)
-
----
-
-[![Hostinger](frontend/images/hostinger.png)](https://hostinger.com/?REFERRALCODE=MIROTALK)
-
-Fast, reliable hosting with 24/7 support and great performance. Start today!
-
-👉 [Check out Hostinger now](https://hostinger.com/?REFERRALCODE=MIROTALK)
-
----
-
-[![Contabo](frontend/images/contabo.png)](https://www.dpbolvw.net/click-101027391-14462707)
-
-Experience also top-tier German web hosting – dedicated servers, VPS, and web hosting at `unbeatable prices`.
-
-👉 [Explore now here](https://www.dpbolvw.net/click-101027391-14462707)
-
----
-
-To set up your own instance of `MiroTalk C2C` on a dedicated cloud server, please refer to our comprehensive [self-hosting documentation](https://docs.mirotalk.com/mirotalk-c2c/self-hosting/). This guide will walk you through the process step by step, ensuring a smooth and successful deployment.
-
-</details>
-
-<details open>
-<summary>Support</summary>
-
-<br/>
-
-Do you find MiroTalk C2C indispensable for your needs? Join us in supporting this transformative project by [becoming a backer or sponsor](https://github.com/sponsors/miroslavpejic85). By doing so, not only will your logo prominently feature here, but you'll also drive the growth and sustainability of MiroTalk C2C. Your support is vital in ensuring that this valuable platform continues to thrive and remain accessible for all. Make an impact – back MiroTalk C2C today and be part of this exciting journey!
+> **Note:**
+> Edit `.env` and `docker-compose.yml` to customize your setup.
 
 </details>
 
 <details>
-<summary>License</summary>
+<summary>📚 Documentation</summary>
 
 <br/>
 
-![AGPLv3](./frontend/images/AGPLv3.png)
+For detailed guides and references, visit the **[official documentation](https://docs.mirotalk.com)**:
+
+- [About](https://docs.mirotalk.com/mirotalk-c2c/)
+- [Self-Hosting Guide](https://docs.mirotalk.com/mirotalk-c2c/self-hosting/)
+- [Automation-scripts](https://docs.mirotalk.com/scripts/about/)
+- [Configurations](https://docs.mirotalk.com/mirotalk-c2c/configurations/)
+- [Integration](https://docs.mirotalk.com/mirotalk-c2c/integration/)
+- [Direct Room Join](https://docs.mirotalk.com/mirotalk-c2c/join-room/)
+- [REST API Documentation](https://docs.mirotalk.com/mirotalk-c2c/api/)
+- [Ngrok](https://docs.mirotalk.com/mirotalk-c2c/ngrok/)
+
+</details>
+
+<details open>
+<summary>☁️ Recommended Hosting Providers</summary>
+
+<br/>
+
+| Provider                                                                                       | Description                                                                                                    | Link                                                                |
+| ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| [![Hetzner](frontend/images/hetzner.png)](https://www.hetzner.com)                             | High-performance cloud servers and dedicated root servers with top-tier reliability. Powers our live demo.      | [Get €20 Free Credits](https://hetzner.cloud/?ref=XdRifCzCK3bn)     |
+| [![Netcup](frontend/images/netcup.png)](https://www.netcup.com/en/?ref=309627)                 | Enterprise-grade performance at unbeatable prices. Scalable and reliable.                                      | [Explore Netcup](https://www.netcup.com/en/?ref=309627)             |
+| [![Hostinger](frontend/images/hostinger.png)](https://hostinger.com/?REFERRALCODE=MIROTALK)    | Fast, reliable hosting with 24/7 support and great performance.                                                | [Check out Hostinger](https://hostinger.com/?REFERRALCODE=MIROTALK) |
+| [![Contabo](frontend/images/contabo.png)](https://www.dpbolvw.net/click-101027391-14462707)    | Top-tier German hosting, dedicated servers, VPS, and web hosting at unbeatable prices.                         | [Explore Contabo](https://www.dpbolvw.net/click-101027391-14462707) |
+
+To set up your own instance of `MiroTalk C2C` on a dedicated cloud server, please refer to our comprehensive [self-hosting documentation](https://docs.mirotalk.com/mirotalk-c2c/self-hosting/).
+
+</details>
+
+<details>
+<summary>🤝 Contributing</summary>
+
+<br/>
+
+Contributions are welcome and greatly appreciated! Whether it's bug fixes, features, or documentation - every contribution helps.
+
+1. Fork the repository
+2. Create your feature branch
+3. Submit a pull request
+
+Have questions? Join our [Discord community](https://discord.gg/rgGYfeYW3N)!
+
+</details>
+
+<details>
+<summary>📄 License</summary>
+
+<br/>
+
+[![AGPLv3](frontend/images/AGPLv3.png)](LICENSE)
 
 MiroTalk C2C is free and open-source under the terms of AGPLv3 (GNU Affero General Public License v3.0). Please `respect the license conditions`, In particular `modifications need to be free as well and made available to the public`. Get a quick overview of the license at [Choose an open source license](https://choosealicense.com/licenses/agpl-3.0/).
 
@@ -222,44 +149,31 @@ To obtain a [MiroTalk C2C license](https://docs.mirotalk.com/license/licensing-o
 
 </details>
 
-## Diving into Additional MiroTalk Projects:
-
-<details>
-<summary>MiroTalk SFU</summary>
-
-<br>
-
-Try also [MiroTalk SFU](https://github.com/miroslavpejic85/mirotalksfu) `selective forwarding unit` real-time video conferences, optimized for large groups. `Unlimited time, unlimited concurrent rooms` each having 8+ participants, up to ~ 100 per single CPU.
-
-</details>
-
-<details>
-<summary>MiroTalk P2P</summary>
+<details open>
+<summary>Support the project</summary>
 
 <br/>
 
-Try also [MiroTalk P2P](https://github.com/miroslavpejic85/mirotalk) `peer to peer` real-time video conferences, optimized for small groups. `Unlimited time, unlimited concurrent rooms` each having 5-8 participants.
+Do you find MiroTalk C2C indispensable for your needs? Join us in supporting this transformative project by [becoming a backer or sponsor](https://github.com/sponsors/miroslavpejic85). By doing so, not only will your logo prominently feature here, but you'll also drive the growth and sustainability of MiroTalk C2C. Your support is vital in ensuring that this valuable platform continues to thrive and remain accessible for all. Make an impact – back MiroTalk C2C today and be part of this exciting journey!
 
 </details>
 
-<details>
-<summary>MiroTalk BRO</summary>
-
-<br>
-
-Try also [MiroTalk BRO](https://github.com/miroslavpejic85/mirotalkbro) `Live broadcast` (peer to peer) live video, audio and screen stream to all connected users (viewers). `Unlimited time, unlimited concurrent rooms` each having a broadcast and many viewers.
-
-</details>
-
-<details>
-<summary>MiroTalk WEB</summary>
-
-<br>
-
-Try also [MiroTalk WEB](https://github.com/miroslavpejic85/mirotalkwebrtc) a platform that allows for the management of an `unlimited number of users`. Each user must register with their email, username, and password, after which they gain access to their `personal dashboard`. Within the dashboard, users can `manage their rooms and schedule meetings` using the desired version of MiroTalk on a specified date and time. Invitations to these meetings can be sent via email, shared through the web browser, or sent via SMS.
-
-</details>
+<br />
 
 ---
 
-![Star History Chart](https://app.repohistory.com/api/svg?repo=miroslavpejic85/mirotalkc2c&type=Date&background=0D1117&color=62C3F8)
+🌐 **Explore all MiroTalk projects:** [MiroTalk Overview →](https://docs.mirotalk.com/overview/)
+
+---
+
+## Star History
+
+If you like this project, please star it - every star helps more people discover this project!
+
+[![Star History Chart](https://api.star-history.com/svg?repos=miroslavpejic85/mirotalkc2c&type=Date)](https://star-history.com/#miroslavpejic85/mirotalkc2c&Date)
+
+---
+
+<p align="center">
+  Built with ❤️ by <a href="https://www.linkedin.com/in/miroslav-pejic-976a07101/">Miroslav</a> and the open-source community
+</p>
