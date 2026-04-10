@@ -162,7 +162,9 @@ Do you find MiroTalk C2C indispensable for your needs? Join us in supporting thi
 
 ---
 
-🌐 **Explore all MiroTalk projects:** [MiroTalk Overview →](https://docs.mirotalk.com/overview/)
+🌐 **Explore all MiroTalk projects:** 
+
+**[ → MiroTalk Overview](https://docs.mirotalk.com/overview/)**
 
 ---
 
