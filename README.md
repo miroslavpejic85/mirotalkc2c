@@ -160,13 +160,7 @@ Do you find MiroTalk C2C indispensable for your needs? Join us in supporting thi
 
 **[ → MiroTalk Overview](https://docs.mirotalk.com/overview/)**
 
----
-
-## Star History
-
 ![Star History Chart](https://app.repohistory.com/api/svg?repo=miroslavpejic85/mirotalkc2c&type=Date&background=0D1117&color=62C3F8)
-
----
 
 <p align="center">
   Built with ❤️ by <a href="https://www.linkedin.com/in/miroslav-pejic-976a07101/">Miroslav</a> and the open-source community
