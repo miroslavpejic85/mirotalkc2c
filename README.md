@@ -1,6 +1,8 @@
 <h1 align="center">MiroTalk C2C</h1>
 
-<h3 align="center">WebRTC peer-to-peer video calls and screen sharing with end-to-end encryption, easily embeddable in any website via iframe</h3>
+<h3 align="center">
+Self-hosted open-source WebRTC cam-to-cam peer-to-peer video calling platform for immersive 1-to-1 real-time communication with screen sharing and end-to-end encryption.
+</h3>
 
 <br />
 
@@ -19,7 +21,9 @@
 
 <br />
 
-<p align="center"><strong>MiroTalk C2C</strong> is a <strong>self-hosted, open-source</strong> platform for <strong>real-time cam-2-cam video calls and screen sharing</strong> using direct <strong>peer-to-peer WebRTC connections</strong>. End-to-end encrypted, embeddable in any website with a <a href="https://docs.mirotalk.com/mirotalk-c2c/integration/" target="_blank">simple iframe</a>.</p>
+<p align="center">
+<strong>MiroTalk C2C</strong> is a self-hosted, open-source WebRTC platform for secure cam-to-cam peer-to-peer video calls and screen sharing. It enables immersive 1-to-1 real-time communication with full end-to-end encryption and can be easily embedded into any website via a simple <a href="https://docs.mirotalk.com/mirotalk-c2c/integration/" target="_blank">iframe integration</a>.
+</p>
 
 <p align="center">
     <a href="https://c2c.mirotalk.com">Try Live Demo</a> · <a href="https://docs.mirotalk.com/mirotalk-c2c/self-hosting/">Documentation</a> · <a href="https://discord.gg/rgGYfeYW3N">Discord</a> · <a href="https://github.com/sponsors/miroslavpejic85">Sponsor</a>
@@ -104,12 +108,12 @@ For detailed guides and references, visit the **[official documentation](https:/
 
 <br/>
 
-| Provider                                                                                       | Description                                                                                                    | Link                                                                |
-| ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| [![Hetzner](frontend/images/hetzner.png)](https://www.hetzner.com)                             | High-performance cloud servers and dedicated root servers with top-tier reliability. Powers our live demo.      | [Get €20 Free Credits](https://hetzner.cloud/?ref=XdRifCzCK3bn)     |
-| [![Netcup](frontend/images/netcup.png)](https://www.netcup.com/en/?ref=309627)                 | Enterprise-grade performance at unbeatable prices. Scalable and reliable.                                      | [Explore Netcup](https://www.netcup.com/en/?ref=309627)             |
-| [![Hostinger](frontend/images/hostinger.png)](https://hostinger.com/?REFERRALCODE=MIROTALK)    | Fast, reliable hosting with 24/7 support and great performance.                                                | [Check out Hostinger](https://hostinger.com/?REFERRALCODE=MIROTALK) |
-| [![Contabo](frontend/images/contabo.png)](https://www.dpbolvw.net/click-101027391-14462707)    | Top-tier German hosting, dedicated servers, VPS, and web hosting at unbeatable prices.                         | [Explore Contabo](https://www.dpbolvw.net/click-101027391-14462707) |
+| Provider                                                                                    | Description                                                                                                | Link                                                                |
+| ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| [![Hetzner](frontend/images/hetzner.png)](https://www.hetzner.com)                          | High-performance cloud servers and dedicated root servers with top-tier reliability. Powers our live demo. | [Get €20 Free Credits](https://hetzner.cloud/?ref=XdRifCzCK3bn)     |
+| [![Netcup](frontend/images/netcup.png)](https://www.netcup.com/en/?ref=309627)              | Enterprise-grade performance at unbeatable prices. Scalable and reliable.                                  | [Explore Netcup](https://www.netcup.com/en/?ref=309627)             |
+| [![Hostinger](frontend/images/hostinger.png)](https://hostinger.com/?REFERRALCODE=MIROTALK) | Fast, reliable hosting with 24/7 support and great performance.                                            | [Check out Hostinger](https://hostinger.com/?REFERRALCODE=MIROTALK) |
+| [![Contabo](frontend/images/contabo.png)](https://www.dpbolvw.net/click-101027391-14462707) | Top-tier German hosting, dedicated servers, VPS, and web hosting at unbeatable prices.                     | [Explore Contabo](https://www.dpbolvw.net/click-101027391-14462707) |
 
 To set up your own instance of `MiroTalk C2C` on a dedicated cloud server, please refer to our comprehensive [self-hosting documentation](https://docs.mirotalk.com/mirotalk-c2c/self-hosting/).
 
@@ -156,7 +160,7 @@ Do you find MiroTalk C2C indispensable for your needs? Join us in supporting thi
 
 ---
 
-🌐 **Explore all MiroTalk projects:** 
+🌐 **Explore all MiroTalk projects:**
 
 **[ → MiroTalk Overview](https://docs.mirotalk.com/overview/)**
 
