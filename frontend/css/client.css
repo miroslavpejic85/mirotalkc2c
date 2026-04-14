@@ -329,8 +329,9 @@ body {
 }
 
 .myVideoWrap.waitingFullScreen .videoAvatarImage {
-    width: 15vh;
-    height: 15vh;
+    width: clamp(100px, 15vh, 180px);
+    height: clamp(100px, 15vh, 180px);
+    padding: clamp(24px, 3vh, 40px);
 }
 
 /* Mobile: responsive buttons for touch */
@@ -544,15 +545,27 @@ body {
     right: 0;
     bottom: 0;
     display: none;
-    width: 10vh;
-    height: 10vh;
+    width: clamp(60px, 8vh, 120px);
+    height: clamp(60px, 8vh, 120px);
     margin: auto;
     border-radius: 50%;
-    padding: 15px;
-    border: 3px solid rgba(255, 255, 255, 0.15);
-    box-shadow:
-        0 0 0 6px rgba(255, 255, 255, 0.06),
-        0 4px 20px rgba(0, 0, 0, 0.4);
+    padding: clamp(18px, 2.5vh, 30px);
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+    opacity: 0.8;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    animation: avatarFadeIn 0.3s ease-out;
+}
+
+@keyframes avatarFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 0.8;
+        transform: scale(1);
+    }
 }
 
 /*--------------------------------------------------------------
