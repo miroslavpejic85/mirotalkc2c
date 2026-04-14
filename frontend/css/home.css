@@ -213,6 +213,16 @@ body {
     white-space: nowrap;
 }
 
+.form-divider .privacy-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.form-divider .privacy-link:hover {
+    color: var(--accent);
+}
+
 /* Support / footer button */
 .support-btn {
     width: 100%;

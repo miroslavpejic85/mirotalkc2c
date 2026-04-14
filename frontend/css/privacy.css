@@ -1,0 +1,86 @@
+.privacy-container {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 40px 36px 32px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.privacy-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.privacy-logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.privacy-logo img {
+    width: 48px;
+    height: 48px;
+}
+
+.privacy-header h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.privacy-body p {
+    color: var(--text-secondary);
+    font-size: 0.92rem;
+    line-height: 1.7;
+    margin: 0 0 18px;
+}
+
+.privacy-body strong {
+    color: var(--text-primary);
+}
+
+.privacy-body a {
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.privacy-body a:hover {
+    color: var(--accent-hover);
+    text-decoration: underline;
+}
+
+.privacy-footer {
+    text-align: center;
+    margin-top: 32px;
+}
+
+.privacy-footer .btn-agree {
+    display: inline-block;
+    padding: 12px 40px;
+    background: var(--accent);
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    text-decoration: none;
+    transition:
+        background 0.2s,
+        transform 0.15s;
+}
+
+.privacy-footer .btn-agree:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+}

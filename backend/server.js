@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.2.96
+ * @version 1.2.97
  */
 
 require('dotenv').config();
@@ -165,6 +165,7 @@ const OIDCAuth = function (req, res, next) {
 const frontendDir = path.join(__dirname, '../', 'frontend');
 const htmlClient = path.join(__dirname, '../', 'frontend/html/client.html');
 const htmlHome = path.join(__dirname, '../', 'frontend/html/home.html');
+const htmlPrivacy = path.join(__dirname, '../', 'frontend/html/privacy.html');
 
 const channels = {};
 const sockets = {};
@@ -263,6 +264,10 @@ app.get('/logout', (req, res) => {
 
 app.get('/', OIDCAuth, (req, res) => {
     return res.sendFile(htmlHome);
+});
+
+app.get('/privacy', (req, res) => {
+    return res.sendFile(htmlPrivacy);
 });
 
 app.get('/join/', (req, res) => {
