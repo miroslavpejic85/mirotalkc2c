@@ -26,7 +26,10 @@ Self-hosted open-source WebRTC cam-to-cam peer-to-peer video calling platform fo
 </p>
 
 <p align="center">
-    <a href="https://c2c.mirotalk.com">Try Live Demo</a> · <a href="https://docs.mirotalk.com/mirotalk-c2c/self-hosting/">Documentation</a> · <a href="https://discord.gg/rgGYfeYW3N">Discord</a> · <a href="https://github.com/sponsors/miroslavpejic85">Sponsor</a>
+    <a href="https://c2c.mirotalk.com">Try Live Demo</a> · <a 
+href="https://c2c.mirotalk.com/privacy">Privacy</a> · <a 
+href="https://docs.mirotalk.com/mirotalk-c2c/self-hosting/">Documentation</a> · <a href="https://discord.gg/rgGYfeYW3N">Discord</a> · <a 
+href="https://github.com/sponsors/miroslavpejic85">Sponsor</a>
 </p>
 
 <br />
