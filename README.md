@@ -1,3 +1,9 @@
+<div align="center">
+    <a href="https://c2c.mirotalk.com" target="_blank">
+        <img src="frontend/images/mirotalk-icon.png">
+    </a>
+</div>
+
 <h1 align="center">MiroTalk C2C</h1>
 
 <h3 align="center">
