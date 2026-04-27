@@ -1,5 +1,5 @@
-# Use a lightweight Node.js image 
-FROM node:22-alpine
+# Use Debian slim for more reliable multi-arch builds under emulation
+FROM node:22-bookworm-slim
 
 # Set working directory
 WORKDIR /src
@@ -12,12 +12,13 @@ COPY package*.json ./
 COPY .env.template ./.env
 
 # Install necessary system packages and dependencies
-RUN apk add --no-cache \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
     bash \
     vim \
-    && npm ci --only=production --silent \
+    && npm ci --omit=dev --silent \
     && npm cache clean --force \
-    && rm -rf /tmp/* /var/tmp/* /usr/share/doc/*
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
 
 # Copy the application code
 COPY frontend frontend
