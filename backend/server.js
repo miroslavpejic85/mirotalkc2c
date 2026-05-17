@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.3.02
+ * @version 1.3.03
  */
 
 require('dotenv').config();
@@ -464,8 +464,22 @@ io.sockets.on('connect', (socket) => {
         }
     });
 
+    function peersShareRoom(peerId) {
+        if (typeof peerId !== 'string' || !peerId) return false;
+        for (const channel in socket.channels) {
+            if (channels[channel] && channels[channel][peerId]) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     socket.on('relaySDP', (config) => {
         const { peerId, sessionDescription } = config;
+
+        if (!peersShareRoom(peerId)) {
+            return log.warn('[' + socket.id + '] relaySDP blocked: no shared room with [' + peerId + ']');
+        }
 
         sendToPeer(peerId, sockets, 'sessionDescription', {
             peerId: socket.id,
@@ -478,6 +492,10 @@ io.sockets.on('connect', (socket) => {
 
     socket.on('relayICE', (config) => {
         const { peerId, iceCandidate } = config;
+
+        if (!peersShareRoom(peerId)) {
+            return log.warn('[' + socket.id + '] relayICE blocked: no shared room with [' + peerId + ']');
+        }
 
         sendToPeer(peerId, sockets, 'iceCandidate', {
             peerId: socket.id,
