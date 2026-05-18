@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.3.03
+ * @version 1.3.04
  */
 
 require('dotenv').config();
@@ -130,6 +130,20 @@ const redirectURL = process.env.REDIRECT_URL || false;
 const OIDC = {
     enabled: process.env.OIDC_ENABLED ? getEnvBoolean(process.env.OIDC_ENABLED) : false,
     baseUrlDynamic: process.env.OIDC_BASE_URL_DYNAMIC ? getEnvBoolean(process.env.OIDC_BASE_URL_DYNAMIC) : false,
+    /*
+     * When `baseUrlDynamic` is true, the OIDC baseURL (and therefore the redirect_uri
+     * sent to the IdP) is derived from the incoming `Host` header. To prevent
+     * Host-header injection from redirecting authorization codes to an attacker,
+     * list every origin the server is allowed to serve here (full origin, no path).
+     * The static `config.baseURL` is always trusted and does not need to be repeated.
+     *
+     * Example: OIDC_ALLOWED_DYNAMIC_BASE_URLS='https://c2c.example.com,https://c2c.eu.example.com'
+     */
+    allowedDynamicBaseURLs: process.env.OIDC_ALLOWED_DYNAMIC_BASE_URLS
+        ? process.env.OIDC_ALLOWED_DYNAMIC_BASE_URLS.split(',')
+              .map((u) => u.trim())
+              .filter(Boolean)
+        : [],
     config: {
         issuerBaseURL: process.env.OIDC_ISSUER_BASE_URL,
         clientID: process.env.OIDC_CLIENT_ID,
@@ -212,6 +226,27 @@ app.use((err, req, res, next) => {
 
 // OpenID Connect - Dynamically set baseURL based on incoming host and protocol
 if (OIDC.enabled) {
+    // Build an allowlist of origins permitted to be used as the OIDC baseURL.
+    // This prevents Host-header injection from rewriting the redirect_uri
+    // (see: https://portswigger.net/web-security/host-header).
+    // Sources, in order of precedence:
+    //   1. OIDC.allowedDynamicBaseURLs (string[] of full origins from OIDC_ALLOWED_DYNAMIC_BASE_URLS)
+    //   2. OIDC.config.baseURL (always trusted)
+    const configuredAllowlist = Array.isArray(OIDC.allowedDynamicBaseURLs) ? OIDC.allowedDynamicBaseURLs : [];
+    const allowedOrigins = new Set(
+        [OIDC.config?.baseURL, ...configuredAllowlist]
+            .filter(Boolean)
+            .map((u) => {
+                try {
+                    return new URL(u).origin;
+                } catch {
+                    return null;
+                }
+            })
+            .filter(Boolean)
+    );
+
+    // Cache auth middleware per host+protocol to avoid re-creating on every request
     const authMiddlewareCache = new Map();
 
     const getAuthMiddleware = (host, protocol) => {
@@ -236,6 +271,21 @@ if (OIDC.enabled) {
     app.use((req, res, next) => {
         const host = req.headers.host;
         const protocol = req.protocol === 'https' ? 'https' : 'http';
+        const cacheKey = `${protocol}://${host}`;
+
+        // Reject Host headers that are not in the configured allowlist when
+        // baseUrlDynamic is enabled. Without this, an attacker can force the
+        // OIDC library to issue a redirect_uri pointing to a domain they
+        // control and steal the authorization code.
+        if (OIDC.baseUrlDynamic && !allowedOrigins.has(cacheKey)) {
+            log.warn('OIDC Host header not in allowlist - rejecting request', {
+                host,
+                origin: cacheKey,
+                allowed: [...allowedOrigins],
+            });
+            return res.status(400).send('Bad Request: invalid Host header');
+        }
+
         try {
             getAuthMiddleware(host, protocol)(req, res, next);
         } catch (err) {
