@@ -21,6 +21,10 @@ class Recording {
         options = { mimeType: options[0] };
         try {
             this._mediaRecorder = new MediaRecorder(this._stream, options);
+            // Always pass a timeslice so the browser flushes encoded chunks into
+            // recordedBlobs periodically instead of buffering the entire recording
+            // in renderer memory. This makes long (>1h) recordings stable and
+            // avoids MediaRecorder auto-stops caused by memory pressure.
             this._mediaRecorder.start(1000);
             this._listenTrackEnded();
             this._mediaRecorder.addEventListener('start', (e) => {
