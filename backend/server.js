@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.3.07
+ * @version 1.3.08
  */
 
 require('dotenv').config();
@@ -318,8 +318,10 @@ app.get('/logout', (req, res) => {
 // When a shared room link is opened (e.g. "/?room=xxxx") and that room is
 // already active, allow unauthenticated guests to load the home page so they
 // can enter their name and join. Otherwise enforce OIDC auth as usual.
+// If OIDC_AUTH_REQUIRED=true, the bypass is disabled and SSO is mandatory for
+// every visitor (host and guests alike).
 const HomeOIDCAuth = (req, res, next) => {
-    if (OIDC.enabled && !req.oidc.isAuthenticated()) {
+    if (OIDC.enabled && !OIDC.config.authRequired && !req.oidc.isAuthenticated()) {
         const query = checkXSS(req.query || {});
         const room = query && query.room;
         if (room && room in peers) {
@@ -338,25 +340,37 @@ app.get('/privacy', (req, res) => {
     return res.sendFile(htmlPrivacy);
 });
 
-app.get('/join/', (req, res) => {
-    if (Object.keys(req.query).length > 0) {
+app.get(
+    '/join/',
+    (req, res, next) => {
+        if (Object.keys(req.query).length === 0) {
+            return notFound(res);
+        }
         //http://localhost:3000/join?room=test&name=test
         log.debug('[' + req.headers.host + ']' + ' request query', req.query);
         const { room, name } = checkXSS(req.query);
-        if (room && name) {
-            // OIDC enabled not authorized user, allow join room only if exist
-            if (OIDC.enabled && !req.oidc.isAuthenticated()) {
-                const roomExist = room in peers;
-                if (!roomExist) {
-                    return notFound(res);
-                }
-            }
-            return res.sendFile(htmlClient);
+        if (!room || !name) {
+            return notFound(res);
         }
-        return notFound(res);
+        // When OIDC_AUTH_REQUIRED=true, every visitor must be authenticated, even
+        // if the room already exists. Force the SSO login flow here.
+        if (OIDC.enabled && OIDC.config.authRequired && !req.oidc.isAuthenticated()) {
+            return OIDCAuth(req, res, next);
+        }
+        // OIDC enabled not authorized user, allow join room only if exist
+        if (OIDC.enabled && !req.oidc.isAuthenticated()) {
+            const roomExist = room in peers;
+            if (!roomExist) {
+                return notFound(res);
+            }
+        }
+        return res.sendFile(htmlClient);
+    },
+    (req, res) => {
+        // Reached only after OIDCAuth completes the login flow above.
+        return res.sendFile(htmlClient);
     }
-    return notFound(res);
-});
+);
 
 // API request meeting room endpoint
 app.post([`${apiBasePath}/meeting`], (req, res) => {
