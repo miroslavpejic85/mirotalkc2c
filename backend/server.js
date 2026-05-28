@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.3.06
+ * @version 1.3.07
  */
 
 require('dotenv').config();
@@ -314,7 +314,23 @@ app.get('/logout', (req, res) => {
     res.redirect('/'); // Redirect to the home page after logout
 });
 
-app.get('/', OIDCAuth, (req, res) => {
+// Conditional OIDC auth for the home page:
+// When a shared room link is opened (e.g. "/?room=xxxx") and that room is
+// already active, allow unauthenticated guests to load the home page so they
+// can enter their name and join. Otherwise enforce OIDC auth as usual.
+const HomeOIDCAuth = (req, res, next) => {
+    if (OIDC.enabled && !req.oidc.isAuthenticated()) {
+        const query = checkXSS(req.query || {});
+        const room = query && query.room;
+        if (room && room in peers) {
+            log.debug('OIDC ------> Guest allowed on home for existing room', { room });
+            return next();
+        }
+    }
+    return OIDCAuth(req, res, next);
+};
+
+app.get('/', HomeOIDCAuth, (req, res) => {
     return res.sendFile(htmlHome);
 });
 
