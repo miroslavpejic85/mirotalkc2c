@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.3.09
+ * @version 1.3.10
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
@@ -37,6 +37,9 @@ const leaveBtn = document.getElementById('leaveBtn');
 const settings = document.getElementById('settings');
 const settingsCloseBtn = document.getElementById('settingsCloseBtn');
 const audioSource = document.getElementById('audioSource');
+const audioOutputDiv = document.getElementById('audioOutputDiv');
+const audioOutputSource = document.getElementById('audioOutputSource');
+const testSpeakerBtn = document.getElementById('testSpeakerBtn');
 const videoSource = document.getElementById('videoSource');
 const videoQualitySelect = document.getElementById('videoQualitySelect');
 const videoFpsDiv = document.getElementById('videoFpsDiv');
@@ -635,10 +638,15 @@ async function enumerateDevices() {
         const devices = await navigator.mediaDevices.enumerateDevices();
         const videoDevices = devices.filter((device) => device.kind === 'videoinput' && device.deviceId !== 'default');
         const audioDevices = devices.filter((device) => device.kind === 'audioinput' && device.deviceId !== 'default');
+        const speakerDevices = devices.filter(
+            (device) => device.kind === 'audiooutput' && device.deviceId !== 'default'
+        );
         removeAllChildren(audioSource);
         removeAllChildren(videoSource);
+        removeAllChildren(audioOutputSource);
         LS.DEVICES_COUNT.audio = 0;
         LS.DEVICES_COUNT.video = 0;
+        LS.DEVICES_COUNT.speaker = 0;
         for (const device of audioDevices) {
             await addChild(audioSource, device);
             LS.DEVICES_COUNT.audio++;
@@ -646,6 +654,16 @@ async function enumerateDevices() {
         for (const device of videoDevices) {
             await addChild(videoSource, device);
             LS.DEVICES_COUNT.video++;
+        }
+        // Speaker selection is only available where setSinkId is supported
+        if (isAudioOutputSupported()) {
+            for (const device of speakerDevices) {
+                await addChild(audioOutputSource, device);
+                LS.DEVICES_COUNT.speaker++;
+            }
+            elemDisplay(audioOutputDiv, LS.DEVICES_COUNT.speaker > 0);
+        } else {
+            elemDisplay(audioOutputDiv, false);
         }
     } catch (err) {
         playSound('error');
@@ -670,6 +688,7 @@ function createVideoElement(id, stream, muted = false) {
     video.muted = muted;
     video.volume = muted ? 0 : 1;
     attachMediaStream(video, stream);
+    if (!muted) applySinkId(video, getSelectedSpeakerId());
     video.play().catch(() => {});
     return video;
 }
@@ -690,6 +709,7 @@ function createAudioElement(id, stream, muted = false) {
     audio.muted = muted;
     audio.volume = muted ? 0 : 1;
     attachMediaStream(audio, stream);
+    if (!muted) applySinkId(audio, getSelectedSpeakerId());
     audio.play().catch(() => {});
     return audio;
 }
@@ -1101,6 +1121,14 @@ function handleEvents() {
         saveLocalStorageConfig();
         changeMicrophone(e.target.value);
     };
+    audioOutputSource.onchange = (e) => {
+        setLocalStorageSpeakerConfig(e.target);
+        saveLocalStorageConfig();
+        changeSpeaker(e.target.value);
+    };
+    testSpeakerBtn.onclick = () => {
+        playTestSound();
+    };
     videoSource.onchange = (e) => {
         resetVideoConstraints();
         setLocalStorageCameraConfig(e.target);
@@ -1421,6 +1449,44 @@ function getAudioConstraints(deviceId = null) {
     return audioConstraints;
 }
 
+function isAudioOutputSupported() {
+    return typeof HTMLMediaElement !== 'undefined' && 'setSinkId' in HTMLMediaElement.prototype;
+}
+
+function getSelectedSpeakerId() {
+    return localStorageConfig?.speaker?.devices?.select?.id || null;
+}
+
+async function applySinkId(element, sinkId) {
+    if (!element || !isAudioOutputSupported() || typeof element.setSinkId !== 'function') return;
+    if (!sinkId) return;
+    try {
+        await element.setSinkId(sinkId);
+    } catch (err) {
+        console.error('[Error] applySinkId', err);
+    }
+}
+
+function changeSpeaker(sinkId = false) {
+    if (!sinkId || !isAudioOutputSupported()) return;
+    const mediaElements = document.querySelectorAll('audio, video');
+    mediaElements.forEach((element) => applySinkId(element, sinkId));
+    console.log('Speaker (audio output) changed to', sinkId);
+}
+
+async function playTestSound() {
+    const audioToPlay = new Audio('../sounds/join.mp3');
+    audioToPlay.volume = 0.5;
+    const sinkId = getSelectedSpeakerId();
+    if (sinkId) await applySinkId(audioToPlay, sinkId);
+    try {
+        await audioToPlay.play();
+    } catch (err) {
+        console.error('[Error] playTestSound', err);
+        popupMessage('toast', 'Test speaker', 'Unable to play test sound', 'top');
+    }
+}
+
 function getVideoConstraints(deviceId = false) {
     let videoConstraints = true;
 
@@ -1513,9 +1579,16 @@ function setLocalStorageAudioConfig(target) {
     localStorageConfig.audio.devices.select.id = target.value;
 }
 
+function setLocalStorageSpeakerConfig(target) {
+    localStorageConfig.speaker.devices.select.index = target.selectedIndex;
+    localStorageConfig.speaker.devices.select.label = target.options[target.selectedIndex].text;
+    localStorageConfig.speaker.devices.select.id = target.value;
+}
+
 function saveLocalStorageConfig() {
     localStorageConfig.video.devices.count = LS.DEVICES_COUNT.video;
     localStorageConfig.audio.devices.count = LS.DEVICES_COUNT.audio;
+    localStorageConfig.speaker.devices.count = LS.DEVICES_COUNT.speaker;
     LS.setConfig(localStorageConfig);
 }
 
@@ -1524,6 +1597,9 @@ function loadLocalStorageConfig() {
     videoQualitySelect.selectedIndex = localStorageConfig.video.settings.quality_index;
     videoFpsSelect.selectedIndex = localStorageConfig.video.settings.fps_index;
     audioSource.selectedIndex = localStorageConfig.audio.devices.select.index;
+    if (isAudioOutputSupported() && audioOutputSource.options.length > 0) {
+        audioOutputSource.selectedIndex = localStorageConfig?.speaker?.devices?.select?.index ?? 0;
+    }
     switchNoiseSuppression.checked = localStorageConfig?.audio?.settings?.noise_suppression ?? false;
     switchMaxVideoQuality.checked = localStorageConfig.video.settings.best_quality;
     switchKeepAspectRatio.checked = localStorageConfig.video.settings.aspect_ratio;

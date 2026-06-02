@@ -754,6 +754,34 @@ video::-webkit-media-controls {
     box-shadow: 0 0 0 3px rgba(55, 109, 249, 0.15);
 }
 
+/* Test speaker button */
+.settings-test-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 8px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.3);
+    color: var(--text-color);
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.settings-test-btn:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: var(--accent-color);
+}
+
+.settings-test-btn:active {
+    transform: scale(0.97);
+}
+
 /* Toggle rows */
 .settings-toggle-row {
     display: flex;
