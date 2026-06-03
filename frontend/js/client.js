@@ -1475,7 +1475,7 @@ function changeSpeaker(sinkId = false) {
 }
 
 async function playTestSound() {
-    const audioToPlay = new Audio('../sounds/join.mp3');
+    const audioToPlay = new Audio('../sounds/speaker.mp3');
     audioToPlay.volume = 0.5;
     const sinkId = getSelectedSpeakerId();
     if (sinkId) await applySinkId(audioToPlay, sinkId);
