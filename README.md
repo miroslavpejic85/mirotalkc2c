@@ -165,15 +165,11 @@ Do you find MiroTalk C2C indispensable for your needs? Join us in supporting thi
 
 </details>
 
-<br />
-
 ---
 
-🌐 **Explore all MiroTalk projects:**
+<p align="center">🌐 Explore the full MiroTalk suite (SFU, P2P, BRO, C2C, WEB, CME, ADM) → <a href="https://docs.mirotalk.com/overview/"><strong>MiroTalk Overview</strong></a></p>
 
-**[ → MiroTalk Overview](https://docs.mirotalk.com/overview/)**
-
-![Star History Chart](https://app.repohistory.com/api/svg?repo=miroslavpejic85/mirotalkc2c&type=Date&background=0D1117&color=62C3F8)
+---
 
 <p align="center">
   Built with ❤️ by <a href="https://www.linkedin.com/in/miroslav-pejic-976a07101/">Miroslav</a> and the open-source community
