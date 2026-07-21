@@ -141,7 +141,10 @@ function refreshTrackState(track) {
 }
 
 function safeXSS(input) {
-    return typeof filterXSS === 'function' ? filterXSS(input) : input;
+    // Strict allowlist: escape ALL HTML tags/attributes so chat messages received
+    // over the P2P DataChannel cannot inject <a> phishing links, autoplaying
+    // <audio>/<video>, or event-handler attributes into other peers' chat panels.
+    return typeof filterXSS === 'function' ? filterXSS(input, { whiteList: {}, css: false }) : input;
 }
 
 function removeAllChildren(node) {
