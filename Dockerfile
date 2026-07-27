@@ -1,5 +1,5 @@
 # Use Debian slim for more reliable multi-arch builds under emulation
-FROM node:22-bookworm-slim
+FROM node:24-bookworm-slim
 
 # Set working directory
 WORKDIR /src
