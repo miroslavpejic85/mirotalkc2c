@@ -37,9 +37,6 @@
     "author": "Miroslav Pejic",
     "license": "AGPL-3.0",
     "homepage": "https://github.com/miroslavpejic85/mirotalkc2c",
-    "engines": {
-        "node": ">=24.15.0"
-    },
     "dependencies": {
         "@mattermost/client": "11.8.0",
         "@ngrok/ngrok": "1.7.0",
