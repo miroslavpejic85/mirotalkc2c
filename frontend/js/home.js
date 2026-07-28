@@ -9,8 +9,20 @@ const roomIdIn = document.getElementById('roomIdInput');
 const userNameIn = document.getElementById('userNameInput');
 const randomRoomBtn = document.getElementById('randomRoomBtn');
 const randomUserBtn = document.getElementById('randomUserBtn');
+const initAudioBtn = document.getElementById('initAudioBtn');
+const initVideoBtn = document.getElementById('initVideoBtn');
 const joinBtn = document.getElementById('joinBtn');
 const supportBtn = document.getElementById('supportBtn');
+
+const LS = new LocalStorage();
+const localStorageConfig = LS.getConfig();
+
+const mediaIcons = {
+    audioOn: 'fas fa-microphone',
+    audioOff: 'fas fa-microphone-slash',
+    videoOn: 'fas fa-video',
+    videoOff: 'fas fa-video-slash',
+};
 
 const config = {
     support: true,
@@ -49,6 +61,23 @@ async function initHome() {
     randomUserBtn.onclick = () => {
         const finalValue = 'User_' + Math.floor(Math.random() * 1000000);
         shuffleText(userNameIn, finalValue);
+    };
+
+    updateMediaToggle(initAudioBtn, 'audio', localStorageConfig.audio.init.active);
+    updateMediaToggle(initVideoBtn, 'video', localStorageConfig.video.init.active);
+
+    initAudioBtn.onclick = () => {
+        const active = !localStorageConfig.audio.init.active;
+        localStorageConfig.audio.init.active = active;
+        LS.setConfig(localStorageConfig);
+        updateMediaToggle(initAudioBtn, 'audio', active);
+    };
+
+    initVideoBtn.onclick = () => {
+        const active = !localStorageConfig.video.init.active;
+        localStorageConfig.video.init.active = active;
+        LS.setConfig(localStorageConfig);
+        updateMediaToggle(initVideoBtn, 'video', active);
     };
 
     joinBtn.onclick = () => {
@@ -95,6 +124,15 @@ function shuffleText(input, finalValue, duration = 600) {
             setTimeout(() => input.classList.remove('shuffle-active'), 300);
         }
     }, interval);
+}
+
+function updateMediaToggle(btn, kind, active) {
+    const icon = btn.querySelector('i');
+    if (icon) {
+        icon.className = active ? mediaIcons[kind + 'On'] : mediaIcons[kind + 'Off'];
+    }
+    btn.classList.toggle('off', !active);
+    btn.setAttribute('aria-pressed', String(active));
 }
 
 function elementDisplay(elem, display) {

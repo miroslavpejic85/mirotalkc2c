@@ -155,6 +155,49 @@ body {
     background: rgba(55, 109, 249, 0.3);
 }
 
+/* Media toggles (audio/video) */
+.media-toggles {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.media-toggle-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 14px;
+    border: 1.5px solid var(--input-border);
+    border-radius: var(--radius);
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: 'Montserrat', sans-serif;
+    cursor: pointer;
+    outline: none;
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.media-toggle-btn i {
+    font-size: 0.95rem;
+}
+
+.media-toggle-btn:hover {
+    border-color: var(--input-focus);
+}
+
+.media-toggle-btn.off {
+    color: #ff5c5c;
+    border-color: rgba(255, 92, 92, 0.4);
+    background: rgba(255, 92, 92, 0.08);
+}
+
 /* Join button */
 .join-button {
     width: 100%;

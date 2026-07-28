@@ -31,6 +31,7 @@
 
         <script defer src="https://cdn.jsdelivr.net/npm/xss/dist/xss.min.js"></script>
         <script defer src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script defer src="../js/storage.js"></script>
         <script defer src="../js/home.js"></script>
     </head>
     <body>
@@ -87,6 +88,31 @@
                         <i class="fa fa-random"></i>
                     </button>
                 </div>
+            </div>
+
+            <div class="media-toggles">
+                <button
+                    type="button"
+                    id="initAudioBtn"
+                    class="media-toggle-btn"
+                    title="Toggle microphone"
+                    aria-label="Toggle microphone"
+                    aria-pressed="true"
+                >
+                    <i class="fas fa-microphone"></i>
+                    <span>Mic</span>
+                </button>
+                <button
+                    type="button"
+                    id="initVideoBtn"
+                    class="media-toggle-btn"
+                    title="Toggle camera"
+                    aria-label="Toggle camera"
+                    aria-pressed="true"
+                >
+                    <i class="fas fa-video"></i>
+                    <span>Camera</span>
+                </button>
             </div>
 
             <button type="submit" id="joinBtn" class="join-button">
