@@ -9,11 +9,24 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.3.20
+ * @version 1.3.21
  */
 
 const roomId = new URLSearchParams(window.location.search).get('room');
 const peerName = new URLSearchParams(window.location.search).get('name');
+
+// Optional query params to control the initial audio/video state on join.
+// Usage: audio=1|0 (true|false|yes|no|on|off) and video=1|0. When omitted, the local storage config is used.
+function getBoolParam(name) {
+    const value = new URLSearchParams(window.location.search).get(name);
+    if (value === null) return null;
+    const v = value.trim().toLowerCase();
+    if (['1', 'true', 'yes', 'on'].includes(v)) return true;
+    if (['0', 'false', 'no', 'off'].includes(v)) return false;
+    return null;
+}
+const audioParam = getBoolParam('audio');
+const videoParam = getBoolParam('video');
 
 const loadingDivContainer = document.getElementById('loadingDivContainer');
 const waitingDivContainer = document.getElementById('waitingDivContainer');
@@ -842,8 +855,11 @@ function setLocalMedia(stream) {
         makeDraggable(myVideoWrap, myVideoDraggableBtn);
     }
 
-    setLocalAudioStatus(hasAudio && localStorageConfig.audio.init.active ? stream.getAudioTracks()[0].enabled : false);
-    setLocalVideoStatus(hasVideo && localStorageConfig.video.init.active ? stream.getVideoTracks()[0].enabled : false);
+    const audioInitActive = audioParam !== null ? audioParam : localStorageConfig.audio.init.active;
+    const videoInitActive = videoParam !== null ? videoParam : localStorageConfig.video.init.active;
+
+    setLocalAudioStatus(hasAudio && audioInitActive ? stream.getAudioTracks()[0].enabled : false);
+    setLocalVideoStatus(hasVideo && videoInitActive ? stream.getVideoTracks()[0].enabled : false);
 }
 
 function setRemoteMedia(stream, peers, peerId) {
