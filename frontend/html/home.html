@@ -61,17 +61,29 @@
                 <section class="join-panel" aria-labelledby="join-title">
                     <div class="panel-topbar">
                         <div class="privacy-status"><i class="fas fa-shield-halved"></i> End-to-end encrypted</div>
-                        <a
-                            id="aboutBtn"
-                            class="about-btn"
-                            href="https://docs.mirotalk.com/about"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title="About MiroTalk C2C"
-                            aria-label="About MiroTalk C2C"
-                        >
-                            <i class="fas fa-heart"></i>
-                        </a>
+                        <div class="topbar-actions">
+                            <button
+                                type="button"
+                                id="themeToggleBtn"
+                                class="topbar-btn"
+                                title="Switch to dark theme"
+                                aria-label="Switch to dark theme"
+                                aria-pressed="false"
+                            >
+                                <i class="fas fa-moon"></i>
+                            </button>
+                            <a
+                                id="aboutBtn"
+                                class="topbar-btn"
+                                href="https://docs.mirotalk.com/about"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="About MiroTalk C2C"
+                                aria-label="About MiroTalk C2C"
+                            >
+                                <i class="fas fa-circle-info"></i>
+                            </a>
+                        </div>
                     </div>
 
                     <div class="panel-content">
@@ -178,20 +190,6 @@
                         <p class="form-note">
                             <i class="fas fa-lock"></i> Your call is encrypted between participants.
                         </p>
-
-                        <div class="appearance-row">
-                            <span><i class="fas fa-moon"></i> Dark appearance</span>
-                            <button
-                                type="button"
-                                id="themeToggleBtn"
-                                class="appearance-shortcut"
-                                title="Switch to dark theme"
-                                aria-label="Switch to dark theme"
-                                aria-pressed="false"
-                            >
-                                <span></span>
-                            </button>
-                        </div>
                     </div>
                 </section>
             </main>

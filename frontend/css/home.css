@@ -253,7 +253,12 @@ a {
 .privacy-status i {
     color: var(--success);
 }
-.about-btn {
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.topbar-btn {
     display: inline-grid;
     width: 38px;
     height: 38px;
@@ -272,7 +277,7 @@ a {
         border-color 0.2s ease,
         transform 0.2s ease;
 }
-.about-btn:hover {
+.topbar-btn:hover {
     border-color: var(--accent);
     color: var(--accent);
     transform: translateY(-1px);
@@ -504,60 +509,10 @@ a {
     margin-right: 5px;
     color: var(--success);
 }
-.appearance-row {
-    display: flex;
-    margin-top: 24px;
-    padding-top: 18px;
-    align-items: center;
-    justify-content: space-between;
-    gap: 18px;
-    border-top: 1px solid var(--divider);
-    color: var(--ink-soft);
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-}
-.appearance-row > span i {
-    width: 20px;
-    color: var(--accent);
-}
-.appearance-shortcut {
-    width: 46px;
-    height: 26px;
-    flex: 0 0 46px;
-    padding: 2px;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    background: var(--field-bg);
-    cursor: pointer;
-    transition:
-        border-color 0.2s ease,
-        background-color 0.2s ease;
-}
-.appearance-shortcut span {
-    display: block;
-    width: 20px;
-    height: 20px;
-    margin-left: 0;
-    border-radius: 50%;
-    background: var(--ink-soft);
-    transition:
-        margin 0.2s ease,
-        background-color 0.2s ease;
-}
-:root[data-theme='dark'] .appearance-shortcut {
-    border-color: rgba(115, 145, 255, 0.45);
-    background: var(--accent);
-}
-:root[data-theme='dark'] .appearance-shortcut span {
-    margin-left: 20px;
-    background: #ffffff;
-}
 .input-btn:focus-visible,
 .media-toggle-btn:focus-visible,
 .join-button:focus-visible,
-.about-btn:focus-visible,
-.appearance-shortcut:focus-visible,
+.topbar-btn:focus-visible,
 a:focus-visible {
     outline: 3px solid rgba(49, 92, 245, 0.28);
     outline-offset: 2px;
@@ -656,9 +611,6 @@ a:focus-visible {
     }
     .join-button {
         width: 100%;
-    }
-    .appearance-row {
-        font-size: 0.64rem;
     }
 }
 @media (prefers-reduced-motion: reduce) {

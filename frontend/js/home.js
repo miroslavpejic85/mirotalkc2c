@@ -154,7 +154,9 @@ function updateThemeToggle(theme) {
     const isDark = theme === 'dark';
     const nextTheme = isDark ? 'light' : 'dark';
     const label = 'Switch to ' + nextTheme + ' theme';
+    const icon = themeToggleBtn.querySelector('i');
 
+    icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
     themeToggleBtn.title = label;
     themeToggleBtn.setAttribute('aria-label', label);
     themeToggleBtn.setAttribute('aria-pressed', String(isDark));
