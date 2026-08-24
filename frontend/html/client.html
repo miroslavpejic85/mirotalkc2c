@@ -63,15 +63,12 @@
 
         <div id="loadingDivContainer">
             <div id="loadingDiv" class="center">
-                <h1 class="pulsate">Loading</h1>
                 <div class="loading-spinner">
                     <div class="spinner-ring"></div>
-                    <img class="spinner-logo" src="../images/logo.svg" alt="logo" />
+                    <img class="spinner-logo" src="../images/logo.svg" alt="" />
                 </div>
-                <pre>
-Please allow camera & microphone
-access to use this app.          
-                </pre>
+                <h1>Preparing your call</h1>
+                <p class="loading-message">Allow camera and microphone access when prompted.</p>
             </div>
         </div>
 
@@ -88,35 +85,111 @@ access to use this app.
             </div>
             <div id="waitingOverlayBottom">
                 <div class="waiting-buttons">
-                    <button id="shareRoomBtn" class="action-btn fas fa-share-nodes"></button>
-                    <button id="copyRoomBtn" class="action-btn fas fa-copy"></button>
-                    <button id="initHideMeBtn" class="action-btn fas fa-user"></button>
-                    <button id="initVideoBtn" class="action-btn fas fa-video"></button>
-                    <button id="initAudioBtn" class="action-btn fas fa-microphone"></button>
-                    <button id="initScreenShareBtn" class="action-btn fas fa-desktop"></button>
-                    <button id="initChatOpenBtn" class="action-btn fas fa-comments"></button>
-                    <button id="initSettingsBtn" class="action-btn fas fa-cogs"></button>
-                    <button id="initLeaveBtn" class="action-btn fas fa-phone-slash red"></button>
+                    <button
+                        id="shareRoomBtn"
+                        class="action-btn fas fa-share-nodes"
+                        type="button"
+                        aria-label="Share room"
+                    ></button>
+                    <button
+                        id="copyRoomBtn"
+                        class="action-btn fas fa-copy"
+                        type="button"
+                        aria-label="Copy room link"
+                    ></button>
+                    <button
+                        id="initHideMeBtn"
+                        class="action-btn fas fa-user"
+                        type="button"
+                        aria-label="Hide my video"
+                    ></button>
+                    <button
+                        id="initVideoBtn"
+                        class="action-btn fas fa-video"
+                        type="button"
+                        aria-label="Toggle camera"
+                    ></button>
+                    <button
+                        id="initAudioBtn"
+                        class="action-btn fas fa-microphone"
+                        type="button"
+                        aria-label="Toggle microphone"
+                    ></button>
+                    <button
+                        id="initScreenShareBtn"
+                        class="action-btn fas fa-desktop"
+                        type="button"
+                        aria-label="Share screen"
+                    ></button>
+                    <button
+                        id="initChatOpenBtn"
+                        class="action-btn fas fa-comments"
+                        type="button"
+                        aria-label="Open chat"
+                    ></button>
+                    <button
+                        id="initSettingsBtn"
+                        class="action-btn fas fa-cogs"
+                        type="button"
+                        aria-label="Open settings"
+                    ></button>
+                    <button
+                        id="initLeaveBtn"
+                        class="action-btn fas fa-phone-slash red"
+                        type="button"
+                        aria-label="Leave room"
+                    ></button>
                 </div>
             </div>
         </div>
 
         <div id="buttonsBar">
-            <button id="hideMeBtn" class="action-btn fas fa-user"></button>
-            <button id="videoBtn" class="action-btn fas fa-video"></button>
-            <button id="audioBtn" class="action-btn fas fa-microphone"></button>
-            <button id="swapCameraBtn" class="action-btn fas fa-camera-rotate"></button>
-            <button id="screenShareBtn" class="action-btn fas fa-desktop"></button>
-            <button id="recordingBtn" class="action-btn fas fa-record-vinyl"></button>
-            <button id="chatOpenBtn" class="action-btn fas fa-comments"></button>
-            <button id="settingsBtn" class="action-btn fas fa-cogs"></button>
-            <button id="leaveBtn" class="action-btn fas fa-phone-slash red"></button>
+            <button id="hideMeBtn" class="action-btn fas fa-user" type="button" aria-label="Hide my video"></button>
+            <button id="videoBtn" class="action-btn fas fa-video" type="button" aria-label="Toggle camera"></button>
+            <button
+                id="audioBtn"
+                class="action-btn fas fa-microphone"
+                type="button"
+                aria-label="Toggle microphone"
+            ></button>
+            <button
+                id="swapCameraBtn"
+                class="action-btn fas fa-camera-rotate"
+                type="button"
+                aria-label="Switch camera"
+            ></button>
+            <button
+                id="screenShareBtn"
+                class="action-btn fas fa-desktop"
+                type="button"
+                aria-label="Share screen"
+            ></button>
+            <button
+                id="recordingBtn"
+                class="action-btn fas fa-record-vinyl"
+                type="button"
+                aria-label="Toggle recording"
+            ></button>
+            <button id="chatOpenBtn" class="action-btn fas fa-comments" type="button" aria-label="Open chat"></button>
+            <button id="settingsBtn" class="action-btn fas fa-cogs" type="button" aria-label="Open settings"></button>
+            <button
+                id="leaveBtn"
+                class="action-btn fas fa-phone-slash red"
+                type="button"
+                aria-label="Leave room"
+            ></button>
         </div>
 
         <div id="settings">
             <div class="settings-header">
-                <span class="settings-title"><i class="fas fa-cogs"></i> Settings</span>
-                <button id="settingsCloseBtn" class="fas fa-times"></button>
+                <span class="settings-title"><i class="fas fa-sliders"></i> Settings</span>
+                <button
+                    id="settingsCloseBtn"
+                    class="fas fa-times"
+                    type="button"
+                    title="Close settings"
+                    aria-label="Close settings"
+                ></button>
             </div>
 
             <div class="settings-section">
@@ -176,19 +249,21 @@ access to use this app.
             <div class="settings-section">
                 <div class="settings-section-title"><i class="fas fa-sliders"></i> Preferences</div>
                 <div id="noiseSuppressionDiv" class="settings-toggle-row">
-                    <label id="labelNoiseSuppression"><i class="fas fa-ear-listen"></i> Noise suppression</label>
+                    <label id="labelNoiseSuppression" for="switchNoiseSuppression"
+                        ><i class="fas fa-ear-listen"></i> Noise suppression</label
+                    >
                     <input id="switchNoiseSuppression" class="toggle" type="checkbox" />
                 </div>
                 <div id="maxVideoQualityDiv" class="settings-toggle-row">
-                    <label><i class="fas fa-star"></i> Best quality</label>
+                    <label for="switchMaxVideoQuality"><i class="fas fa-star"></i> Best quality</label>
                     <input id="switchMaxVideoQuality" class="toggle" type="checkbox" />
                 </div>
                 <div id="aspectRatioDiv" class="settings-toggle-row">
-                    <label><i class="fas fa-display"></i> Aspect ratio</label>
+                    <label for="switchKeepAspectRatio"><i class="fas fa-display"></i> Aspect ratio</label>
                     <input id="switchKeepAspectRatio" class="toggle" type="checkbox" />
                 </div>
                 <div id="pushToTalkDiv" class="settings-toggle-row">
-                    <label><i class="fas fa-hand-pointer"></i> Push to talk</label>
+                    <label for="switchPushToTalk"><i class="fas fa-hand-pointer"></i> Push to talk</label>
                     <input id="switchPushToTalk" class="toggle" type="checkbox" />
                 </div>
             </div>
@@ -208,11 +283,29 @@ access to use this app.
 
         <div id="chat" class="chat">
             <div class="header">
-                <span class="title">Chat</span>
+                <span class="title"><i class="fas fa-comments"></i> Chat</span>
                 <div class="header-buttons">
-                    <button id="chatCleanBtn" class="fas fa-trash"></button>
-                    <button id="chatSaveBtn" class="fas fa-save"></button>
-                    <button id="chatCloseBtn" class="fas fa-times"></button>
+                    <button
+                        id="chatCleanBtn"
+                        class="fas fa-trash"
+                        type="button"
+                        title="Clear messages"
+                        aria-label="Clear messages"
+                    ></button>
+                    <button
+                        id="chatSaveBtn"
+                        class="fas fa-download"
+                        type="button"
+                        title="Save messages"
+                        aria-label="Save messages"
+                    ></button>
+                    <button
+                        id="chatCloseBtn"
+                        class="fas fa-times"
+                        type="button"
+                        title="Close chat"
+                        aria-label="Close chat"
+                    ></button>
                 </div>
             </div>
             <div class="body" id="chatBody">
@@ -226,11 +319,29 @@ access to use this app.
             </div>
             <div class="footer">
                 <div class="footer-buttons">
-                    <button id="chatEmojiBtn" class="fas fa-smile" title="Emoji"></button>
-                    <button id="chatFileBtn" class="fas fa-paperclip" title="Send file"></button>
+                    <button
+                        id="chatEmojiBtn"
+                        class="fas fa-smile"
+                        type="button"
+                        title="Choose emoji"
+                        aria-label="Choose emoji"
+                    ></button>
+                    <button
+                        id="chatFileBtn"
+                        class="fas fa-paperclip"
+                        type="button"
+                        title="Send file"
+                        aria-label="Send file"
+                    ></button>
                     <input type="file" id="chatFileInput" />
-                    <textarea id="chatInput" placeholder="Write a message..."></textarea>
-                    <button id="chatSendBtn" class="fas fa-paper-plane"></button>
+                    <textarea id="chatInput" rows="1" placeholder="Write a message..." aria-label="Message"></textarea>
+                    <button
+                        id="chatSendBtn"
+                        class="fas fa-paper-plane"
+                        type="button"
+                        title="Send message"
+                        aria-label="Send message"
+                    ></button>
                 </div>
             </div>
             <div id="chatEmoji" class="chatEmojiPicker hidden"></div>

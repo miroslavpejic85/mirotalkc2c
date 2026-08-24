@@ -1,86 +1,168 @@
+body {
+    display: flex;
+    min-height: 100vh;
+    padding: 48px 24px;
+    align-items: flex-start;
+    justify-content: center;
+    overflow-y: auto;
+}
+
+.privacy-container,
+.privacy-container * {
+    box-sizing: border-box;
+}
+
 .privacy-container {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 20px;
-    padding: 40px 36px 32px;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow:
-        0 20px 60px rgba(0, 0, 0, 0.5),
-        0 0 0 1px rgba(255, 255, 255, 0.05);
-    width: 100%;
-    max-width: 720px;
-    margin: 0 auto;
+    width: min(100%, 820px);
+    padding: 42px 48px 36px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--ink);
+    background: var(--surface);
+    box-shadow: 12px 12px 0 var(--panel-shadow, rgba(23, 24, 27, 0.06));
 }
 
 .privacy-header {
-    text-align: center;
-    margin-bottom: 32px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--line);
 }
 
 .privacy-logo {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 16px;
+    margin-bottom: 24px;
+}
+
+.privacy-logo a {
+    display: inline-flex;
+    border-radius: 50%;
 }
 
 .privacy-logo img {
-    width: 48px;
-    height: 48px;
+    width: 42px;
+    height: 42px;
 }
 
 .privacy-header h1 {
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: var(--text-primary);
+    margin: 0 0 10px;
+    color: var(--ink);
+    font-family: 'Manrope', sans-serif;
+    font-size: 2rem;
+    line-height: 1.2;
+    letter-spacing: 0;
+}
+
+.privacy-header p {
+    max-width: 560px;
     margin: 0;
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.privacy-body {
+    padding: 30px 0 4px;
 }
 
 .privacy-body p {
-    color: var(--text-secondary);
+    margin: 0;
+    padding: 0 0 22px;
+    color: var(--ink-soft);
     font-size: 0.92rem;
-    line-height: 1.7;
-    margin: 0 0 18px;
+    line-height: 1.75;
 }
 
-.privacy-body strong {
-    color: var(--text-primary);
+.privacy-body p + p {
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+}
+
+.privacy-body strong:first-child {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--ink);
+    font-size: 0.98rem;
+}
+
+.privacy-body strong:first-child + br {
+    display: none;
 }
 
 .privacy-body a {
     color: var(--accent);
-    text-decoration: none;
-    transition: color 0.2s;
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 3px;
+    transition:
+        color 0.2s ease,
+        text-decoration-color 0.2s ease;
 }
 
 .privacy-body a:hover {
-    color: var(--accent-hover);
-    text-decoration: underline;
+    color: var(--accent-dark);
+    text-decoration-color: currentColor;
 }
 
 .privacy-footer {
-    text-align: center;
-    margin-top: 32px;
+    display: flex;
+    padding-top: 26px;
+    justify-content: flex-end;
+    border-top: 1px solid var(--line);
 }
 
 .privacy-footer .btn-agree {
-    display: inline-block;
-    padding: 12px 40px;
-    background: var(--accent);
-    color: #fff;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 600;
-    border: none;
+    display: inline-flex;
+    min-height: 44px;
+    padding: 0 18px;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
     border-radius: var(--radius);
-    cursor: pointer;
+    color: #ffffff;
+    background: var(--accent);
+    box-shadow: 0 8px 18px rgba(49, 92, 245, 0.2);
+    font-size: 0.86rem;
+    font-weight: 700;
     text-decoration: none;
     transition:
-        background 0.2s,
-        transform 0.15s;
+        background 0.2s ease,
+        transform 0.2s ease;
 }
 
 .privacy-footer .btn-agree:hover {
-    background: var(--accent-hover);
+    background: var(--accent-dark);
     transform: translateY(-1px);
+}
+
+.privacy-logo a:focus-visible,
+.privacy-body a:focus-visible,
+.privacy-footer .btn-agree:focus-visible {
+    outline: 3px solid rgba(49, 92, 245, 0.28);
+    outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 16px;
+    }
+
+    .privacy-container {
+        padding: 30px 22px 24px;
+        box-shadow: 7px 7px 0 var(--panel-shadow, rgba(23, 24, 27, 0.06));
+    }
+
+    .privacy-header {
+        padding-bottom: 24px;
+    }
+
+    .privacy-header h1 {
+        font-size: 1.65rem;
+    }
+
+    .privacy-body {
+        padding-top: 24px;
+    }
+
+    .privacy-footer .btn-agree {
+        width: 100%;
+    }
 }

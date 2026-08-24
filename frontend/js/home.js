@@ -1,5 +1,11 @@
 'use strict';
 
+const savedTheme = window.localStorage.getItem('home-theme');
+const preferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+document.documentElement.dataset.theme = ['light', 'dark'].includes(savedTheme) ? savedTheme : preferredTheme;
+
+const homeConfig = window.APP_CONFIG?.home || {};
+
 console.log('Location', window.location);
 console.log('LocalStorage', window.localStorage);
 
@@ -7,12 +13,16 @@ const roomId = filterXSS(new URLSearchParams(window.location.search).get('room')
 
 const roomIdIn = document.getElementById('roomIdInput');
 const userNameIn = document.getElementById('userNameInput');
+const joinForm = document.getElementById('joinForm');
 const randomRoomBtn = document.getElementById('randomRoomBtn');
 const randomUserBtn = document.getElementById('randomUserBtn');
 const initAudioBtn = document.getElementById('initAudioBtn');
 const initVideoBtn = document.getElementById('initVideoBtn');
-const joinBtn = document.getElementById('joinBtn');
-const supportBtn = document.getElementById('supportBtn');
+const themeToggleBtn = document.getElementById('themeToggleBtn');
+const homeBrand = document.getElementById('homeBrand');
+const appName = document.getElementById('appName');
+const copyrightLabel = document.getElementById('copyrightLabel');
+const aboutBtn = document.getElementById('aboutBtn');
 
 const LS = new LocalStorage();
 const localStorageConfig = LS.getConfig();
@@ -24,16 +34,21 @@ const mediaIcons = {
     videoOff: 'fas fa-video-slash',
 };
 
-const config = {
-    support: true,
-    //...
-};
-
 document.addEventListener('DOMContentLoaded', function () {
     initHome();
 });
 
 async function initHome() {
+    applyHomeConfig();
+    updateThemeToggle(document.documentElement.dataset.theme);
+
+    themeToggleBtn.onclick = () => {
+        const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = theme;
+        window.localStorage.setItem('home-theme', theme);
+        updateThemeToggle(theme);
+    };
+
     roomIdIn.value = roomId ? roomId : filterXSS(window.localStorage.room) || '';
 
     const getUserName = async () => {
@@ -80,21 +95,69 @@ async function initHome() {
         updateMediaToggle(initVideoBtn, 'video', active);
     };
 
-    joinBtn.onclick = () => {
-        if (roomIdIn.value && userNameIn.value) {
-            const joinURL = window.location.origin + '/join?room=' + roomIdIn.value + '&name=' + userNameIn.value;
-            window.history.pushState({ url: joinURL }, roomIdIn.value, joinURL);
-            window.localStorage.room = roomIdIn.value;
-            window.localStorage.name = userNameIn.value;
-        }
+    joinForm.onsubmit = (event) => {
+        event.preventDefault();
+
+        const room = roomIdIn.value.trim();
+        const name = userNameIn.value.trim();
+        if (!room || !name) return;
+
+        const params = new URLSearchParams({ room, name });
+        window.localStorage.room = room;
+        window.localStorage.name = name;
+        window.location.assign('/join?' + params.toString());
     };
 
-    supportBtn.onclick = () => {
-        window.open('https://docs.mirotalk.com/about', '_blank');
-    };
-
-    !config.support && elementDisplay(supportBtn, false);
+    const aboutUrl = getSafeAboutUrl(homeConfig.about?.url);
+    elementDisplay(copyrightLabel, homeConfig.showCopyright !== false);
+    elementDisplay(aboutBtn, homeConfig.about?.show !== false && Boolean(aboutUrl));
+    if (aboutUrl) aboutBtn.href = aboutUrl;
     //...
+}
+
+function getSafeAboutUrl(configuredUrl) {
+    try {
+        const aboutUrl = new URL(String(configuredUrl || '').trim(), window.location.origin);
+        return ['http:', 'https:'].includes(aboutUrl.protocol) ? aboutUrl.href : '';
+    } catch {
+        return '';
+    }
+}
+
+function applyHomeConfig() {
+    const configuredAppName = String(homeConfig.appName || '').trim();
+    if (!configuredAppName) return;
+
+    const nameParts = configuredAppName.split(/\s+/);
+    const accentPart = nameParts.pop();
+
+    appName.replaceChildren();
+    if (nameParts.length) {
+        appName.append(document.createTextNode(nameParts.join(' ') + ' '));
+    }
+    const accentName = document.createElement('strong');
+    accentName.textContent = accentPart;
+    appName.append(accentName);
+
+    document.title = configuredAppName + ' — Private video calls in your browser';
+    document.querySelector('meta[name="description"]').content =
+        configuredAppName + ' WebRTC real-time cam-2-cam video calls and screen sharing, end-to-end encrypted.';
+    document.querySelector('meta[property="og:site_name"]').content = configuredAppName;
+    homeBrand.setAttribute('aria-label', configuredAppName + ' home');
+    copyrightLabel.textContent = '© ' + new Date().getFullYear() + ' ' + configuredAppName;
+    const aboutLabel = 'About ' + configuredAppName;
+    aboutBtn.title = aboutLabel;
+    aboutBtn.setAttribute('aria-label', aboutLabel);
+}
+
+function updateThemeToggle(theme) {
+    const isDark = theme === 'dark';
+    const nextTheme = isDark ? 'light' : 'dark';
+    const label = 'Switch to ' + nextTheme + ' theme';
+
+    themeToggleBtn.title = label;
+    themeToggleBtn.setAttribute('aria-label', label);
+    themeToggleBtn.setAttribute('aria-pressed', String(isDark));
 }
 
 function shuffleText(input, finalValue, duration = 600) {
@@ -128,13 +191,17 @@ function shuffleText(input, finalValue, duration = 600) {
 
 function updateMediaToggle(btn, kind, active) {
     const icon = btn.querySelector('i');
+    const state = btn.querySelector('.toggle-state');
     if (icon) {
         icon.className = active ? mediaIcons[kind + 'On'] : mediaIcons[kind + 'Off'];
+    }
+    if (state) {
+        state.textContent = active ? 'On' : 'Off';
     }
     btn.classList.toggle('off', !active);
     btn.setAttribute('aria-pressed', String(active));
 }
 
 function elementDisplay(elem, display) {
-    elem.style.display = display ? 'block' : 'none';
+    elem.hidden = !display;
 }

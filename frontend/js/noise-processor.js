@@ -254,7 +254,7 @@ class RNNoiseProcessor {
 
     updateUI() {
         this.elements.labelNoiseSuppression.disabled = !this.isProcessing;
-        this.elements.labelNoiseSuppression.style.color = this.noiseSuppressionEnabled ? 'lime' : 'white';
+        //this.elements.labelNoiseSuppression.style.color = this.noiseSuppressionEnabled ? 'green' : 'white';
     }
 
     updateStatus(message, type = 'info') {

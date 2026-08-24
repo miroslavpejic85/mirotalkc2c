@@ -1,8 +1,7 @@
 <!doctype html>
 <html lang="en">
     <head>
-        <title>MiroTalk WebRTC C2C end-to-end encrypted</title>
-
+        <title>MiroTalk C2C — Private video calls in your browser</title>
         <meta charset="UTF-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta
@@ -13,118 +12,189 @@
             name="description"
             content="MiroTalk C2C WebRTC real-time cam-2-cam video calls and screen sharing, end-to-end encrypted."
         />
-
         <meta property="og:type" content="app-webrtc" />
         <meta property="og:site_name" content="MiroTalk C2C" />
         <meta property="og:title" content="Click the link to join this call." />
         <meta property="og:description" content="Free WebRTC cam-2-cam video calls." />
         <meta property="og:image" content="https://c2c.mirotalk.com/images/ui.png" />
         <meta property="og:url" content="https://c2c.mirotalk.com" />
-
         <link rel="apple-touch-icon" href="../images/favicon.png" />
         <link rel="icon" type="image/x-icon" href="../images/favicon.ico" />
         <link rel="stylesheet" href="../css/home.css" />
         <link rel="stylesheet" href="../css/common.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
-
         <script async src="../js/stats.js"></script>
-
         <script defer src="https://cdn.jsdelivr.net/npm/xss/dist/xss.min.js"></script>
         <script defer src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
         <script defer src="../js/storage.js"></script>
+        <script defer src="../js/config.js"></script>
         <script defer src="../js/home.js"></script>
     </head>
     <body>
-        <form id="joinForm" autocomplete="off" class="join-form">
-            <div class="form-header">
-                <div class="form-logo">
-                    <img src="../images/logo.svg" alt="MiroTalk" />
-                </div>
-                <h2>Start a Video Call</h2>
-                <p>Connect face-to-face, instantly</p>
-            </div>
+        <div class="page-shell">
+            <main class="home-main">
+                <section class="product-intro" aria-labelledby="home-title">
+                    <a id="homeBrand" class="brand" href="/" aria-label="MiroTalk C2C home">
+                        <img src="../images/logo.svg" alt="" />
+                        <span id="appName">MiroTalk <strong>C2C</strong></span>
+                    </a>
 
-            <div class="input-group">
-                <label for="room"><i class="fas fa-door-open"></i> Room</label>
-                <div class="input-container">
-                    <input
-                        id="roomIdInput"
-                        type="text"
-                        name="room"
-                        placeholder="e.g. my-meeting"
-                        maxlength="36"
-                        required
-                    />
-                    <button
-                        type="button"
-                        id="randomRoomBtn"
-                        class="input-btn"
-                        title="Generate random room"
-                        aria-label="Generate Random Room"
-                    >
-                        <i class="fa fa-random"></i>
-                    </button>
-                </div>
-            </div>
+                    <div class="intro-copy">
+                        <p class="eyebrow"><span></span> Browser-to-browser video calls</p>
+                        <h1 id="home-title">Your room.<br />Ready when<br />you are.</h1>
+                        <p class="intro-text">
+                            Meet face to face with video, audio, and screen sharing. One private link is all it takes.
+                        </p>
+                        <div class="trust-row" aria-label="Product benefits">
+                            <span><i class="fas fa-bolt"></i> No downloads</span>
+                            <span><i class="fas fa-shield-halved"></i> Private rooms</span>
+                            <span><i class="fas fa-display"></i> Any device</span>
+                        </div>
+                    </div>
 
-            <div class="input-group">
-                <label for="username"><i class="fas fa-user"></i> Name</label>
-                <div class="input-container">
-                    <input
-                        id="userNameInput"
-                        type="text"
-                        name="name"
-                        placeholder="Your display name"
-                        maxlength="36"
-                        required
-                    />
-                    <button
-                        type="button"
-                        id="randomUserBtn"
-                        class="input-btn"
-                        title="Generate random user"
-                        aria-label="Generate Random User"
-                    >
-                        <i class="fa fa-random"></i>
-                    </button>
-                </div>
-            </div>
+                    <div class="intro-footer">
+                        <span id="copyrightLabel" class="copyright-label">&copy; 2026 MiroTalk C2C</span>
+                        <a href="/privacy" class="privacy-link">Privacy</a>
+                    </div>
+                </section>
 
-            <div class="media-toggles">
-                <button
-                    type="button"
-                    id="initAudioBtn"
-                    class="media-toggle-btn"
-                    title="Toggle microphone"
-                    aria-label="Toggle microphone"
-                    aria-pressed="true"
-                >
-                    <i class="fas fa-microphone"></i>
-                    <span>Mic</span>
-                </button>
-                <button
-                    type="button"
-                    id="initVideoBtn"
-                    class="media-toggle-btn"
-                    title="Toggle camera"
-                    aria-label="Toggle camera"
-                    aria-pressed="true"
-                >
-                    <i class="fas fa-video"></i>
-                    <span>Camera</span>
-                </button>
-            </div>
+                <section class="join-panel" aria-labelledby="join-title">
+                    <div class="panel-topbar">
+                        <div class="privacy-status"><i class="fas fa-shield-halved"></i> End-to-end encrypted</div>
+                        <a
+                            id="aboutBtn"
+                            class="about-btn"
+                            href="https://docs.mirotalk.com/about"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="About MiroTalk C2C"
+                            aria-label="About MiroTalk C2C"
+                        >
+                            <i class="fas fa-heart"></i>
+                        </a>
+                    </div>
 
-            <button type="submit" id="joinBtn" class="join-button">
-                <i class="fas fa-video"></i>
-                <span>Join Call</span>
-            </button>
+                    <div class="panel-content">
+                        <div class="form-header">
+                            <p class="step-label">Private meeting</p>
+                            <h2 id="join-title">Set up your call</h2>
+                            <p>Choose a room and how you want to join.</p>
+                        </div>
 
-            <div class="form-divider">
-                <span><a href="/privacy" class="privacy-link">Privacy Policy</a></span>
-            </div>
+                        <form id="joinForm" autocomplete="off" class="join-form">
+                            <div class="input-group">
+                                <label for="userNameInput"><i class="fas fa-user"></i> Your name</label>
+                                <div class="input-container">
+                                    <input
+                                        id="userNameInput"
+                                        type="text"
+                                        name="name"
+                                        placeholder="How others will see you"
+                                        maxlength="36"
+                                        autocomplete="name"
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        id="randomUserBtn"
+                                        class="input-btn"
+                                        title="Generate a random name"
+                                        aria-label="Generate a random name"
+                                    >
+                                        <i class="fas fa-rotate"></i>
+                                    </button>
+                                </div>
+                            </div>
 
-            <button id="supportBtn" class="support-btn">&copy; 2026 MiroTalk C2C</button>
-        </form>
+                            <div class="input-group">
+                                <label for="roomIdInput"><i class="fas fa-hashtag"></i> Room ID</label>
+                                <div class="input-container">
+                                    <input
+                                        id="roomIdInput"
+                                        type="text"
+                                        name="room"
+                                        placeholder="e.g. design-sync"
+                                        maxlength="36"
+                                        spellcheck="false"
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        id="randomRoomBtn"
+                                        class="input-btn"
+                                        title="Generate a random room"
+                                        aria-label="Generate a random room"
+                                    >
+                                        <i class="fas fa-rotate"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <fieldset class="media-settings">
+                                <legend>Join with</legend>
+                                <div class="media-toggles">
+                                    <button
+                                        type="button"
+                                        id="initAudioBtn"
+                                        class="media-toggle-btn"
+                                        title="Toggle microphone"
+                                        aria-label="Toggle microphone"
+                                        aria-pressed="true"
+                                    >
+                                        <span class="media-icon"><i class="fas fa-microphone"></i></span>
+                                        <span>Microphone</span>
+                                        <span class="toggle-state">On</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        id="initVideoBtn"
+                                        class="media-toggle-btn"
+                                        title="Toggle camera"
+                                        aria-label="Toggle camera"
+                                        aria-pressed="true"
+                                    >
+                                        <span class="media-icon"><i class="fas fa-video"></i></span>
+                                        <span>Camera</span>
+                                        <span class="toggle-state">On</span>
+                                    </button>
+                                </div>
+                            </fieldset>
+
+                            <div class="join-action">
+                                <div class="join-action-copy">
+                                    <span class="action-icon"><i class="fas fa-video"></i></span>
+                                    <span>
+                                        <strong>Ready to meet</strong>
+                                        <small>Camera and audio can change anytime</small>
+                                    </span>
+                                </div>
+                                <button type="submit" id="joinBtn" class="join-button">
+                                    <span>Enter room</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </form>
+
+                        <p class="form-note">
+                            <i class="fas fa-lock"></i> Your call is encrypted between participants.
+                        </p>
+
+                        <div class="appearance-row">
+                            <span><i class="fas fa-moon"></i> Dark appearance</span>
+                            <button
+                                type="button"
+                                id="themeToggleBtn"
+                                class="appearance-shortcut"
+                                title="Switch to dark theme"
+                                aria-label="Switch to dark theme"
+                                aria-pressed="false"
+                            >
+                                <span></span>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
     </body>
 </html>
