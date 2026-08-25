@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.4.11
+ * @version 1.4.20
  */
 
 const savedTheme = window.localStorage.getItem('home-theme');
@@ -64,6 +64,7 @@ const videoFpsSelect = document.getElementById('videoFpsSelect');
 const maxVideoQualityDiv = document.getElementById('maxVideoQualityDiv');
 const pushToTalkDiv = document.getElementById('pushToTalkDiv');
 const noiseSuppressionDiv = document.getElementById('noiseSuppressionDiv');
+const switchLightTheme = document.getElementById('switchLightTheme');
 const switchNoiseSuppression = document.getElementById('switchNoiseSuppression');
 const switchMaxVideoQuality = document.getElementById('switchMaxVideoQuality');
 const switchKeepAspectRatio = document.getElementById('switchKeepAspectRatio');
@@ -1163,6 +1164,13 @@ function handleEvents() {
     }
     videoFpsSelect.onchange = (e) => {
         refreshVideoConstraints();
+    };
+    switchLightTheme.checked = document.documentElement.dataset.theme === 'light';
+    switchLightTheme.onchange = (e) => {
+        const theme = e.currentTarget.checked ? 'light' : 'dark';
+        document.documentElement.dataset.theme = theme;
+        window.localStorage.setItem('home-theme', theme);
+        playSound('switch');
     };
     //switchMaxVideoQuality.checked = localStorageConfig.video.settings.best_quality;
     switchMaxVideoQuality.onchange = (e) => {

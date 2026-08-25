@@ -320,9 +320,9 @@ function copyRoom() {
                 <canvas id="qrRoom"></canvas>
             </div>
             <br/>
-            <p style="color:rgb(8, 189, 89);">Join from your mobile device</p>
-            <p style="background:transparent; color:white; font-family: Arial, Helvetica, sans-serif;">No need for apps, simply capture the QR code with your mobile camera Or Invite someone else to join by sending them the following URL</p>
-            <p style="color:rgb(8, 189, 89);">${roomURL}</p>`
+            <p class="qr-room-heading">Join from your mobile device</p>
+            <p class="qr-room-description">No app needed. Scan the QR code with your mobile camera or share the room link below.</p>
+            <p class="qr-room-url">${roomURL}</p>`
         );
         makeRoomQR();
     });
@@ -495,15 +495,29 @@ function makeRoomQR() {
 }
 
 function setPeerVideoAvatarImgName(elem, peerName) {
-    if (elem && isValidEmail(peerName)) {
-        elem.setAttribute('src', genGravatar(peerName));
-    }
+    if (!elem) return;
+
+    const fallbackSrc = elem.getAttribute('src');
+    elem.classList.add('camera-off-avatar');
+
+    if (!isValidEmail(peerName)) return;
+
+    const profileImage = new Image();
+    profileImage.onload = () => {
+        elem.src = profileImage.src;
+        elem.classList.remove('camera-off-avatar');
+        elem.classList.add('profile-avatar');
+    };
+    profileImage.onerror = () => {
+        elem.src = fallbackSrc;
+    };
+    profileImage.src = genGravatar(peerName);
 }
 
 function genGravatar(email, size = false) {
     const hash = md5(email.toLowerCase().trim());
-    const gravatarURL = `https://www.gravatar.com/avatar/${hash}` + (size ? `?s=${size}` : '?s=250') + '?d=404';
-    return gravatarURL;
+    const params = new URLSearchParams({ s: size || 250, d: '404' });
+    return `https://www.gravatar.com/avatar/${hash}?${params.toString()}`;
     function md5(input) {
         return CryptoJS.MD5(input).toString();
     }
