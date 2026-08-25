@@ -385,23 +385,23 @@ a {
 }
 .media-toggles {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
 }
 .media-toggle-btn {
     display: grid;
     min-width: 0;
-    height: 54px;
-    padding: 0 11px;
-    grid-template-columns: 30px 1fr auto;
-    gap: 8px;
+    min-height: 72px;
+    padding: 10px 14px;
+    grid-template-columns: 46px minmax(0, 1fr) 48px;
+    gap: 12px;
     align-items: center;
     border: 1px solid var(--line);
     border-radius: var(--radius);
     color: var(--ink);
-    background: rgba(49, 92, 245, 0.06);
+    background: var(--field-bg);
     cursor: pointer;
-    font-size: 0.75rem;
+    font-size: 0.9rem;
     font-weight: 700;
     text-align: left;
     transition:
@@ -419,27 +419,54 @@ a {
 .media-icon,
 .action-icon {
     display: inline-grid;
-    width: 30px;
-    height: 30px;
+    width: 46px;
+    height: 46px;
     place-items: center;
-    border-radius: 6px;
+    border-radius: 8px;
     color: var(--accent);
     background: rgba(49, 92, 245, 0.1);
-    font-size: 0.78rem;
+    font-size: 1.1rem;
 }
 .toggle-state {
-    min-width: 28px;
-    color: var(--success);
-    font-size: 0.68rem;
-    text-align: center;
+    position: relative;
+    display: block;
+    width: 48px;
+    height: 28px;
+    overflow: hidden;
+    border-radius: 999px;
+    color: transparent;
+    background: var(--success);
+    font-size: 0;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.28);
+    transition:
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+.toggle-state::after {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.3);
+    content: '';
+    transition: transform 0.2s ease;
 }
 .media-toggle-btn.off {
     border-color: rgba(217, 67, 67, 0.28);
     background: rgba(217, 67, 67, 0.04);
 }
-.media-toggle-btn.off .media-icon,
-.media-toggle-btn.off .toggle-state {
+.media-toggle-btn.off .media-icon {
     color: var(--danger);
+}
+.media-toggle-btn.off .toggle-state {
+    background: var(--ink-soft);
+    box-shadow: none;
+}
+.media-toggle-btn.off .toggle-state::after {
+    transform: translateX(-20px);
 }
 .join-action {
     display: flex;
@@ -600,10 +627,26 @@ a:focus-visible {
         font-size: 2rem;
     }
     .media-toggle-btn {
-        grid-template-columns: 28px 1fr;
+        min-height: 64px;
+        padding: 8px 10px;
+        grid-template-columns: 38px minmax(0, 1fr) 44px;
+        gap: 8px;
+        font-size: 0.84rem;
+    }
+    .media-icon {
+        width: 38px;
+        height: 38px;
     }
     .toggle-state {
-        display: none;
+        width: 44px;
+        height: 24px;
+    }
+    .toggle-state::after {
+        width: 18px;
+        height: 18px;
+    }
+    .media-toggle-btn.off .toggle-state::after {
+        transform: translateX(-20px);
     }
     .join-action {
         align-items: stretch;
