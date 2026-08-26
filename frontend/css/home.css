@@ -585,48 +585,14 @@ a:focus-visible {
         flex-direction: column;
     }
     .product-intro {
-        min-height: 430px;
-        padding: 32px 28px;
-    }
-    .intro-copy {
-        padding: 56px 0;
-    }
-    .intro-copy h1 {
-        margin-top: 20px;
-        font-size: clamp(2.8rem, 11vw, 4.2rem);
-    }
-    .intro-text {
-        margin-top: 20px;
-    }
-    .trust-row {
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: 12px 22px;
+        display: none;
     }
     .join-panel {
-        min-height: 640px;
+        min-height: 100svh;
         padding: 30px 28px 42px;
     }
 }
 @media (max-width: 480px) {
-    .product-intro {
-        min-height: 400px;
-        padding: 26px 20px;
-    }
-    .intro-copy {
-        padding: 44px 0;
-    }
-    .intro-copy h1 {
-        font-size: clamp(2.55rem, 13vw, 3.5rem);
-    }
-    .intro-text {
-        font-size: 0.9rem;
-        line-height: 1.55;
-    }
-    .trust-row {
-        margin-top: 22px;
-        font-size: 0.68rem;
-    }
     .join-panel {
         padding: 26px 20px 36px;
     }
