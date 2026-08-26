@@ -436,6 +436,24 @@ body {
         0 0 0 3px rgba(255, 255, 255, 0.72);
 }
 
+#audioBtn.fa-microphone,
+#initAudioBtn.fa-microphone,
+#videoBtn.fa-video,
+#initVideoBtn.fa-video {
+    border-color: rgba(76, 175, 80, 0.58);
+    color: var(--success-color);
+    background: rgba(76, 175, 80, 0.16);
+}
+
+#audioBtn.fa-microphone-slash,
+#initAudioBtn.fa-microphone-slash,
+#videoBtn.fa-video-slash,
+#initVideoBtn.fa-video-slash {
+    border-color: rgba(255, 77, 77, 0.58);
+    color: var(--danger-color);
+    background: rgba(255, 77, 77, 0.16);
+}
+
 #leaveBtn,
 #initLeaveBtn {
     border-color: rgba(255, 77, 77, 0.45);

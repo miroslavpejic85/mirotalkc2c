@@ -410,11 +410,20 @@ a {
         transform 0.2s ease;
 }
 .media-toggle-btn:not(.off) {
-    border-color: rgba(49, 92, 245, 0.38);
+    border-color: rgba(22, 163, 74, 0.38);
+}
+.media-toggle-btn:not(.off) .media-icon {
+    color: var(--success);
+    background: rgba(22, 163, 74, 0.1);
 }
 .media-toggle-btn:hover {
-    border-color: var(--accent);
     transform: translateY(-1px);
+}
+.media-toggle-btn:not(.off):hover {
+    border-color: var(--success);
+}
+.media-toggle-btn.off:hover {
+    border-color: var(--danger);
 }
 .media-icon,
 .action-icon {
@@ -460,6 +469,7 @@ a {
 }
 .media-toggle-btn.off .media-icon {
     color: var(--danger);
+    background: rgba(217, 67, 67, 0.1);
 }
 .media-toggle-btn.off .toggle-state {
     background: var(--ink-soft);
