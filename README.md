@@ -4,10 +4,10 @@
     </a>
 </div>
 
-<h1 align="center">MiroTalk C2C</h1>
+<h1 align="center">MiroTalk C2C - Open Source Self-Hosted WebRTC 1-to-1 Video Calling</h1>
 
 <h3 align="center">
-Self-hosted open-source WebRTC cam-to-cam peer-to-peer video calling platform for immersive 1-to-1 real-time communication with screen sharing and end-to-end encryption.
+Self-hosted, open-source WebRTC cam-to-cam peer-to-peer video calling for private 1-to-1 real-time communication, with screen sharing and end-to-end encryption.
 </h3>
 
 <br />
