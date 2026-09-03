@@ -17,6 +17,7 @@
     --accent-dark: #2448cc;
     --success: #16865c;
     --danger: #d94343;
+    --toggle-off-bg: #64666d;
     --hero-bg: #f4f1eb;
     --hero-shape: #e7e9ef;
     --hero-ink: #17181b;
@@ -41,6 +42,7 @@
     --accent-dark: #5d7cf1;
     --success: #4bc795;
     --danger: #ff7272;
+    --toggle-off-bg: #55585e;
     --hero-bg: #0f1012;
     --hero-shape: #151b25;
     --hero-ink: #f8f7f4;
@@ -480,7 +482,7 @@ a {
 .media-toggle-btn.off .toggle-state {
     padding: 0 8px 0 32px;
     justify-content: flex-end;
-    background: var(--ink-soft);
+    background: var(--toggle-off-bg);
     box-shadow: none;
 }
 .media-toggle-btn.off .toggle-state::after {
