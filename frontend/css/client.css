@@ -1366,12 +1366,12 @@ video::-webkit-media-controls {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    width: 44px;
-    height: 24px;
+    width: 64px;
+    height: 30px;
     display: inline-block;
-    flex: 0 0 44px;
+    flex: 0 0 64px;
     position: relative;
-    border-radius: 12px;
+    border-radius: 15px;
     overflow: hidden;
     outline: none;
     border: 1px solid transparent;
@@ -1387,8 +1387,8 @@ video::-webkit-media-controls {
     display: block;
     position: absolute;
     z-index: 2;
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
     box-sizing: border-box;
     background: var(--toggle-thumb);
     border: 1px solid var(--toggle-thumb-border);
@@ -1400,8 +1400,27 @@ video::-webkit-media-controls {
     transition: transform 0.2s ease;
 }
 
+.toggle:after {
+    content: 'OFF';
+    position: absolute;
+    top: 50%;
+    right: 7px;
+    color: var(--panel-text-color);
+    font-size: 0.65rem;
+    font-weight: 700;
+    line-height: 1;
+    transform: translateY(-50%);
+}
+
 .toggle:checked {
     background-color: var(--toggle-active-bg);
+}
+
+.toggle:checked:after {
+    content: 'ON';
+    right: auto;
+    left: 9px;
+    color: #ffffff;
 }
 
 .toggle:focus-visible {
@@ -1409,7 +1428,7 @@ video::-webkit-media-controls {
 }
 
 .toggle:checked:before {
-    transform: translate(20px, -50%);
+    transform: translate(34px, -50%);
 }
 
 /*--------------------------------------------------------------
