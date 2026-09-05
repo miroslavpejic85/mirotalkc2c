@@ -20,12 +20,11 @@ RUN apt-get update \
     && npm cache clean --force \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
 
-# Copy the application code
-COPY frontend frontend
-COPY backend backend
+# Copy the application code, already owned by the runtime user
+COPY --chown=node:node frontend frontend
+COPY --chown=node:node backend backend
 
 # Run as the non-root "node" user (uid/gid 1000) shipped with the base image
-RUN chown -R node:node /src
 USER node
 
 # Set default command to start the application
