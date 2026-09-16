@@ -1355,6 +1355,10 @@ video::-webkit-media-controls {
     box-shadow: var(--swal-shadow) !important;
 }
 
+.swal2-popup.swal2-toast .swal2-html-container {
+    color: var(--panel-text-muted) !important;
+}
+
 .swal2-actions {
     margin-top: 1.5rem !important;
     gap: 8px;
