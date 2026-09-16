@@ -1082,6 +1082,15 @@ function updatePushToTalkIcon() {
         (isPushToTalkActive ? 'fas fa-microphone-lines' : isAudioStreaming ? className.audioOn : className.audioOff);
 }
 
+function setPushToTalkPressed(pressed) {
+    if (!isPushToTalkActive || pressed === isSpaceDown) return;
+    isSpaceDown = pressed;
+    setLocalAudioStatus(pressed, audioBtn.event);
+    playPushToTalkBlip(pressed);
+    updatePushToTalkIcon();
+    console.log(`Push-to-talk: audio ${pressed ? 'ON' : 'OFF'}`);
+}
+
 async function playPushToTalkBlip(pressed) {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (!AudioContextClass) return;
@@ -1145,6 +1154,7 @@ function handleEvents() {
         toggleHideMe();
     };
     audioBtn.onclick = (e) => {
+        if (isPushToTalkActive) return;
         if (hasAudioTrack(localMediaStream)) setLocalAudioStatus(!localMediaStream.getAudioTracks()[0].enabled, e);
     };
     videoBtn.onclick = (e) => {
@@ -1243,9 +1253,9 @@ function handleEvents() {
         elemDisplay(pushToTalkDiv, false);
     } else {
         switchPushToTalk.onchange = (e) => {
-            if (!e.currentTarget.checked && isSpaceDown) setLocalAudioStatus(false, audioBtn.event);
             isPushToTalkActive = e.currentTarget.checked;
             isSpaceDown = false;
+            setLocalAudioStatus(!isPushToTalkActive, audioBtn.event);
             updatePushToTalkIcon();
             playPushToTalkBlip(isPushToTalkActive);
             if (isPushToTalkActive) {
@@ -1259,27 +1269,26 @@ function handleEvents() {
             }
             playSound('switch');
         };
+        audioBtn.addEventListener('pointerdown', (e) => {
+            if (!isPushToTalkActive) return;
+            e.preventDefault();
+            setPushToTalkPressed(true);
+        });
+        audioBtn.addEventListener('pointerup', () => setPushToTalkPressed(false));
+        audioBtn.addEventListener('pointerleave', () => setPushToTalkPressed(false));
+        audioBtn.addEventListener('pointercancel', () => setPushToTalkPressed(false));
         document.onkeydown = (e) => {
             if (!isPushToTalkActive) return;
             if (e.code === 'Space') {
                 e.preventDefault();
-                if (isSpaceDown) return;
-                setLocalAudioStatus(true, audioBtn.event);
-                isSpaceDown = true;
-                playPushToTalkBlip(true);
-                updatePushToTalkIcon();
-                console.log('Push-to-talk: audio ON');
+                setPushToTalkPressed(true);
             }
         };
         document.onkeyup = (e) => {
             if (!isPushToTalkActive) return;
             if (e.code === 'Space') {
                 e.preventDefault();
-                setLocalAudioStatus(false, audioBtn.event);
-                isSpaceDown = false;
-                playPushToTalkBlip(false);
-                updatePushToTalkIcon();
-                console.log('Push-to-talk: audio OFF');
+                setPushToTalkPressed(false);
             }
         };
     }
