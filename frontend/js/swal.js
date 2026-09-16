@@ -31,6 +31,7 @@ function popupMessage(icon, title, message, position = 'center', timer = 3000) {
         case 'toast':
             const Toast = Swal.mixin({
                 toast: true,
+                backdrop: false,
                 position: position,
                 icon: 'info',
                 showConfirmButton: false,
