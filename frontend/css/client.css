@@ -565,6 +565,45 @@ body {
     translate: -50% 0;
 }
 
+#buttonsBar .action-control {
+    position: relative;
+    width: 2.75rem;
+    height: 2.75rem;
+    min-width: 2.75rem;
+    flex: 0 0 auto;
+}
+
+#buttonsBar .push-to-talk-status {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 14px);
+    z-index: 2;
+    padding: 5px 9px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 6px;
+    color: var(--panel-text-color);
+    background: var(--panel-bg);
+    box-shadow: var(--box-shadow);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    pointer-events: none;
+    transform: translateX(-50%);
+}
+
+#buttonsBar #audioControl.ptt-enabled:not(.ptt-transmitting) > #audioBtn {
+    border-color: rgba(255, 77, 77, 0.58);
+    color: var(--danger-color);
+    background: rgba(255, 77, 77, 0.16);
+}
+
+#buttonsBar #audioControl.ptt-transmitting > #audioBtn {
+    border-color: rgba(76, 175, 80, 0.58);
+    color: var(--success-color);
+    background: rgba(76, 175, 80, 0.16);
+}
+
 .fa-user-slash,
 .fa-microphone-slash,
 .fa-video-slash {
@@ -606,6 +645,12 @@ body {
         height: 2.625rem;
         min-width: 2.625rem;
         font-size: 0.88rem;
+    }
+
+    #buttonsBar .action-control {
+        width: 2.625rem;
+        height: 2.625rem;
+        min-width: 2.625rem;
     }
 }
 

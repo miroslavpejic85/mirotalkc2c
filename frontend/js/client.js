@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.4.30
+ * @version 1.4.31
  */
 
 const savedTheme = window.localStorage.getItem('home-theme');
@@ -197,6 +197,7 @@ let isAudioStreaming = false;
 let isScreenStreaming = false;
 let isPushToTalkActive = false;
 let isSpaceDown = false;
+let pushToTalkAudioContext = null;
 let isMyAudioActiveBefore = false;
 let isMyVideoActiveBefore = false;
 let isChatPasteTxt = false;
@@ -1069,6 +1070,48 @@ function blobToArrayBuffer(blob) {
     });
 }
 
+function updatePushToTalkIcon() {
+    if (!audioBtn) return;
+    const audioControl = document.getElementById('audioControl');
+    const pushToTalkStatus = document.getElementById('pushToTalkStatus');
+    audioControl.classList.toggle('ptt-enabled', isPushToTalkActive);
+    audioControl.classList.toggle('ptt-transmitting', isPushToTalkActive && isSpaceDown);
+    pushToTalkStatus.classList.toggle('hidden', !isPushToTalkActive || !isSpaceDown);
+    audioBtn.className =
+        'action-btn ' +
+        (isPushToTalkActive ? 'fas fa-microphone-lines' : isAudioStreaming ? className.audioOn : className.audioOff);
+}
+
+async function playPushToTalkBlip(pressed) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+
+    try {
+        if (!pushToTalkAudioContext || pushToTalkAudioContext.state === 'closed') {
+            pushToTalkAudioContext = new AudioContextClass();
+        }
+        if (pushToTalkAudioContext.state === 'suspended') {
+            await pushToTalkAudioContext.resume();
+        }
+
+        const oscillator = pushToTalkAudioContext.createOscillator();
+        const gain = pushToTalkAudioContext.createGain();
+        const now = pushToTalkAudioContext.currentTime;
+        const duration = 0.08;
+
+        oscillator.connect(gain);
+        gain.connect(pushToTalkAudioContext.destination);
+        oscillator.frequency.setValueAtTime(pressed ? 880 : 800, now);
+        oscillator.frequency.linearRampToValueAtTime(pressed ? 1200 : 500, now + duration);
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+        oscillator.start(now);
+        oscillator.stop(now + duration);
+    } catch (err) {
+        console.warn('Unable to play push-to-talk blip', err);
+    }
+}
+
 function handleEvents() {
     initLeaveBtn.onclick = () => {
         endCall();
@@ -1200,7 +1243,11 @@ function handleEvents() {
         elemDisplay(pushToTalkDiv, false);
     } else {
         switchPushToTalk.onchange = (e) => {
+            if (!e.currentTarget.checked && isSpaceDown) setLocalAudioStatus(false, audioBtn.event);
             isPushToTalkActive = e.currentTarget.checked;
+            isSpaceDown = false;
+            updatePushToTalkIcon();
+            playPushToTalkBlip(isPushToTalkActive);
             if (isPushToTalkActive) {
                 popupMessage(
                     'toast',
@@ -1215,18 +1262,23 @@ function handleEvents() {
         document.onkeydown = (e) => {
             if (!isPushToTalkActive) return;
             if (e.code === 'Space') {
+                e.preventDefault();
                 if (isSpaceDown) return;
                 setLocalAudioStatus(true, audioBtn.event);
                 isSpaceDown = true;
+                playPushToTalkBlip(true);
+                updatePushToTalkIcon();
                 console.log('Push-to-talk: audio ON');
             }
         };
         document.onkeyup = (e) => {
-            e.preventDefault();
             if (!isPushToTalkActive) return;
             if (e.code === 'Space') {
+                e.preventDefault();
                 setLocalAudioStatus(false, audioBtn.event);
                 isSpaceDown = false;
+                playPushToTalkBlip(false);
+                updatePushToTalkIcon();
                 console.log('Push-to-talk: audio OFF');
             }
         };
