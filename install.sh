@@ -6,6 +6,7 @@
 set -Eeuo pipefail
 
 readonly NODE_MAJOR=24
+readonly DOCKER_IMAGE='mirotalk/c2c:latest'
 readonly ENV_FILE='.env'
 readonly ENV_TEMPLATE='.env.template'
 readonly COMPOSE_FILE='docker-compose.yml'
@@ -170,10 +171,10 @@ if confirm 'Use Docker?' y; then
 
     if confirm 'Use the official Docker image?' y; then
         log info 'Pulling the latest official image'
-        docker pull mirotalk/c2c:latest
+        docker pull "$DOCKER_IMAGE"
     else
         log info 'Building the image from this checkout'
-        docker build --tag mirotalk/c2c:latest .
+        docker build --tag "$DOCKER_IMAGE" .
     fi
 
     log info 'Starting MiroTalk C2C in the background'
