@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.4.40
+ * @version 1.4.50
  */
 
 const savedTheme = window.localStorage.getItem('home-theme');
@@ -58,6 +58,12 @@ const audioOutputDiv = document.getElementById('audioOutputDiv');
 const audioOutputSource = document.getElementById('audioOutputSource');
 const testSpeakerBtn = document.getElementById('testSpeakerBtn');
 const videoSource = document.getElementById('videoSource');
+const backgroundEffectsSection = document.getElementById('backgroundEffectsSection');
+const backgroundEffectSelect = document.getElementById('backgroundEffectSelect');
+const backgroundEffectLoading = document.getElementById('backgroundEffectLoading');
+const backgroundImageInput = document.getElementById('backgroundImageInput');
+const backgroundImageBtn = document.getElementById('backgroundImageBtn');
+const backgroundImageName = document.getElementById('backgroundImageName');
 const videoQualitySelect = document.getElementById('videoQualitySelect');
 const videoFpsDiv = document.getElementById('videoFpsDiv');
 const videoFpsSelect = document.getElementById('videoFpsSelect');
@@ -202,6 +208,9 @@ let isMyAudioActiveBefore = false;
 let isMyVideoActiveBefore = false;
 let isChatPasteTxt = false;
 let noiseProcessor = null;
+let cameraEffects = null;
+let backgroundImage = null;
+let backgroundEffectsBusy = false;
 let localMediaStream = null;
 let remoteMediaStream = null;
 let camera = 'user';
@@ -588,6 +597,7 @@ function handleIceCandidate(config) {
 }
 
 function handleDisconnect() {
+    stopCameraEffects();
     stopMediaStream(localMediaStream);
     localMediaStream = null;
     cleanupPeerConnections();
@@ -631,6 +641,8 @@ async function setupLocalMedia(callback, errorBack) {
         // Apply noise suppression to the stream if enabled
         const originalStream = stream;
         stream = await applyNoiseSuppressionToLocalStream(stream);
+        if (hasVideoTrack(stream)) camera = detectCameraFacingMode(stream);
+        stream = await prepareCameraBackground(stream);
 
         // Check if noise suppression was applied and if we have peer connections
         const noiseSuppressionWasApplied = stream !== originalStream;
@@ -644,7 +656,6 @@ async function setupLocalMedia(callback, errorBack) {
             console.log('Noise suppression applied during setup and stream updated to peers');
         }
 
-        if (hasVideoTrack(stream)) camera = detectCameraFacingMode(stream);
         if (callback) callback();
     } catch (err) {
         console.error('[Error] setting up local media', err);
@@ -1212,6 +1223,24 @@ function handleEvents() {
         saveLocalStorageConfig();
         changeCamera(e.target.value);
     };
+    backgroundEffectsSection.hidden = !BackgroundEffects.supported();
+    backgroundEffectSelect.onchange = () => {
+        updateBackgroundControls();
+        if (backgroundEffectSelect.value === 'image' && !backgroundImage) {
+            backgroundImageInput.click();
+            return;
+        }
+        applyCameraBackground();
+    };
+    backgroundImageBtn.onclick = () => backgroundImageInput.click();
+    backgroundImageInput.onchange = () => loadBackgroundImage(backgroundImageInput.files[0]);
+    backgroundImageInput.oncancel = () => {
+        if (!backgroundImage) {
+            backgroundEffectSelect.value = cameraEffects?.mode || 'off';
+            updateBackgroundControls();
+        }
+    };
+    updateBackgroundControls();
     videoQualitySelect.onchange = (e) => {
         refreshVideoConstraints();
     };
@@ -1370,7 +1399,139 @@ function toggleSettings() {
     }
 }
 
+function updateBackgroundControls() {
+    const imageMode = backgroundEffectSelect.value === 'image';
+    backgroundEffectSelect.disabled = backgroundEffectsBusy || isScreenStreaming;
+    backgroundImageBtn.disabled = backgroundEffectsBusy || isScreenStreaming;
+    backgroundImageBtn.hidden = !imageMode;
+    backgroundImageName.hidden = !imageMode || !backgroundImage;
+    backgroundEffectLoading.hidden = !backgroundEffectsBusy;
+    backgroundEffectsSection.setAttribute('aria-busy', String(backgroundEffectsBusy));
+    videoSource.disabled = backgroundEffectsBusy || isScreenStreaming;
+    swapCameraBtn.disabled = backgroundEffectsBusy || isScreenStreaming;
+    screenShareBtn.disabled = backgroundEffectsBusy;
+    initScreenShareBtn.disabled = backgroundEffectsBusy;
+}
+
+function stopCameraEffects(stopCamera = true) {
+    const processor = cameraEffects;
+    cameraEffects = null;
+    processor?.stop(stopCamera);
+}
+
+function attachCameraBackgroundTrack(track) {
+    if (!localMediaStream || isScreenStreaming) return;
+    track.enabled = localMediaStream.getVideoTracks()[0]?.enabled ?? isVideoStreaming;
+    localMediaStream = new MediaStream([track, ...localMediaStream.getAudioTracks()]);
+    if (window.myVideo) window.myVideo.srcObject = localMediaStream;
+    refreshMyVideoStreamToPeers(localMediaStream);
+}
+
+function handleBackgroundError(processor, error) {
+    if (cameraEffects !== processor) return;
+    console.error('Camera background effect', error);
+    const track = processor.cameraTrack;
+    backgroundEffectSelect.value = 'off';
+    if (localMediaStream?.getVideoTracks()[0] === processor.outputTrack) attachCameraBackgroundTrack(track);
+    stopCameraEffects(false);
+    updateBackgroundControls();
+    popupMessage('warning', 'Camera background', 'Background effects unavailable. Continuing without effects.');
+}
+
+async function prepareCameraBackground(stream) {
+    const track = stream.getVideoTracks()[0];
+    const mode = backgroundEffectSelect.value;
+    if (!track || mode === 'off' || !BackgroundEffects.supported()) return stream;
+    backgroundEffectsBusy = true;
+    updateBackgroundControls();
+    const processor = new BackgroundEffects((error) => handleBackgroundError(processor, error));
+    processor.cameraTrack = track;
+    cameraEffects = processor;
+    try {
+        await processor.setMode(mode, backgroundImage);
+        const processed = await processor.start(stream);
+        if (cameraEffects !== processor) return stream;
+        processor.outputTrack.enabled = track.enabled;
+        return processed;
+    } catch (error) {
+        handleBackgroundError(processor, error);
+        return stream;
+    } finally {
+        backgroundEffectsBusy = false;
+        updateBackgroundControls();
+    }
+}
+
+async function applyCameraBackground() {
+    if (backgroundEffectsBusy || isScreenStreaming || !hasVideoTrack(localMediaStream)) return;
+    if (recording && recording.isStreamRecording()) {
+        backgroundEffectSelect.value = cameraEffects?.mode || 'off';
+        updateBackgroundControls();
+        return popupMessage('toast', 'Recording', 'Cannot change camera background while recording', 'top');
+    }
+    const stream = localMediaStream;
+    const processor = cameraEffects;
+    backgroundEffectsBusy = true;
+    updateBackgroundControls();
+    try {
+        if (backgroundEffectSelect.value === 'off') {
+            if (processor) {
+                attachCameraBackgroundTrack(processor.cameraTrack);
+                stopCameraEffects(false);
+            }
+        } else if (processor) {
+            await processor.setMode(backgroundEffectSelect.value, backgroundImage);
+        } else {
+            const processed = await prepareCameraBackground(stream);
+            if (localMediaStream === stream && !isScreenStreaming) {
+                attachCameraBackgroundTrack(processed.getVideoTracks()[0]);
+            }
+        }
+    } catch (error) {
+        handleBackgroundError(processor, error);
+    } finally {
+        backgroundEffectsBusy = false;
+        updateBackgroundControls();
+    }
+}
+
+async function loadBackgroundImage(file) {
+    if (!file || backgroundEffectsBusy || isScreenStreaming) return;
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 10 * 1024 * 1024) {
+        backgroundEffectSelect.value = cameraEffects?.mode || 'off';
+        backgroundImageInput.value = '';
+        updateBackgroundControls();
+        return popupMessage('warning', 'Camera background', 'Choose a PNG, JPEG or WebP image up to 10 MB.');
+    }
+    backgroundEffectsBusy = true;
+    updateBackgroundControls();
+    const url = URL.createObjectURL(file);
+    try {
+        const selectedImage = new Image();
+        await new Promise((resolve, reject) => {
+            selectedImage.onload = resolve;
+            selectedImage.onerror = () => reject(new Error('Unable to load background image'));
+            selectedImage.src = url;
+        });
+        backgroundImage = selectedImage;
+        backgroundImageName.textContent = file.name;
+        backgroundImageName.title = file.name;
+        backgroundEffectSelect.value = 'image';
+    } catch (error) {
+        console.error('Camera background image', error);
+        backgroundEffectSelect.value = cameraEffects?.mode || 'off';
+        popupMessage('warning', 'Camera background', 'Unable to load background image.');
+    } finally {
+        URL.revokeObjectURL(url);
+        backgroundImageInput.value = '';
+        backgroundEffectsBusy = false;
+        updateBackgroundControls();
+    }
+    await applyCameraBackground();
+}
+
 function swapCamera() {
+    if (backgroundEffectsBusy || isScreenStreaming) return;
     if (recording && recording.isStreamRecording()) {
         return popupMessage('toast', 'Recording', 'Cannot swap camera while recording', 'top');
     }
@@ -1378,14 +1539,17 @@ function swapCamera() {
     const camVideo = camera == 'user' ? true : { facingMode: { exact: camera } };
     navigator.mediaDevices
         .getUserMedia({ video: camVideo })
-        .then((camStream) => {
+        .then(async (camStream) => {
+            camera = detectCameraFacingMode(camStream);
+            stopCameraEffects();
             if (hasVideoTrack(localMediaStream)) {
                 localMediaStream.getVideoTracks()[0].stop();
             }
+            camStream = await prepareCameraBackground(camStream);
+            camStream = new MediaStream([...camStream.getVideoTracks(), ...localMediaStream.getAudioTracks()]);
             refreshMyLocalVideoStream(camStream);
             refreshMyVideoStreamToPeers(camStream);
             setLocalVideoStatus(true);
-            camera = detectCameraFacingMode(camStream);
             handleCameraMirror(window.myVideo, camera);
         })
         .catch((err) => {
@@ -1395,6 +1559,7 @@ function swapCamera() {
 }
 
 async function toggleScreenSharing() {
+    if (backgroundEffectsBusy) return;
     if (recording && recording.isStreamRecording()) {
         return popupMessage('toast', 'Recording', 'Cannot toggle screen sharing while recording', 'top');
     }
@@ -1418,9 +1583,16 @@ async function toggleScreenSharing() {
         }
 
         if (newStream) {
+            stopCameraEffects();
+            localMediaStream?.getVideoTracks().forEach((track) => track.stop());
+            if (isScreenStreaming) {
+                if (hasVideoTrack(newStream)) camera = detectCameraFacingMode(newStream);
+                newStream = await prepareCameraBackground(newStream);
+            }
             isScreenStreaming = !isScreenStreaming;
             refreshMyAudioAndVideoStreamToPeers(newStream);
             setLocalScreenStatus(isScreenStreaming);
+            updateBackgroundControls();
 
             // UI updates...
             if (window.myVideo) {
@@ -1447,6 +1619,7 @@ async function toggleScreenSharing() {
 }
 
 function changeCamera(deviceId = false) {
+    if (backgroundEffectsBusy || isScreenStreaming) return;
     if (recording && recording.isStreamRecording()) {
         return popupMessage('toast', 'Recording', 'Cannot change camera while recording', 'top');
     }
@@ -1456,7 +1629,9 @@ function changeCamera(deviceId = false) {
         .getUserMedia({
             video: videoConstraints,
         })
-        .then((camStream) => {
+        .then(async (camStream) => {
+            camera = detectCameraFacingMode(camStream);
+            stopCameraEffects();
             // Remove all existing video tracks from localMediaStream
             if (localMediaStream) {
                 localMediaStream.getVideoTracks().forEach((track) => {
@@ -1464,6 +1639,7 @@ function changeCamera(deviceId = false) {
                     localMediaStream.removeTrack(track);
                 });
             }
+            camStream = await prepareCameraBackground(camStream);
             // Add the new video track to localMediaStream
             const newVideoTrack = camStream.getVideoTracks()[0];
             if (localMediaStream && newVideoTrack) {
@@ -1473,7 +1649,7 @@ function changeCamera(deviceId = false) {
             }
             refreshMyLocalVideoStream(localMediaStream);
             refreshMyVideoStreamToPeers(localMediaStream);
-            camera = detectCameraFacingMode(camStream);
+            setVideoButtons(isVideoStreaming);
             handleCameraMirror(window.myVideo, camera);
         })
         .catch((err) => {
@@ -1789,6 +1965,7 @@ function setAudioButtons(active, e = false) {
 }
 
 function setVideoButtons(active, e = false) {
+    if (cameraEffects && !isScreenStreaming) cameraEffects.cameraTrack.enabled = active;
     if (localMediaStream.getVideoTracks()[0]) {
         localMediaStream.getVideoTracks()[0].enabled = active;
     }
@@ -1807,13 +1984,14 @@ function resetVideoConstraints() {
 }
 
 function refreshVideoConstraints() {
+    if (isScreenStreaming || backgroundEffectsBusy) return;
     // Check if localMediaStream exists and has video tracks
     if (!localMediaStream || !hasVideoTrack(localMediaStream)) {
         console.warn('Cannot refresh video constraints: no video track available');
         return;
     }
 
-    const videoTrack = localMediaStream.getVideoTracks()[0];
+    const videoTrack = cameraEffects?.cameraTrack || localMediaStream.getVideoTracks()[0];
     if (!videoTrack) {
         console.warn('Cannot refresh video constraints: video track is undefined');
         return;
@@ -2663,6 +2841,7 @@ window.addEventListener(
 window.onbeforeunload = function (e) {
     saveLocalStorageConfig();
     saveRecording();
+    stopCameraEffects();
     stopMediaStream(localMediaStream);
     cleanupPeerConnections();
     cleanupPeerMediaElements();

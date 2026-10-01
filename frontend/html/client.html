@@ -53,6 +53,7 @@
         <script defer src="../js/helpers.js"></script>
         <script defer src="../js/fix-webm-duration.js"></script>
         <script defer src="../js/recording.js"></script>
+        <script defer src="../js/background-effects.js"></script>
         <script defer src="../js/client.js"></script>
         <script defer src="../js/translate.js"></script>
         <script defer src="../js/noise-processor.js"></script>
@@ -227,6 +228,29 @@
                             <option value="15">15 fps</option>
                             <option value="5">5 fps</option>
                         </select>
+                    </div>
+                    <div id="backgroundEffectsSection" class="settings-field" hidden>
+                        <label for="backgroundEffectSelect">
+                            Background
+                            <span
+                                id="backgroundEffectLoading"
+                                role="status"
+                                aria-label="Loading background effect"
+                                hidden
+                            >
+                                <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+                            </span>
+                        </label>
+                        <select id="backgroundEffectSelect">
+                            <option value="off">Off</option>
+                            <option value="blur">Blur</option>
+                            <option value="image">Image</option>
+                        </select>
+                        <input id="backgroundImageInput" type="file" accept="image/png,image/jpeg,image/webp" hidden />
+                        <button id="backgroundImageBtn" class="settings-test-btn" type="button" hidden>
+                            <i class="fas fa-image" aria-hidden="true"></i> Choose image
+                        </button>
+                        <div id="backgroundImageName" class="background-image-name" hidden></div>
                     </div>
                 </div>
 

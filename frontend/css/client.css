@@ -1144,6 +1144,19 @@ video::-webkit-media-controls {
 }
 
 /* Test speaker button */
+.background-image-name {
+    margin-top: 7px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.76rem;
+    color: var(--panel-text-muted);
+}
+
+#backgroundEffectsSection [hidden] {
+    display: none;
+}
+
 .settings-test-btn {
     display: inline-flex;
     align-items: center;

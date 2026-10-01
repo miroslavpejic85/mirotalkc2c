@@ -70,6 +70,17 @@ Open [http://localhost:8080](http://localhost:8080) - done!
 </details>
 
 <details>
+<summary>🖼️ Camera backgrounds</summary>
+
+In **Settings > Video > Background**, select **Off**, **Blur**, or **Image**. PNG, JPEG, and WebP images up to 10 MB are processed locally in your browser and are not uploaded. Effects appear in the camera preview, outgoing camera video, and camera recordings. Screen sharing is unaffected; the selected effect resumes when returning to the camera. Background changes are blocked while recording.
+
+Effects require WebGL2 and canvas stream capture; blur also requires canvas filter support. MediaPipe Tasks Vision 0.10.21 and its WASM files are lazy-loaded from jsDelivr, and the selfie segmentation model (version 1) is loaded from Google Storage. These hosts must be reachable and allowed by any custom CSP, including WASM execution. Processing failures fall back to the original camera.
+
+Effect output is capped at 1280 x 720 and 15 FPS. Off uses the original camera without processing. Performance varies by device, and background tabs may throttle rendering. Image selections are not persisted across page reloads.
+
+</details>
+
+<details>
 <summary>🐳 Docker</summary>
 
 <br/>
