@@ -9,6 +9,7 @@ class RNNoiseProcessor {
         this.destinationNode = null;
         this.isProcessing = false;
         this.noiseSuppressionEnabled = noiseSuppressionEnabled;
+        this.cancelInitialization = null;
 
         console.log('RNNoiseProcessor initialized with noise suppression:', this.noiseSuppressionEnabled);
 
@@ -60,13 +61,11 @@ class RNNoiseProcessor {
         };
 
         this.elements.switchNoiseSuppression.checked = this.noiseSuppressionEnabled;
-        this.elements.switchNoiseSuppression.onchange = (e) => {
+        this.elements.switchNoiseSuppression.onchange = async (e) => {
+            const enabled = e.currentTarget.checked;
             typeof toggleNoiseSuppressionForLocalStream === 'function'
-                ? toggleNoiseSuppressionForLocalStream()
-                : this.toggleNoiseSuppression();
-            localStorageConfig.audio.settings.noise_suppression = e.currentTarget.checked;
-            saveLocalStorageConfig();
-            this.updateUI();
+                ? await toggleNoiseSuppressionForLocalStream(enabled)
+                : this.setNoiseSuppressionEnabled(enabled);
         };
     }
 
@@ -80,20 +79,23 @@ class RNNoiseProcessor {
             return;
         }
 
+        const enabled = this.noiseSuppressionEnabled;
+        this.stopProcessing();
+        this.noiseSuppressionEnabled = enabled;
+        let audioContext;
+        let initializationTimer;
         try {
             this.updateStatus('🎤 Starting audio processing...', 'info');
 
             // 48 kHz support is verified by isSampleRateSupported() at init.
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 48000 });
+            this.audioContext = audioContext;
+            if (audioContext.sampleRate !== 48000) throw new Error('RNNoise requires a 48 kHz audio context');
             this.updateStatus(`🎵 Audio context created with sample rate: ${this.audioContext.sampleRate}Hz`, 'info');
 
-            if (this.audioContext.state === 'suspended') {
-                try {
-                    await this.audioContext.resume();
-                } catch (e) {
-                    // ignore
-                }
-            }
+            if (audioContext.state === 'suspended') await audioContext.resume();
+            if (this.audioContext !== audioContext) return null;
+            if (audioContext.state !== 'running') throw new Error('Audio context is not running');
 
             this.mediaStream = mediaStream;
             if (!this.mediaStream.getAudioTracks().length) {
@@ -101,31 +103,37 @@ class RNNoiseProcessor {
             }
 
             console.log('Loading AudioWorklet module...');
-            await this.audioContext.audioWorklet.addModule('./js/noise-suppression-processor.js');
+            await audioContext.audioWorklet.addModule('./js/noise-suppression-processor.js');
+            if (this.audioContext !== audioContext) return null;
             console.log('AudioWorklet module loaded successfully');
 
-            this.workletNode = new AudioWorkletNode(this.audioContext, 'noise-suppression-processor', {
+            const workletNode = new AudioWorkletNode(audioContext, 'noise-suppression-processor', {
                 numberOfInputs: 1,
                 numberOfOutputs: 1,
                 outputChannelCount: [1],
             });
 
-            this.workletNode.port.onmessage = (event) => {
-                if (event.data.type === 'request-wasm') {
-                    console.log('Worklet requesting WASM module...');
-                    this.loadWasmBuffer();
-                } else if (event.data.type === 'wasm-ready') {
-                    console.log('WASM module ready in worklet');
-                    this.updateStatus('✅ RNNoise WASM initialized successfully', 'success');
-                } else if (event.data.type === 'wasm-error') {
-                    console.error('WASM error in worklet:', event.data.error);
-                    this.updateStatus('❌ RNNoise WASM error: ' + event.data.error, 'error');
-                } else if (event.data.type === 'vad') {
-                    if (event.data.isSpeech) {
-                        //this.updateStatus(`🗣️ Speech detected (VAD: ${event.data.probability.toFixed(2)})`, 'info');
-                    }
-                }
-            };
+            this.workletNode = workletNode;
+            await new Promise((resolve, reject) => {
+                this.cancelInitialization = () => reject(new Error('Audio processing stopped during initialization'));
+                initializationTimer = setTimeout(() => reject(new Error('RNNoise initialization timed out')), 10000);
+                const fail = (error) => {
+                    reject(error);
+                    if (this.isProcessing) this.onError?.(error);
+                };
+                workletNode.port.onmessage = (event) => {
+                    if (this.workletNode !== workletNode) return;
+                    if (event.data.type === 'request-wasm') this.loadWasmBuffer(workletNode).catch(fail);
+                    if (event.data.type === 'wasm-ready') resolve();
+                    if (event.data.type === 'wasm-error')
+                        fail(new Error(event.data.error || 'RNNoise initialization failed'));
+                };
+                workletNode.onprocessorerror = () => {
+                    if (this.workletNode === workletNode) fail(new Error('RNNoise audio worklet failed'));
+                };
+            });
+            if (this.audioContext !== audioContext || this.workletNode !== workletNode) return null;
+            this.cancelInitialization = null;
 
             this.sourceNode = this.audioContext.createMediaStreamSource(this.mediaStream);
             this.destinationNode = this.audioContext.createMediaStreamDestination();
@@ -137,27 +145,31 @@ class RNNoiseProcessor {
             // Enable noise suppression by default
             this.workletNode.port.postMessage({
                 type: 'enable',
-                enabled: true,
+                enabled: this.noiseSuppressionEnabled,
             });
 
             this.isProcessing = true;
             this.updateUI();
             this.updateStatus('🎤 Audio processing started', 'success');
             console.log('Audio processing started successfully');
+            return this.destinationNode.stream;
         } catch (error) {
+            if (audioContext && this.audioContext !== audioContext) return null;
             console.error('Error in startProcessing:', error);
             this.updateStatus('❌ Error: ' + error.message, 'error');
             this.isProcessing = false;
             this.stopProcessing();
             return null;
+        } finally {
+            clearTimeout(initializationTimer);
         }
     }
 
-    async loadWasmBuffer() {
+    async loadWasmBuffer(workletNode = this.workletNode) {
         try {
             if (!this.workletNode) {
                 this.updateStatus('⚠️ Worklet node not available, skipping WASM load', 'warning');
-                return;
+                throw new Error('Worklet node is not available');
             }
 
             this.updateStatus('📦 Loading RNNoise sync module...', 'info');
@@ -173,9 +185,9 @@ class RNNoiseProcessor {
             console.log('rnnoise-sync.js loaded, size:', jsContent.length);
             this.updateStatus('📦 Sending sync module to worklet...', 'info');
 
-            if (!this.workletNode) {
+            if (this.workletNode !== workletNode) {
                 this.updateStatus('⚠️ Worklet node disconnected before WASM could be sent', 'warning');
-                return;
+                throw new Error('Worklet node changed during WASM loading');
             }
 
             this.workletNode.port.postMessage({
@@ -187,15 +199,14 @@ class RNNoiseProcessor {
         } catch (error) {
             console.error('Sync module loading error:', error);
             this.updateStatus('❌ Failed to load sync module: ' + error.message, 'error');
+            throw error;
         }
     }
 
-    stopProcessing() {
-        // Stop the raw input (mic) tracks so the previous device is released on a device switch
-        try {
-            this.mediaStream?.getTracks?.().forEach((t) => t.stop());
-        } catch (e) {}
-
+    stopProcessing(stopMicrophone = false) {
+        this.cancelInitialization?.();
+        this.cancelInitialization = null;
+        if (stopMicrophone) this.mediaStream?.getAudioTracks().forEach((track) => track.stop());
         this.mediaStream = null;
 
         // Signal the worklet to free WASM memory before disconnecting
@@ -214,9 +225,9 @@ class RNNoiseProcessor {
         } catch (e) {}
 
         if (this.audioContext && this.audioContext.state !== 'closed') {
-            this.audioContext.close();
-            this.audioContext = null;
+            this.audioContext.close().catch((error) => console.warn('Audio context cleanup failed:', error));
         }
+        this.audioContext = null;
 
         this.workletNode = null;
         this.sourceNode = null;
@@ -292,9 +303,9 @@ class RNNoiseProcessor {
         console.log('Starting noise suppression processing...');
         console.log('Input stream tracks:', inputStream.getTracks().length);
 
-        await this.startProcessing(inputStream);
+        const stream = await this.startProcessing(inputStream);
 
-        if (!this.isProcessing || !this.destinationNode) {
+        if (!stream || !this.isProcessing || !this.destinationNode) {
             console.warn('Noise suppression processing failed');
             console.log('Is processing:', this.isProcessing);
             console.log('Destination node:', !!this.destinationNode);
@@ -310,7 +321,11 @@ class RNNoiseProcessor {
         // Add processed audio tracks
         this.destinationNode.stream.getAudioTracks().forEach((track) => {
             console.log('Adding processed audio track:', track.label);
+            track.enabled = inputStream.getAudioTracks()[0].enabled;
             processedStream.addTrack(track);
+        });
+        inputStream.getAudioTracks().forEach((track) => {
+            track.enabled = true;
         });
 
         // Add original video tracks if they exist

@@ -29,6 +29,7 @@ class RNNoiseProcessor extends AudioWorkletProcessor {
 
     setupMessageHandler() {
         this.port.onmessage = (event) => {
+            if (this._destroyed) return;
             const { type, jsContent, enabled } = event.data;
             switch (type) {
                 case 'sync-module':
@@ -48,25 +49,30 @@ class RNNoiseProcessor extends AudioWorkletProcessor {
 
     async initSyncModule(jsContent) {
         try {
+            if (this._destroyed) return;
             if (!jsContent) throw new Error('Missing sync module JS content');
 
             // Execute the module code directly since it's now AudioWorklet compatible
             const createFunction = new Function(jsContent + '; return createRNNWasmModuleSync;')();
 
             // Initialize the sync module
-            this.Module = await createFunction();
+            const module = await createFunction();
 
             // Wait for the module to be ready
-            if (this.Module.ready) {
-                await this.Module.ready;
+            if (module.ready) {
+                await module.ready;
             }
-
+            if (this._destroyed) return;
+            this.Module = module;
             this._setupWasm();
             this.initialized = true;
             this.port.postMessage({ type: 'wasm-ready' });
         } catch (error) {
             console.error('Sync module initialization error:', error);
-            this.port.postMessage({ type: 'wasm-error', error: error.message });
+            if (!this._destroyed) {
+                this.destroy();
+                this.port.postMessage({ type: 'wasm-error', error: error.message });
+            }
         }
     }
 
@@ -87,6 +93,7 @@ class RNNoiseProcessor extends AudioWorkletProcessor {
     }
 
     process(inputs, outputs, parameters) {
+        if (this._destroyed) return false;
         const input = inputs[0]?.[0];
         const output = outputs[0]?.[0];
         if (!input || !output) return true;
