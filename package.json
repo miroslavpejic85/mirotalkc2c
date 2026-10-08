@@ -1,11 +1,11 @@
 {
     "name": "mirotalkc2c",
-    "version": "1.4.56",
+    "version": "1.4.57",
     "description": "A free WebRTC Cam-2-Cam browser-based video calls",
     "main": "server.js",
     "scripts": {
         "start": "node backend/server.js",
-        "start-dev": "nodemon backend/server.js",
+        "dev": "node --watch backend/server.js",
         "test": "mocha tests/*.js",
         "lint": "npx prettier --write .",
         "mailpit:up": "docker-compose -f docker-compose-mailpit.yml up -d",
@@ -62,7 +62,6 @@
     "devDependencies": {
         "mocha": "^12.0.3",
         "node-fetch": "^3.3.2",
-        "nodemon": "^3.1.14",
         "prettier": "3.9.9",
         "should": "^13.2.3"
     }
