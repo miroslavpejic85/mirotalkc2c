@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.4.58
+ * @version 1.4.59
  */
 
 require('dotenv').config();
@@ -553,7 +553,7 @@ io.sockets.on('connect', (socket) => {
     function peersShareRoom(peerId) {
         if (typeof peerId !== 'string' || !peerId) return false;
         for (const channel in socket.channels) {
-            if (channels[channel] && channels[channel][peerId]) {
+            if (Object.hasOwn(channels, channel) && Object.hasOwn(channels[channel], peerId)) {
                 return true;
             }
         }
@@ -561,9 +561,9 @@ io.sockets.on('connect', (socket) => {
     }
 
     socket.on('relaySDP', (config) => {
-        const { peerId, sessionDescription } = config;
+        const { peerId, sessionDescription } = config || {};
 
-        if (!peersShareRoom(peerId)) {
+        if (!peersShareRoom(peerId) || !sessionDescription || typeof sessionDescription !== 'object') {
             return log.warn('[' + socket.id + '] relaySDP blocked: no shared room with [' + peerId + ']');
         }
 
@@ -577,7 +577,7 @@ io.sockets.on('connect', (socket) => {
     });
 
     socket.on('relayICE', (config) => {
-        const { peerId, iceCandidate } = config;
+        const { peerId, iceCandidate } = config || {};
 
         if (!peersShareRoom(peerId)) {
             return log.warn('[' + socket.id + '] relayICE blocked: no shared room with [' + peerId + ']');
@@ -617,6 +617,8 @@ io.sockets.on('connect', (socket) => {
         const config = checkXSS(cfg);
 
         const { roomId, peerName, element, active } = config;
+
+        if (!Object.hasOwn(socket.channels, roomId)) return;
 
         if (peers[roomId]) {
             for (let peerId in peers[roomId]) {
