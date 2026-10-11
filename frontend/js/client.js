@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.4.59
+ * @version 1.4.60
  */
 
 const savedTheme = window.localStorage.getItem('home-theme');
@@ -1856,17 +1856,17 @@ function giveMeFeedback() {
         allowEscapeKey: false,
         showDenyButton: true,
         showCancelButton: true,
-        confirmButtonColor: 'green',
-        denyButtonColor: 'red',
-        cancelButtonColor: 'gray',
+        focusDeny: true,
         background: swal.background,
         imageUrl: image.feedback,
+        imageHeight: 140,
         position: 'top',
-        title: 'Leave a feedback',
-        text: 'Do you want to rate your MiroTalk experience?',
-        confirmButtonText: `Yes`,
-        denyButtonText: `No`,
-        cancelButtonText: `Cancel`,
+        title: 'Leave the meeting?',
+        text: 'You can optionally rate your MiroTalk experience before you go.',
+        confirmButtonText: 'Leave & rate',
+        denyButtonText: 'Leave without rating',
+        cancelButtonText: 'Stay in meeting',
+        customClass: { popup: 'leave-popup', actions: 'leave-actions' },
         showClass: { popup: 'animate__animated animate__fadeInDown' },
         hideClass: { popup: 'animate__animated animate__fadeOutUp' },
     }).then((result) => {

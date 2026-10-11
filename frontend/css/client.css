@@ -1393,6 +1393,51 @@ video::-webkit-media-controls {
     background: var(--accent-color) !important;
 }
 
+.leave-popup .swal2-image {
+    margin: 0.5rem auto 1rem;
+}
+
+.leave-popup .swal2-html-container {
+    color: var(--panel-text-muted) !important;
+}
+
+.leave-popup .leave-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    margin: 1.5rem 0 0 !important;
+}
+
+.leave-popup .leave-actions .swal2-styled {
+    width: 100%;
+    min-height: 48px;
+    border-radius: 10px !important;
+    font-weight: 600;
+}
+
+.leave-popup .leave-actions .swal2-cancel {
+    order: 1;
+}
+
+.leave-popup .leave-actions .swal2-confirm {
+    order: 2;
+}
+
+.leave-popup .leave-actions .swal2-deny {
+    order: 3;
+}
+
+.leave-popup .leave-actions .swal2-cancel,
+.leave-popup .leave-actions .swal2-confirm {
+    background: var(--chat-button-bg) !important;
+    color: var(--panel-text-color) !important;
+}
+
+.leave-popup .leave-actions .swal2-deny {
+    background: var(--accent-color) !important;
+    color: #ffffff !important;
+}
+
 .swal2-container {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
