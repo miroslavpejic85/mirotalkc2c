@@ -1041,8 +1041,9 @@ video::-webkit-media-controls {
 }
 
 #settings .settings-header button:hover {
-    background: var(--panel-control-hover);
-    color: var(--accent-color);
+    background: var(--danger-color);
+    border-color: var(--danger-color);
+    color: #ffffff;
     transform: none;
     box-shadow: none;
 }
@@ -1363,6 +1364,8 @@ video::-webkit-media-controls {
 }
 
 .swal2-popup.swal2-toast {
+    position: relative;
+    padding-right: 2.2em !important;
     border: 1px solid var(--swal-border) !important;
     background: var(--swal-bg) !important;
     box-shadow: var(--swal-shadow) !important;
@@ -1370,6 +1373,20 @@ video::-webkit-media-controls {
 
 .swal2-popup.swal2-toast .swal2-html-container {
     color: var(--panel-text-muted) !important;
+}
+
+.swal2-popup.swal2-toast .swal2-close {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    margin: 0;
+    color: var(--panel-text-muted);
+    box-shadow: none;
+}
+
+.swal2-popup.swal2-toast .swal2-close:hover {
+    background: transparent;
+    color: var(--danger-color);
 }
 
 .swal2-actions {

@@ -13,8 +13,8 @@ function popupMessage(icon, title, message, position = 'center', timer = 3000) {
                 icon: icon,
                 title: title,
                 html: message,
-                showClass: { popup: 'animate__animated animate__fadeInDown' },
-                hideClass: { popup: 'animate__animated animate__fadeOutUp' },
+                showClass: { popup: 'animate__animated animate__zoomIn animate__faster' },
+                hideClass: { popup: 'animate__animated animate__zoomOut animate__faster' },
             });
             break;
         case 'html':
@@ -24,8 +24,8 @@ function popupMessage(icon, title, message, position = 'center', timer = 3000) {
                 position: position,
                 title: title,
                 html: message,
-                showClass: { popup: 'animate__animated animate__fadeInDown' },
-                hideClass: { popup: 'animate__animated animate__fadeOutUp' },
+                showClass: { popup: 'animate__animated animate__zoomIn animate__faster' },
+                hideClass: { popup: 'animate__animated animate__zoomOut animate__faster' },
             });
             break;
         case 'toast':
@@ -35,6 +35,7 @@ function popupMessage(icon, title, message, position = 'center', timer = 3000) {
                 position: position,
                 icon: 'info',
                 showConfirmButton: false,
+                showCloseButton: true,
                 timerProgressBar: true,
                 timer: timer,
             });
@@ -60,8 +61,8 @@ function popupHtmlMessage(icon, imageUrl, title, html, position, redirectURL = f
         imageUrl: imageUrl,
         title: title,
         html: html,
-        showClass: { popup: 'animate__animated animate__fadeInDown' },
-        hideClass: { popup: 'animate__animated animate__fadeOutUp' },
+        showClass: { popup: 'animate__animated animate__zoomIn animate__faster' },
+        hideClass: { popup: 'animate__animated animate__zoomOut animate__faster' },
     }).then((result) => {
         if (result.isConfirmed && redirectURL) {
             openURL(redirectURL);

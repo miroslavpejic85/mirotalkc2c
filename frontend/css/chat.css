@@ -83,14 +83,22 @@
 }
 
 .chat .header button:hover {
-    background: var(--chat-button-bg);
-    color: var(--chat-button-color);
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: #ffffff;
     transform: none;
     box-shadow: none;
 }
 
 .chat .header button:hover::before {
     opacity: 1;
+}
+
+.chat .header #chatCleanBtn:hover,
+.chat .header #chatCloseBtn:hover {
+    background: var(--danger-color);
+    border-color: var(--danger-color);
+    color: #ffffff;
 }
 
 /* Chat Body */
