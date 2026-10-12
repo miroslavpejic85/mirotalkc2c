@@ -1860,7 +1860,7 @@ function giveMeFeedback() {
         background: swal.background,
         imageUrl: image.feedback,
         imageHeight: 140,
-        position: 'top',
+        position: 'center',
         title: 'Leave the meeting?',
         text: 'You can optionally rate your MiroTalk experience before you go.',
         confirmButtonText: 'Leave & rate',
