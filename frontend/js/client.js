@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.4.70
+ * @version 1.4.71
  */
 
 const savedTheme = window.localStorage.getItem('home-theme');
@@ -212,6 +212,9 @@ let noiseSuppressionRequest = 0;
 let noiseSuppressionConstraints = Promise.resolve();
 let microphoneRequest = 0;
 let cameraEffects = null;
+// Devices actually in use, to restore the selects when a swap fails or a fallback device was opened
+let activeVideoDeviceId = null;
+let activeAudioDeviceId = null;
 let backgroundImage = null;
 let backgroundEffectsBusy = false;
 let localMediaStream = null;
@@ -343,6 +346,7 @@ function handleConnect() {
             handleCameraMirror(window.myVideo, camera);
             handleEvents();
             loadLocalStorageConfig();
+            syncDeviceSelects();
             await initNoiseProcessor();
             showWaitingUser();
             joinToChannel();
@@ -663,6 +667,8 @@ async function setupLocalMedia(callback, errorBack) {
 
     try {
         let stream = await getBestUserMedia(constraints);
+        activeVideoDeviceId = getStreamDeviceId(stream, 'video') || null;
+        activeAudioDeviceId = getStreamDeviceId(stream, 'audio') || null;
 
         // Apply noise suppression to the stream if enabled
         const originalStream = stream;
@@ -1567,6 +1573,8 @@ function swapCamera() {
     navigator.mediaDevices
         .getUserMedia({ video: camVideo })
         .then(async (camStream) => {
+            activeVideoDeviceId = getStreamDeviceId(camStream, 'video') || activeVideoDeviceId;
+            selectDevice(videoSource, activeVideoDeviceId);
             camera = detectCameraFacingMode(camStream);
             stopCameraEffects();
             if (hasVideoTrack(localMediaStream)) {
@@ -1657,6 +1665,7 @@ function changeCamera(deviceId = false) {
             video: videoConstraints,
         })
         .then(async (camStream) => {
+            activeVideoDeviceId = getStreamDeviceId(camStream, 'video') || activeVideoDeviceId;
             camera = detectCameraFacingMode(camStream);
             stopCameraEffects();
             // Remove all existing video tracks from localMediaStream
@@ -1681,6 +1690,8 @@ function changeCamera(deviceId = false) {
         })
         .catch((err) => {
             console.error('[Error] changeCamera', err);
+            // Keep showing the camera that is still in use
+            restoreDeviceSelect(videoSource, activeVideoDeviceId, setLocalStorageCameraConfig);
             popupMessage('error', 'Change camera', 'Error while swapping camera' + err);
         });
 }
@@ -1840,6 +1851,27 @@ function setLocalStorageSpeakerConfig(target) {
     localStorageConfig.speaker.devices.select.index = target.selectedIndex;
     localStorageConfig.speaker.devices.select.label = target.options[target.selectedIndex].text;
     localStorageConfig.speaker.devices.select.id = target.value;
+}
+
+/**
+ * Put the select back on the device still in use after a failed swap and save it as the preference
+ * @param {HTMLSelectElement} select
+ * @param {string|null} deviceId
+ * @param {function} setLocalStorageConfig
+ */
+function restoreDeviceSelect(select, deviceId, setLocalStorageConfig) {
+    if (!selectDevice(select, deviceId)) return;
+    setLocalStorageConfig(select);
+    saveLocalStorageConfig();
+}
+
+/**
+ * Show the devices actually in use in the selects (the saved ones may have been busy).
+ * The saved preference is left untouched so it is retried on the next join.
+ */
+function syncDeviceSelects() {
+    selectDevice(videoSource, activeVideoDeviceId);
+    selectDevice(audioSource, activeAudioDeviceId);
 }
 
 function saveLocalStorageConfig() {
@@ -2840,6 +2872,7 @@ async function replaceLocalMicrophone(deviceId) {
             micStream.getAudioTracks().forEach((track) => track.stop());
             return;
         }
+        activeAudioDeviceId = getStreamDeviceId(micStream, 'audio') || activeAudioDeviceId;
         micStream.getAudioTracks().forEach((track) => {
             track.enabled = isAudioStreaming;
         });
@@ -2854,6 +2887,8 @@ async function replaceLocalMicrophone(deviceId) {
         micStream?.getAudioTracks().forEach((track) => track.stop());
         if (request !== microphoneRequest) return;
         console.error('Error changing microphone:', error);
+        // Keep showing the microphone that is still in use
+        restoreDeviceSelect(audioSource, activeAudioDeviceId, setLocalStorageAudioConfig);
         popupMessage('error', 'Change microphone', 'Error while swapping microphone: ' + error);
     }
 }

@@ -201,20 +201,119 @@ function buildUniqueMediaStream(stream) {
 async function getBestUserMedia(constraints) {
     try {
         return await navigator.mediaDevices.getUserMedia(constraints);
-    } catch (err1) {
-        console.warn('[Warning] audio+video denied or not present', err1);
+    } catch (err) {
+        console.warn('[Warning] audio+video denied or not present', err);
+    }
+
+    // Request each device on its own so one busy or missing device does not take down the other
+    const stream = new MediaStream();
+    if (constraints.audio) {
         try {
-            return await navigator.mediaDevices.getUserMedia({ audio: constraints.audio, video: false });
-        } catch (err2) {
-            console.warn('[Warning] audio only denied or not present', err2);
-            try {
-                return await navigator.mediaDevices.getUserMedia({ audio: false, video: constraints.video });
-            } catch (err3) {
-                console.warn('[Warning] video only denied or not present', err3);
-                return new MediaStream();
-            }
+            const audioStream = await getUserMediaWithDeviceFallback('audioinput', (deviceId) => ({
+                audio: withDeviceId(constraints.audio, deviceId),
+                video: false,
+            }));
+            audioStream.getAudioTracks().forEach((track) => stream.addTrack(track));
+        } catch (err) {
+            console.warn('[Warning] audio denied or not present', err);
+            notifyBusyDevice('audio', err);
         }
     }
+    if (constraints.video) {
+        try {
+            const videoStream = await getUserMediaWithDeviceFallback('videoinput', (deviceId) => ({
+                audio: false,
+                video: withDeviceId(constraints.video, deviceId),
+            }));
+            videoStream.getVideoTracks().forEach((track) => stream.addTrack(track));
+        } catch (err) {
+            console.warn('[Warning] video denied or not present', err);
+            notifyBusyDevice('video', err);
+        }
+    }
+    return stream;
+}
+
+function withDeviceId(constraint, deviceId) {
+    if (!deviceId || !constraint) return constraint;
+    return { ...(constraint === true ? {} : constraint), deviceId: { exact: deviceId } };
+}
+
+/**
+ * Request a media stream with the given constraints; if the requested device is busy or broken
+ * (e.g. held by OBS) try the other devices of the same kind before giving up.
+ * @param {string} kind 'audioinput' or 'videoinput'
+ * @param {function} getConstraints builds the constraints for a device id (undefined = requested device)
+ * @returns {Promise<MediaStream>} the first stream that could be opened
+ * @throws the error of the requested device when no device could be opened
+ */
+async function getUserMediaWithDeviceFallback(kind, getConstraints) {
+    try {
+        return await navigator.mediaDevices.getUserMedia(getConstraints());
+    } catch (err) {
+        // Other devices cannot help if the user denied the permission or the constraints are invalid
+        if (['NotAllowedError', 'PermissionDeniedError', 'TypeError'].includes(err.name)) throw err;
+
+        console.warn(`Requested ${kind} unavailable [${err.name}], trying the other devices`);
+        let devices = [];
+        try {
+            devices = await navigator.mediaDevices.enumerateDevices();
+        } catch (enumErr) {
+            console.warn('Unable to enumerate devices', enumErr);
+        }
+        const candidates = devices.filter((d) => d.kind === kind && d.deviceId && d.deviceId !== 'default');
+        for (const device of candidates) {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia(getConstraints(device.deviceId));
+                console.log(`Using ${kind} fallback device`, device.label || device.deviceId);
+                return stream;
+            } catch (fallbackErr) {
+                console.warn(`Fallback ${kind} unavailable`, device.label || device.deviceId, fallbackErr.name);
+            }
+        }
+        throw err;
+    }
+}
+
+/**
+ * Get the id of the device behind the first audio or video track of a stream
+ * @param {MediaStream} stream
+ * @param {string} kind 'audio' or 'video'
+ * @returns {string|undefined} device id
+ */
+function getStreamDeviceId(stream, kind) {
+    const tracks = kind === 'audio' ? stream?.getAudioTracks?.() : stream?.getVideoTracks?.();
+    return tracks?.[0]?.getSettings?.().deviceId;
+}
+
+/**
+ * Select the device in the select element, if the option exists (does not fire onchange)
+ * @param {HTMLSelectElement} select
+ * @param {string} deviceId
+ * @returns {boolean} true if the select was updated
+ */
+function selectDevice(select, deviceId) {
+    if (!select || !deviceId) return false;
+    const exists = Array.from(select.options).some((option) => option.value === deviceId);
+    if (exists) select.value = deviceId;
+    return exists;
+}
+
+/**
+ * Tell the user that a device is busy or broken (not simply missing or denied)
+ * @param {string} mediaType 'audio' or 'video'
+ * @param {object} err
+ */
+function notifyBusyDevice(mediaType, err) {
+    if (!['NotReadableError', 'TrackStartError', 'AbortError'].includes(err?.name)) return;
+    const device = mediaType === 'audio' ? 'microphone' : 'camera';
+    popupMessage(
+        'toast',
+        'Device busy',
+        `The ${device} is busy or unavailable (maybe used by another app). Try another device.`,
+        'top',
+        6000
+    );
 }
 
 async function getScreenWithMic(constraints) {
