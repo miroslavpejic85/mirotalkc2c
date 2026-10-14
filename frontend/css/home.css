@@ -423,6 +423,13 @@ a {
     color: var(--success);
     background: rgba(22, 163, 74, 0.1);
 }
+.media-toggle-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+.media-toggle-btn:disabled:hover {
+    transform: none;
+}
 .media-toggle-btn:hover {
     transform: translateY(-1px);
 }

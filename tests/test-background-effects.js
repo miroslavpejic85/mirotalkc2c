@@ -150,6 +150,7 @@ describe('camera background integration', () => {
             getBestUserMedia: async () => new TestStream([makeTrack('video', 'returned-camera'), audio]),
             getVideoConstraints: () => ({ frameRate: 30 }),
             activeVideoDeviceId: null,
+            cameraAvailable: true,
             getStreamDeviceId: () => undefined,
             selectDevice: () => false,
             notifyBusyDevice() {},

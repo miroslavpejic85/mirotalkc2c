@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.4.71
+ * @version 1.4.72
  */
 
 const savedTheme = window.localStorage.getItem('home-theme');
@@ -215,6 +215,8 @@ let cameraEffects = null;
 // Devices actually in use, to restore the selects when a swap fails or a fallback device was opened
 let activeVideoDeviceId = null;
 let activeAudioDeviceId = null;
+let cameraAvailable = true;
+let microphoneAvailable = true;
 let backgroundImage = null;
 let backgroundEffectsBusy = false;
 let localMediaStream = null;
@@ -669,6 +671,8 @@ async function setupLocalMedia(callback, errorBack) {
         let stream = await getBestUserMedia(constraints);
         activeVideoDeviceId = getStreamDeviceId(stream, 'video') || null;
         activeAudioDeviceId = getStreamDeviceId(stream, 'audio') || null;
+        cameraAvailable = hasVideoTrack(stream);
+        microphoneAvailable = hasAudioTrack(stream);
 
         // Apply noise suppression to the stream if enabled
         const originalStream = stream;
@@ -698,11 +702,12 @@ async function setupLocalMedia(callback, errorBack) {
 async function enumerateDevices() {
     try {
         const devices = await navigator.mediaDevices.enumerateDevices();
-        const videoDevices = devices.filter((device) => device.kind === 'videoinput' && device.deviceId !== 'default');
-        const audioDevices = devices.filter((device) => device.kind === 'audioinput' && device.deviceId !== 'default');
-        const speakerDevices = devices.filter(
-            (device) => device.kind === 'audiooutput' && device.deviceId !== 'default'
-        );
+        // Without permission the browser lists devices with an empty id: they cannot be used
+        const usable = (kind) =>
+            devices.filter((device) => device.kind === kind && device.deviceId && device.deviceId !== 'default');
+        const videoDevices = usable('videoinput');
+        const audioDevices = usable('audioinput');
+        const speakerDevices = usable('audiooutput');
         removeAllChildren(audioSource);
         removeAllChildren(videoSource);
         removeAllChildren(audioOutputSource);
@@ -723,7 +728,11 @@ async function enumerateDevices() {
                 await addChild(audioOutputSource, device);
                 LS.DEVICES_COUNT.speaker++;
             }
-            elemDisplay(audioOutputDiv, LS.DEVICES_COUNT.speaker > 0);
+            elemDisplay(audioOutputDiv, true);
+            if (LS.DEVICES_COUNT.speaker === 0) {
+                showNoDevice(audioOutputSource, 'No speaker');
+                elemDisable(testSpeakerBtn, true);
+            }
         } else {
             elemDisplay(audioOutputDiv, false);
         }
@@ -990,9 +999,12 @@ function setRemoteMedia(stream, peers, peerId) {
         remoteVideoElem = createVideoElement(peerId + '_remoteVideo', stream, false);
         remoteVideoElem.style.display = 'block';
         remoteVideoAvatarImage.style.display = 'none';
-        const remoteVideoSpinner = createVideoSpinner();
-        remoteVideoWrap.appendChild(remoteVideoSpinner);
-        remoteVideoElem.addEventListener('playing', () => remoteVideoSpinner.remove(), { once: true });
+        // A peer without an active camera sends a disabled placeholder track: nothing to wait for
+        if (peerVideo || peerScreen) {
+            const remoteVideoSpinner = createVideoSpinner();
+            remoteVideoWrap.appendChild(remoteVideoSpinner);
+            remoteVideoElem.addEventListener('playing', () => remoteVideoSpinner.remove(), { once: true });
+        }
     }
 
     // Audio element (if audio track)
@@ -1434,14 +1446,14 @@ function toggleSettings() {
 
 function updateBackgroundControls() {
     const imageMode = backgroundEffectSelect.value === 'image';
-    backgroundEffectSelect.disabled = backgroundEffectsBusy || isScreenStreaming;
-    backgroundImageBtn.disabled = backgroundEffectsBusy || isScreenStreaming;
+    backgroundEffectSelect.disabled = backgroundEffectsBusy || isScreenStreaming || !cameraAvailable;
+    backgroundImageBtn.disabled = backgroundEffectsBusy || isScreenStreaming || !cameraAvailable;
     backgroundImageBtn.hidden = !imageMode;
     backgroundImageName.hidden = !imageMode || !backgroundImage;
     backgroundEffectLoading.hidden = !backgroundEffectsBusy;
     backgroundEffectsSection.setAttribute('aria-busy', String(backgroundEffectsBusy));
-    videoSource.disabled = backgroundEffectsBusy || isScreenStreaming;
-    swapCameraBtn.disabled = backgroundEffectsBusy || isScreenStreaming;
+    videoSource.disabled = backgroundEffectsBusy || isScreenStreaming || !cameraAvailable;
+    swapCameraBtn.disabled = backgroundEffectsBusy || isScreenStreaming || !cameraAvailable;
     screenShareBtn.disabled = backgroundEffectsBusy;
     initScreenShareBtn.disabled = backgroundEffectsBusy;
 }
@@ -1758,8 +1770,8 @@ async function playTestSound() {
 function getVideoConstraints(deviceId = false) {
     let videoConstraints = true;
 
-    elemDisable(videoQualitySelect, localStorageConfig.video.settings.best_quality);
-    elemDisable(videoFpsSelect, localStorageConfig.video.settings.best_quality);
+    elemDisable(videoQualitySelect, localStorageConfig.video.settings.best_quality || !cameraAvailable);
+    elemDisable(videoFpsSelect, localStorageConfig.video.settings.best_quality || !cameraAvailable);
 
     if (localStorageConfig.video.settings.best_quality) {
         resetVideoConstraints();
@@ -1872,6 +1884,36 @@ function restoreDeviceSelect(select, deviceId, setLocalStorageConfig) {
 function syncDeviceSelects() {
     selectDevice(videoSource, activeVideoDeviceId);
     selectDevice(audioSource, activeAudioDeviceId);
+    if (!cameraAvailable) disableCameraControls();
+    if (!microphoneAvailable) disableMicrophoneControls();
+}
+
+/**
+ * Show a disabled placeholder in the select (the saved device preference is left untouched)
+ * @param {HTMLSelectElement} select
+ * @param {string} label
+ */
+function showNoDevice(select, label) {
+    const placeholder = new Option(label, '');
+    select.add(placeholder);
+    select.selectedIndex = placeholder.index;
+    select.disabled = true;
+}
+
+// Without a microphone there is nothing to configure
+function disableMicrophoneControls() {
+    showNoDevice(audioSource, 'No microphone');
+    elemDisable(switchNoiseSuppression, true);
+}
+
+// Without a camera there is nothing to configure
+function disableCameraControls() {
+    elemDisable(videoQualitySelect, true);
+    elemDisable(videoFpsSelect, true);
+    elemDisable(switchMaxVideoQuality, true);
+    showNoDevice(videoSource, 'No camera');
+    backgroundEffectSelect.value = 'off';
+    updateBackgroundControls();
 }
 
 function saveLocalStorageConfig() {
@@ -1886,7 +1928,7 @@ function loadLocalStorageConfig() {
     videoQualitySelect.selectedIndex = localStorageConfig.video.settings.quality_index;
     videoFpsSelect.selectedIndex = localStorageConfig.video.settings.fps_index;
     audioSource.selectedIndex = localStorageConfig.audio.devices.select.index;
-    if (isAudioOutputSupported() && audioOutputSource.options.length > 0) {
+    if (isAudioOutputSupported() && audioOutputSource.options.length > 0 && !audioOutputSource.disabled) {
         audioOutputSource.selectedIndex = localStorageConfig?.speaker?.devices?.select?.index ?? 0;
     }
     switchNoiseSuppression.checked = localStorageConfig?.audio?.settings?.noise_suppression ?? false;
@@ -1965,7 +2007,7 @@ function setLocalVideoStatus(active = true, e = false) {
     emitPeerStatus('video', active);
     localStorageConfig.video.init.active = active;
     saveLocalStorageConfig();
-    elemDisable(videoQualitySelect, !active || localStorageConfig.video.settings.best_quality);
+    elemDisable(videoQualitySelect, !active || localStorageConfig.video.settings.best_quality || !cameraAvailable);
 }
 
 function setLocalScreenStatus(active = false, e = false) {
@@ -2581,6 +2623,11 @@ function updatePeerMediaDisplay(peerId, active, type) {
     const peerVideo = document.getElementById(peerId + '_remoteVideo');
     const peerVideoAvatarImage = document.getElementById(peerId + '_remoteVideoAvatar');
     if (peerVideoAvatarImage) elemDisplay(peerVideoAvatarImage, !active);
+    if (!active)
+        document
+            .getElementById(peerId + '_remoteVideoWrap')
+            ?.querySelector('.video-spinner')
+            ?.remove();
     if (peerVideo) {
         peerVideo.style.display = active ? 'block' : 'none';
         peerVideo.style.objectFit =

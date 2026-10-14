@@ -95,6 +95,9 @@ async function initHome() {
         updateMediaToggle(initVideoBtn, 'video', active);
     };
 
+    watchMediaPermission('microphone', initAudioBtn, 'audio');
+    watchMediaPermission('camera', initVideoBtn, 'video');
+
     joinForm.onsubmit = (event) => {
         event.preventDefault();
 
@@ -202,6 +205,33 @@ function updateMediaToggle(btn, kind, active) {
     }
     btn.classList.toggle('off', !active);
     btn.setAttribute('aria-pressed', String(active));
+}
+
+/**
+ * Lock the toggle in the Off state while the browser permission is blocked,
+ * and restore the saved choice when the permission is granted again.
+ * Browsers that cannot query the permission keep the toggle as is.
+ * @param {string} name permission name ('microphone' or 'camera')
+ * @param {HTMLButtonElement} btn
+ * @param {string} kind 'audio' or 'video'
+ */
+async function watchMediaPermission(name, btn, kind) {
+    if (!navigator.permissions?.query) return;
+    let status;
+    try {
+        status = await navigator.permissions.query({ name });
+    } catch {
+        return;
+    }
+    const defaultTitle = btn.title;
+    const update = () => {
+        const blocked = status.state === 'denied';
+        btn.disabled = blocked;
+        btn.title = blocked ? `${name} access is blocked in the browser` : defaultTitle;
+        updateMediaToggle(btn, kind, !blocked && localStorageConfig[kind].init.active);
+    };
+    status.onchange = update;
+    update();
 }
 
 function elementDisplay(elem, display) {
