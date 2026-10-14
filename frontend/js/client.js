@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.4.72
+ * @version 1.4.73
  */
 
 const savedTheme = window.localStorage.getItem('home-theme');
@@ -1900,14 +1900,20 @@ function showNoDevice(select, label) {
     select.disabled = true;
 }
 
-// Without a microphone there is nothing to configure
+// Without a microphone there is nothing to configure or toggle
 function disableMicrophoneControls() {
     showNoDevice(audioSource, 'No microphone');
     elemDisable(switchNoiseSuppression, true);
+    elemDisplay(initAudioBtn, false);
+    elemDisplay(document.getElementById('audioControl'), false);
+    elemDisplay(pushToTalkDiv, false);
 }
 
-// Without a camera there is nothing to configure
+// Without a camera there is nothing to configure or toggle
 function disableCameraControls() {
+    elemDisplay(initVideoBtn, false);
+    elemDisplay(videoBtn, false);
+    elemDisplay(swapCameraBtn, false);
     elemDisable(videoQualitySelect, true);
     elemDisable(videoFpsSelect, true);
     elemDisable(switchMaxVideoQuality, true);

@@ -5,6 +5,7 @@
 }
 
 .chat {
+    --animate-duration: 0.18s;
     z-index: 8;
     display: none;
     position: absolute;

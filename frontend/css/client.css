@@ -628,7 +628,7 @@ body {
     box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    transition: right 0.25s ease;
+    transition: right 0.18s ease;
 }
 
 /* Keep call controls centered in the visible area when a side panel is open */
@@ -771,6 +771,15 @@ body {
     float: left;
     background: var(--video-stage-bg);
     overflow: hidden;
+    transition: width 0.18s ease;
+}
+
+/* Resize the video stage so the open side panel never covers it */
+@media (min-width: 769px) {
+    body.side-panel-open .remoteVideoWrap,
+    body.side-panel-open .myVideoWrap.waitingFullScreen {
+        width: calc(100vw - var(--settings-width)) !important;
+    }
 }
 
 .videoHeader {
@@ -1026,6 +1035,7 @@ video::-webkit-media-controls {
 }
 
 #settings {
+    --animate-duration: 0.18s;
     position: absolute;
     z-index: 7;
     top: 0;
