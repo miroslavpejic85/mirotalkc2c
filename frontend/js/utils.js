@@ -243,6 +243,10 @@ async function getScreenWithMic(constraints) {
 }
 
 function setTippy(element, content, placement) {
+    // Tooltip text doubles as the accessible name for icon-only buttons (also on mobile, where tooltips are off)
+    if (element && element.tagName === 'BUTTON' && !element.getAttribute('aria-label')) {
+        element.setAttribute('aria-label', content);
+    }
     if (isMobileDevice) return;
     if (element) {
         if (element._tippy) {

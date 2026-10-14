@@ -15,6 +15,9 @@
     --placeholder: #98999f;
     --accent: #315cf5;
     --accent-dark: #2448cc;
+    /* Filled buttons with white text (kept AA-contrast in both themes) */
+    --accent-solid: #315cf5;
+    --accent-solid-hover: #2448cc;
     --success: #16865c;
     --danger: #d94343;
     --toggle-off-bg: #64666d;
@@ -40,6 +43,8 @@
     --placeholder: #85878d;
     --accent: #7391ff;
     --accent-dark: #5d7cf1;
+    --accent-solid: #4566f0;
+    --accent-solid-hover: #3a59dd;
     --success: #4bc795;
     --danger: #ff7272;
     --toggle-off-bg: #55585e;
@@ -530,7 +535,7 @@ a {
     border: 0;
     border-radius: var(--radius);
     color: #ffffff;
-    background: var(--accent);
+    background: var(--accent-solid);
     box-shadow: 0 8px 18px rgba(49, 92, 245, 0.2);
     cursor: pointer;
     font-size: 0.78rem;
@@ -541,7 +546,7 @@ a {
         box-shadow 0.2s ease;
 }
 .join-button:hover {
-    background: var(--accent-dark);
+    background: var(--accent-solid-hover);
     box-shadow: 0 10px 22px rgba(49, 92, 245, 0.28);
     transform: translateY(-1px);
 }
@@ -555,6 +560,17 @@ a {
 .form-note i {
     margin-right: 5px;
     color: var(--success);
+}
+.mobile-legal {
+    display: none;
+    margin: 10px 0 0;
+    font-size: 0.72rem;
+    text-align: center;
+}
+.mobile-legal .privacy-link {
+    color: var(--ink-soft);
+    text-decoration: underline;
+    text-underline-offset: 3px;
 }
 .input-btn:focus-visible,
 .media-toggle-btn:focus-visible,
@@ -594,20 +610,36 @@ a:focus-visible {
         display: flex;
         flex-direction: column;
     }
+    /* Compact brand row: keep identity visible while hiding the hero copy */
     .product-intro {
+        padding: 22px 28px 0;
+        background: var(--surface);
+    }
+    .product-intro::after,
+    .intro-copy,
+    .intro-footer {
         display: none;
     }
     .join-panel {
-        min-height: 100svh;
-        padding: 30px 28px 42px;
+        flex: 1;
+        padding: 18px 28px 42px;
+    }
+    .panel-content {
+        padding-top: 26px;
+    }
+    .mobile-legal {
+        display: block;
     }
 }
 @media (max-width: 480px) {
+    .product-intro {
+        padding: 18px 20px 0;
+    }
     .join-panel {
-        padding: 26px 20px 36px;
+        padding: 14px 20px 32px;
     }
     .panel-content {
-        padding-top: 34px;
+        padding-top: 22px;
     }
     .form-header h2 {
         font-size: 2rem;

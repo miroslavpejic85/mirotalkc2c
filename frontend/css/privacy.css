@@ -19,7 +19,7 @@ body {
     border-radius: var(--radius);
     color: var(--ink);
     background: var(--surface);
-    box-shadow: 12px 12px 0 var(--panel-shadow, rgba(23, 24, 27, 0.06));
+    box-shadow: 0 28px 70px var(--panel-shadow, rgba(23, 24, 27, 0.12));
 }
 
 .privacy-header {
@@ -118,7 +118,7 @@ body {
     gap: 9px;
     border-radius: var(--radius);
     color: #ffffff;
-    background: var(--accent);
+    background: var(--accent-solid, var(--accent));
     box-shadow: 0 8px 18px rgba(49, 92, 245, 0.2);
     font-size: 0.86rem;
     font-weight: 700;
@@ -129,7 +129,7 @@ body {
 }
 
 .privacy-footer .btn-agree:hover {
-    background: var(--accent-dark);
+    background: var(--accent-solid-hover, var(--accent-dark));
     transform: translateY(-1px);
 }
 
@@ -147,7 +147,7 @@ body {
 
     .privacy-container {
         padding: 30px 22px 24px;
-        box-shadow: 7px 7px 0 var(--panel-shadow, rgba(23, 24, 27, 0.06));
+        box-shadow: 0 16px 40px var(--panel-shadow, rgba(23, 24, 27, 0.12));
     }
 
     .privacy-header {

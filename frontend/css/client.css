@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap');
 
 /*--------------------------------------------------------------
 # Root settings
@@ -6,6 +6,10 @@
 
 :root {
     color-scheme: dark;
+    --font-sans: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-display: 'Manrope', 'DM Sans', system-ui, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --focus-ring: 0 0 0 3px rgba(115, 145, 255, 0.55);
     --primary-color: #202123;
     --primary-color-rgb: 32, 33, 35;
     --secondary-color: #45494c;
@@ -80,9 +84,6 @@
     --swal-shadow: 0 24px 70px rgba(0, 0, 0, 0.48);
     --swal-backdrop: rgba(5, 7, 10, 0.48);
     --panel-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23f5f5f5' d='M1.41 0L6 4.58 10.59 0 12 1.41l-6 6-6-6z'/%3E%3C/svg%3E");
-    /* toggle button colors */
-    --success-color: #4caf50;
-    --accent-color: #376df9;
 }
 
 :root[data-theme='light'] {
@@ -138,11 +139,34 @@
     --swal-backdrop: rgba(24, 28, 36, 0.28);
     --panel-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23202123' d='M1.41 0L6 4.58 10.59 0 12 1.41l-6 6-6-6z'/%3E%3C/svg%3E");
     --box-shadow: 0 12px 30px rgba(32, 33, 35, 0.18);
+    --focus-ring: 0 0 0 3px rgba(49, 92, 245, 0.45);
 }
 
 * {
-    font-family: 'Montserrat';
+    font-family: var(--font-sans);
+}
+
+code,
+pre,
+kbd {
+    font-family: var(--font-mono);
+}
+
+:focus {
     outline: none;
+}
+
+:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+#loadingDiv h1,
+.settings-title,
+.chat .header .title,
+.swal2-popup .swal2-title {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
 }
 
 /*--------------------------------------------------------------
@@ -187,9 +211,11 @@ body {
 .waiting-status {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 10px 24px;
-    border-radius: 50px;
+    gap: 14px;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 10px 22px;
+    border-radius: 999px;
     background: rgba(0, 0, 0, 0.55);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
@@ -208,11 +234,24 @@ body {
     height: 8px;
 }
 
+.waiting-text {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 2px;
+}
+
 .waiting-label {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 0.9rem;
-    font-weight: 500;
-    letter-spacing: 0.02em;
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.waiting-hint {
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 0.76rem;
+    line-height: 1.3;
 }
 
 #waitingOverlayBottom {
@@ -436,6 +475,33 @@ body {
         0 0 0 3px rgba(255, 255, 255, 0.72);
 }
 
+.action-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+    transform: none;
+}
+
+/* Invite actions are the primary next step while waiting */
+#copyRoomBtn,
+#shareRoomBtn {
+    border-color: rgba(115, 145, 255, 0.6);
+    color: #ffffff;
+    background: rgba(55, 109, 249, 0.85);
+}
+
+#copyRoomBtn:hover,
+#shareRoomBtn:hover {
+    border-color: rgba(160, 182, 255, 0.8);
+    background: var(--accent-color);
+}
+
+/* Open state for panel toggles (chat, settings) */
+.action-btn[aria-expanded='true'] {
+    border-color: rgba(115, 145, 255, 0.75);
+    color: #ffffff;
+    background: rgba(55, 109, 249, 0.42);
+}
+
 #audioBtn.fa-microphone,
 #initAudioBtn.fa-microphone,
 #videoBtn.fa-video,
@@ -503,29 +569,27 @@ body {
 
 /* Mobile: responsive buttons for touch */
 @media (max-width: 600px) {
-    .waiting-buttons {
-        gap: clamp(4px, 1.2vw, 8px);
+    #waitingOverlayTop {
+        padding: 12px;
+        padding-top: max(12px, env(safe-area-inset-top));
+    }
+
+    .waiting-status {
+        gap: 12px;
+        padding: 9px 18px;
     }
 
     .waiting-label {
-        font-size: 0.8rem;
+        font-size: 0.84rem;
+    }
+
+    .waiting-hint {
+        font-size: 0.72rem;
     }
 
     #waitingOverlayBottom {
         padding: 16px 8px;
         padding-bottom: max(16px, env(safe-area-inset-bottom));
-    }
-}
-
-@media (max-width: 380px) {
-    .waiting-buttons {
-        gap: 3px;
-    }
-
-    .waiting-buttons .action-btn {
-        width: 2rem;
-        height: 2rem;
-        font-size: 0.85rem;
     }
 }
 
@@ -547,11 +611,13 @@ body {
     position: fixed;
     z-index: 6;
     bottom: max(14px, env(safe-area-inset-bottom));
-    left: 50%;
+    left: 0;
+    right: 0;
     display: none;
     box-sizing: border-box;
-    width: auto;
-    max-width: calc(100vw - 24px);
+    width: fit-content;
+    max-width: calc(100% - 24px);
+    margin-inline: auto;
     padding: 6px;
     justify-content: center;
     align-items: center;
@@ -562,7 +628,16 @@ body {
     box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    translate: -50% 0;
+    transition: right 0.25s ease;
+}
+
+/* Keep call controls centered in the visible area when a side panel is open */
+@media (min-width: 769px) {
+    body.side-panel-open #buttonsBar,
+    body.side-panel-open #waitingOverlayTop,
+    body.side-panel-open #waitingOverlayBottom {
+        right: var(--settings-width);
+    }
 }
 
 #buttonsBar .action-control {
@@ -607,50 +682,46 @@ body {
 .fa-user-slash,
 .fa-microphone-slash,
 .fa-video-slash {
-    background: #ff4d4d !important;
+    background: var(--danger-color) !important;
     color: white !important;
 }
 
-/* Responsive for mobile */
+/* Responsive for mobile: controls shrink to fit, scrolling only as a last resort */
 @media (max-width: 600px) {
-    .waiting-buttons {
+    .waiting-buttons,
+    #buttonsBar {
         justify-content: flex-start;
-        gap: 5px;
-        padding: 7px;
+        gap: 4px;
+        padding: 5px;
         overflow-x: auto;
         scrollbar-width: none;
     }
 
-    .waiting-buttons::-webkit-scrollbar {
+    .waiting-buttons::-webkit-scrollbar,
+    #buttonsBar::-webkit-scrollbar {
         display: none;
     }
 
     #buttonsBar {
         bottom: max(8px, env(safe-area-inset-bottom));
-        max-width: calc(100vw - 16px);
-        padding: 5px;
-        justify-content: flex-start;
-        gap: 4px;
-        overflow-x: auto;
-        scrollbar-width: none;
+        max-width: calc(100% - 16px);
     }
 
-    #buttonsBar::-webkit-scrollbar {
-        display: none;
-    }
-
-    #buttonsBar .action-btn,
+    #buttonsBar > .action-btn,
+    #buttonsBar > .action-control,
     .waiting-buttons .action-btn {
-        width: 2.625rem;
-        height: 2.625rem;
-        min-width: 2.625rem;
+        flex: 0 1 2.75rem;
+        width: 2.75rem;
+        min-width: 2.125rem;
+        height: auto;
+        aspect-ratio: 1;
         font-size: 0.88rem;
     }
 
-    #buttonsBar .action-control {
-        width: 2.625rem;
-        height: 2.625rem;
-        min-width: 2.625rem;
+    #buttonsBar .action-control > .action-btn {
+        width: 100%;
+        height: 100%;
+        min-width: 0;
     }
 }
 
@@ -937,7 +1008,7 @@ video:hover {
 }
 
 video:fullscreen {
-    border: var(--border-color);
+    border: 0;
     object-fit: contain;
 }
 
@@ -1125,7 +1196,7 @@ video::-webkit-media-controls {
     background-position: right 12px center;
     background-size: 10px;
     color: var(--panel-text-color);
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-sans);
     font-size: 0.85rem;
     cursor: pointer;
     box-sizing: border-box;
@@ -1526,6 +1597,8 @@ video::-webkit-media-controls {
 
 .toggle:after {
     content: 'OFF';
+    /* Decorative text: hide from assistive tech (checkbox state is already announced) */
+    content: 'OFF' / '';
     position: absolute;
     top: 50%;
     right: 7px;
@@ -1542,6 +1615,7 @@ video::-webkit-media-controls {
 
 .toggle:checked:after {
     content: 'ON';
+    content: 'ON' / '';
     right: auto;
     left: 9px;
     color: #ffffff;
@@ -1585,7 +1659,7 @@ video::-webkit-media-controls {
     background-position: right 12px center !important;
     background-size: 12px !important;
     color: var(--panel-text-color) !important;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-sans);
     font-size: 0.9rem;
     cursor: pointer;
     box-sizing: border-box;
@@ -1732,6 +1806,17 @@ hr {
 
 .orange {
     color: orange !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
 }
 
 /*

@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.4.61
+ * @version 1.4.70
  */
 
 const savedTheme = window.localStorage.getItem('home-theme');
@@ -275,7 +275,30 @@ document.addEventListener('DOMContentLoaded', function () {
     initClient();
     handleChatEmojiPicker();
     handleChatFileSharing();
+    observeSidePanels();
 });
+
+// Mirror chat/settings visibility to toggle buttons (aria-expanded) and <body> (layout), whatever code path opens them
+function observeSidePanels() {
+    const panels = [
+        { panel: chat, buttons: [chatOpenBtn, initChatOpenBtn] },
+        { panel: settings, buttons: [settingsBtn, initSettingsBtn] },
+    ];
+    const isOpen = (panel) => panel.style.display !== 'none' && panel.style.display !== '';
+    const sync = () => {
+        panels.forEach(({ panel, buttons }) => {
+            const open = isOpen(panel);
+            buttons.forEach((btn) => btn && btn.setAttribute('aria-expanded', String(open)));
+        });
+        document.body.classList.toggle(
+            'side-panel-open',
+            panels.some(({ panel }) => isOpen(panel))
+        );
+    };
+    const observer = new MutationObserver(sync);
+    panels.forEach(({ panel }) => panel && observer.observe(panel, { attributes: true, attributeFilter: ['style'] }));
+    sync();
+}
 
 function initClient() {
     console.log('RoomURL', roomURL);
@@ -784,6 +807,7 @@ function setLocalMedia(stream) {
     myVideoDraggableBtn.id = 'myVideoDraggable';
     myVideoDraggableBtn.className = className.draggable;
     myVideoDraggableBtn.style.cursor = 'move';
+    myVideoDraggableBtn.setAttribute('aria-label', 'Drag to move my video');
     myFullScreenBtn.id = 'myFullScreen';
     myFullScreenBtn.className = className.fullScreenOn;
     myVideoPiPBtn.id = 'myVideoPIP';

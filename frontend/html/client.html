@@ -75,13 +75,16 @@
 
         <div id="waitingDivContainer" class="fadeIn">
             <div id="waitingOverlayTop">
-                <div class="waiting-status">
-                    <div class="waiting-dots">
+                <div class="waiting-status" role="status" aria-live="polite">
+                    <div class="waiting-dots" aria-hidden="true">
                         <span class="dot"></span>
                         <span class="dot"></span>
                         <span class="dot"></span>
                     </div>
-                    <span class="waiting-label">Waiting for participant</span>
+                    <div class="waiting-text">
+                        <span class="waiting-label">Waiting for participant</span>
+                        <span class="waiting-hint">Share the room link to invite someone</span>
+                    </div>
                 </div>
             </div>
             <div id="waitingOverlayBottom">
@@ -127,12 +130,16 @@
                         class="action-btn fas fa-comments"
                         type="button"
                         aria-label="Open chat"
+                        aria-controls="chat"
+                        aria-expanded="false"
                     ></button>
                     <button
                         id="initSettingsBtn"
                         class="action-btn fas fa-cogs"
                         type="button"
                         aria-label="Open settings"
+                        aria-controls="settings"
+                        aria-expanded="false"
                     ></button>
                     <button
                         id="initLeaveBtn"
@@ -176,8 +183,22 @@
                 type="button"
                 aria-label="Toggle recording"
             ></button>
-            <button id="chatOpenBtn" class="action-btn fas fa-comments" type="button" aria-label="Open chat"></button>
-            <button id="settingsBtn" class="action-btn fas fa-cogs" type="button" aria-label="Open settings"></button>
+            <button
+                id="chatOpenBtn"
+                class="action-btn fas fa-comments"
+                type="button"
+                aria-label="Open chat"
+                aria-controls="chat"
+                aria-expanded="false"
+            ></button>
+            <button
+                id="settingsBtn"
+                class="action-btn fas fa-cogs"
+                type="button"
+                aria-label="Open settings"
+                aria-controls="settings"
+                aria-expanded="false"
+            ></button>
             <button
                 id="leaveBtn"
                 class="action-btn fas fa-phone-slash red"
@@ -186,7 +207,7 @@
             ></button>
         </div>
 
-        <div id="settings">
+        <div id="settings" role="region" aria-label="Settings">
             <div class="settings-header">
                 <span class="settings-title"><i class="fas fa-sliders"></i> Settings</span>
                 <button
@@ -206,7 +227,7 @@
                         <select id="videoSource"></select>
                     </div>
                     <div class="settings-field">
-                        <label>Quality</label>
+                        <label for="videoQualitySelect">Quality</label>
                         <select id="videoQualitySelect">
                             <option value="default">Default</option>
                             <option value="qvga">QVGA</option>
@@ -220,7 +241,7 @@
                         </select>
                     </div>
                     <div id="videoFpsDiv" class="settings-field">
-                        <label>Frame rate</label>
+                        <label for="videoFpsSelect">Frame rate</label>
                         <select id="videoFpsSelect">
                             <option value="default">Default</option>
                             <option value="60">60 fps</option>
@@ -316,7 +337,7 @@
             </div>
         </div>
 
-        <div id="chat" class="chat">
+        <div id="chat" class="chat" role="region" aria-label="Chat">
             <div class="header">
                 <span class="title"><i class="fas fa-comments"></i> Chat</span>
                 <div class="header-buttons">
