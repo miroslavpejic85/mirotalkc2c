@@ -9,7 +9,7 @@
  * @license For private project or commercial purposes contact us at: license.mirotalk@gmail.com or purchase it directly via Code Canyon:
  * @license https://codecanyon.net/item/mirotalk-c2c-webrtc-real-time-cam-2-cam-video-conferences-and-screen-sharing/43383005
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.4.73
+ * @version 1.4.74
  */
 
 const savedTheme = window.localStorage.getItem('home-theme');
@@ -1432,16 +1432,38 @@ function toggleHideMe() {
     saveLocalStorageConfig();
 }
 
+function isSidePanelOpen(panel) {
+    return panel.style.display !== 'none' && panel.style.display !== '';
+}
+
+// Chat and settings share the same side area: only one is open at a time
+function openSidePanel(panel, mode = 'block') {
+    // Clear leftovers when a close animation was cancelled by hiding the panel directly
+    delete panel.dataset.animating;
+    panel.classList.remove('animate__animated', 'animate__fadeOutRight');
+    const other = panel === chat ? settings : chat;
+    if (isSidePanelOpen(other)) elemDisplay(other, false);
+    elemDisplay(panel, true, mode);
+    animateCSS(panel, 'fadeInRight');
+}
+
+function closeSidePanel(panel) {
+    if (panel.dataset.animating) return;
+    panel.dataset.animating = 'closing';
+    // Release the layout now so the video stage grows while the panel slides out
+    document.body.classList.remove('side-panel-open');
+    animateCSS(panel, 'fadeOutRight').then(() => {
+        delete panel.dataset.animating;
+        elemDisplay(panel, false);
+    });
+}
+
+function toggleSidePanel(panel, mode = 'block') {
+    isSidePanelOpen(panel) ? closeSidePanel(panel) : openSidePanel(panel, mode);
+}
+
 function toggleSettings() {
-    if (settings.style.display == 'none' || settings.style.display == '') {
-        elemDisplay(chat, false);
-        elemDisplay(settings, true);
-        animateCSS(settings, 'fadeInRight');
-    } else {
-        animateCSS(settings, 'fadeOutRight').then((ok) => {
-            elemDisplay(settings, false);
-        });
-    }
+    toggleSidePanel(settings);
 }
 
 function updateBackgroundControls() {
@@ -2298,14 +2320,7 @@ function handleVideoWrapSize() {
 }
 
 function toggleChat() {
-    if (chat.style.display == 'none' || chat.style.display == '') {
-        elemDisplay(chat, true, 'flex');
-        animateCSS(chat, 'fadeInRight');
-    } else {
-        animateCSS(chat, 'fadeOutRight').then((ok) => {
-            elemDisplay(chat, false);
-        });
-    }
+    toggleSidePanel(chat, 'flex');
 }
 
 function saveChat() {
@@ -2538,10 +2553,7 @@ function handleMessage(config) {
 
 function showChat() {
     playSound('message');
-    if (chat.style.display == 'none' || chat.style.display == '') {
-        elemDisplay(chat, true, 'flex');
-        animateCSS(chat, 'fadeInRight');
-    }
+    if (!isSidePanelOpen(chat)) openSidePanel(chat, 'flex');
 }
 
 function checkLineBreaks() {

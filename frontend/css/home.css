@@ -99,7 +99,7 @@ a {
     grid-template-columns: minmax(0, 1.08fr) minmax(460px, 0.92fr);
     overflow: hidden;
     border: 1px solid var(--panel-border);
-    border-radius: var(--radius);
+    border-radius: 16px;
     background: var(--surface);
     box-shadow: 0 28px 70px var(--panel-shadow);
 }
