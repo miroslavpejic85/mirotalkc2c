@@ -686,6 +686,34 @@ body {
     color: white !important;
 }
 
+/* Blocked/unavailable camera or microphone: dimmed with a warning badge, still clickable to explain why and retry */
+.action-btn[data-media-unavailable='true'] {
+    opacity: 0.65;
+    cursor: help;
+}
+
+.action-btn[data-media-unavailable='true']:hover {
+    opacity: 0.9;
+}
+
+.action-btn[data-media-unavailable='true']::after {
+    content: '!';
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 14px;
+    height: 14px;
+    color: #1a1d27;
+    font-family: system-ui, sans-serif;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 14px;
+    text-align: center;
+    border-radius: 50%;
+    background: #ffc107;
+    pointer-events: none;
+}
+
 /* Responsive for mobile: controls shrink to fit, scrolling only as a last resort */
 @media (max-width: 600px) {
     .waiting-buttons,

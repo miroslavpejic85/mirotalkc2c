@@ -7,7 +7,7 @@
  * @link    Live demo: https://c2c.mirotalk.com
  * @license Open source: AGPLv3 | Commercial/closed source (official channel): https://docs.mirotalk.com/sites/c2c/
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.4.75
+ * @version 1.4.76
  */
 
 const savedTheme = window.localStorage.getItem('home-theme');
@@ -215,6 +215,8 @@ let activeVideoDeviceId = null;
 let activeAudioDeviceId = null;
 let cameraAvailable = true;
 let microphoneAvailable = true;
+let mediaErrors = { audio: null, video: null }; // last getUserMedia error name per device type
+let isRetryingMedia = false;
 let backgroundImage = null;
 let backgroundEffectsBusy = false;
 let localMediaStream = null;
@@ -709,6 +711,7 @@ async function enumerateDevices() {
         removeAllChildren(audioSource);
         removeAllChildren(videoSource);
         removeAllChildren(audioOutputSource);
+        audioOutputSource.disabled = false;
         LS.DEVICES_COUNT.audio = 0;
         LS.DEVICES_COUNT.video = 0;
         LS.DEVICES_COUNT.speaker = 0;
@@ -727,6 +730,7 @@ async function enumerateDevices() {
                 LS.DEVICES_COUNT.speaker++;
             }
             elemDisplay(audioOutputDiv, true);
+            elemDisable(testSpeakerBtn, false);
             if (LS.DEVICES_COUNT.speaker === 0) {
                 showNoDevice(audioOutputSource, 'No speaker');
                 elemDisable(testSpeakerBtn, true);
@@ -1196,9 +1200,11 @@ function handleEvents() {
         toggleHideMe();
     };
     initAudioBtn.onclick = (e) => {
+        if (!microphoneAvailable) return showMediaUnavailable('audio');
         if (hasAudioTrack(localMediaStream)) setLocalAudioStatus(!localMediaStream.getAudioTracks()[0].enabled, e);
     };
     initVideoBtn.onclick = (e) => {
+        if (!cameraAvailable) return showMediaUnavailable('video');
         if (hasVideoTrack(localMediaStream)) setLocalVideoStatus(!localMediaStream.getVideoTracks()[0].enabled, e);
     };
     initChatOpenBtn.onclick = () => {
@@ -1211,10 +1217,12 @@ function handleEvents() {
         toggleHideMe();
     };
     audioBtn.onclick = (e) => {
+        if (!microphoneAvailable) return showMediaUnavailable('audio');
         if (isPushToTalkActive) return;
         if (hasAudioTrack(localMediaStream)) setLocalAudioStatus(!localMediaStream.getAudioTracks()[0].enabled, e);
     };
     videoBtn.onclick = (e) => {
+        if (!cameraAvailable) return showMediaUnavailable('video');
         if (hasVideoTrack(localMediaStream)) setLocalVideoStatus(!localMediaStream.getVideoTracks()[0].enabled, e);
     };
     if (!isMobileDevice && (navigator.getDisplayMedia || navigator.mediaDevices.getDisplayMedia)) {
@@ -1228,16 +1236,7 @@ function handleEvents() {
         elemDisplay(initScreenShareBtn, false);
         elemDisplay(screenShareBtn, false);
     }
-    navigator.mediaDevices.enumerateDevices().then((devices) => {
-        const videoInput = devices.filter((device) => device.kind === 'videoinput');
-        if (videoInput.length > 1 && isMobileDevice) {
-            swapCameraBtn.onclick = () => {
-                swapCamera();
-            };
-        } else {
-            elemDisplay(swapCameraBtn, false);
-        }
-    });
+    setupSwapCameraBtn();
     recordingBtn.onclick = () => {
         toggleRecording();
     };
@@ -1914,25 +1913,24 @@ function syncDeviceSelects() {
  * @param {string} label
  */
 function showNoDevice(select, label) {
+    select.querySelectorAll('option[data-placeholder]').forEach((option) => option.remove());
     const placeholder = new Option(label, '');
+    placeholder.dataset.placeholder = 'true';
     select.add(placeholder);
     select.selectedIndex = placeholder.index;
     select.disabled = true;
 }
 
-// Without a microphone there is nothing to configure or toggle
+// Without a microphone there is nothing to configure, the button stays visible to explain why and to retry
 function disableMicrophoneControls() {
     showNoDevice(audioSource, 'No microphone');
     elemDisable(switchNoiseSuppression, true);
-    elemDisplay(initAudioBtn, false);
-    elemDisplay(document.getElementById('audioControl'), false);
     elemDisplay(pushToTalkDiv, false);
+    updateMediaUnavailableUI();
 }
 
-// Without a camera there is nothing to configure or toggle
+// Without a camera there is nothing to configure, the button stays visible to explain why and to retry
 function disableCameraControls() {
-    elemDisplay(initVideoBtn, false);
-    elemDisplay(videoBtn, false);
     elemDisplay(swapCameraBtn, false);
     elemDisable(videoQualitySelect, true);
     elemDisable(videoFpsSelect, true);
@@ -1940,6 +1938,234 @@ function disableCameraControls() {
     showNoDevice(videoSource, 'No camera');
     backgroundEffectSelect.value = 'off';
     updateBackgroundControls();
+    updateMediaUnavailableUI();
+}
+
+function restoreMicrophoneControls() {
+    audioSource.disabled = false;
+    elemDisable(switchNoiseSuppression, false);
+    if (!isMobileDevice) pushToTalkDiv.style.display = '';
+    updateMediaUnavailableUI();
+}
+
+function restoreCameraControls() {
+    videoSource.disabled = false;
+    elemDisable(switchMaxVideoQuality, false);
+    elemDisable(videoQualitySelect, localStorageConfig.video.settings.best_quality);
+    updateBackgroundControls();
+    setupSwapCameraBtn();
+    updateMediaUnavailableUI();
+}
+
+async function setupSwapCameraBtn() {
+    let videoInputs = 0;
+    try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        videoInputs = devices.filter((device) => device.kind === 'videoinput').length;
+    } catch (err) {
+        console.warn('Unable to enumerate cameras', err);
+    }
+    if (cameraAvailable && videoInputs > 1 && isMobileDevice) {
+        swapCameraBtn.onclick = () => {
+            swapCamera();
+        };
+        swapCameraBtn.style.display = '';
+    } else {
+        elemDisplay(swapCameraBtn, false);
+    }
+}
+
+/**
+ * Mark the mic/camera buttons as unavailable (they stay clickable to explain why and to retry)
+ */
+function updateMediaUnavailableUI() {
+    const groups = [
+        {
+            available: microphoneAvailable,
+            elements: [audioBtn, initAudioBtn],
+            tooltip: 'Toggle audio',
+            label: 'Toggle microphone',
+            unavailable: 'My audio is disabled, click to try again',
+        },
+        {
+            available: cameraAvailable,
+            elements: [videoBtn, initVideoBtn],
+            tooltip: 'Toggle video',
+            label: 'Toggle camera',
+            unavailable: 'My video is disabled, click to try again',
+        },
+    ];
+    groups.forEach(({ available, elements, tooltip, label, unavailable }) => {
+        elements.forEach((el) => {
+            if (!el) return;
+            if (available) {
+                el.removeAttribute('data-media-unavailable');
+            } else {
+                el.setAttribute('data-media-unavailable', 'true');
+            }
+            el.setAttribute('aria-label', available ? label : unavailable);
+            setTippy(el, available ? tooltip : unavailable, 'top');
+        });
+    });
+}
+
+/**
+ * Describe why a device is unavailable, based on the last getUserMedia error
+ * @param {string} kind 'audio' or 'video'
+ * @returns {{type: string, title: string, text: string}}
+ */
+function getMediaUnavailableInfo(kind) {
+    const device = kind === 'audio' ? 'microphone' : 'camera';
+    const Device = kind === 'audio' ? 'Microphone' : 'Camera';
+    const messages = {
+        blocked: {
+            title: `${Device} blocked`,
+            text: `Permission denied. Please allow access to the ${device} in your browser settings, then try again.`,
+        },
+        missing: {
+            title: `No ${device} found`,
+            text: `No ${device} was detected. Connect one, then try again.`,
+        },
+        busy: {
+            title: `${Device} busy`,
+            text: `The ${device} may be in use by another app. Close it, then try again.`,
+        },
+        error: {
+            title: `${Device} unavailable`,
+            text: `Unable to access the ${device}. Check your browser and system settings, then try again.`,
+        },
+    };
+    const types = {
+        NotAllowedError: 'blocked',
+        PermissionDeniedError: 'blocked',
+        SecurityError: 'blocked',
+        NotFoundError: 'missing',
+        DevicesNotFoundError: 'missing',
+        NotReadableError: 'busy',
+        TrackStartError: 'busy',
+        AbortError: 'busy',
+    };
+    const type = types[mediaErrors[kind]] || 'error';
+    return { type, ...messages[type] };
+}
+
+/**
+ * Explain why the camera/microphone is unavailable and let the user try again
+ * @param {string} kind 'audio' or 'video'
+ */
+function showMediaUnavailable(kind) {
+    if (isRetryingMedia) return;
+    const info = getMediaUnavailableInfo(kind);
+    Swal.fire({
+        background: swal.background,
+        position: 'center',
+        icon: 'warning',
+        title: info.title,
+        text: info.text,
+        footer: '<a href="https://blog.addpipe.com/common-getusermedia-errors/" target="_blank" rel="noopener noreferrer">Check the common getUserMedia errors</a>',
+        showCancelButton: true,
+        reverseButtons: true,
+        confirmButtonText: 'Try again',
+        cancelButtonText: 'Close',
+        showClass: { popup: 'animate__animated animate__zoomIn animate__faster' },
+        hideClass: { popup: 'animate__animated animate__zoomOut animate__faster' },
+    }).then((result) => {
+        if (result.isConfirmed) retryMediaAccess([kind]);
+    });
+}
+
+/**
+ * Ask again for the camera/microphone (after the user fixed the permission or plugged the device)
+ * and start sharing them with the peer when already in a call
+ * @param {Array<string>} kinds 'audio' and/or 'video'
+ */
+async function retryMediaAccess(kinds) {
+    if (isRetryingMedia || !kinds.length) return;
+    if (isScreenStreaming) {
+        return popupMessage('toast', 'Screen sharing', 'Stop screen sharing to retry the camera/microphone', 'top');
+    }
+    if (recording && recording.isStreamRecording()) {
+        return popupMessage('toast', 'Recording', 'Cannot retry the camera/microphone while recording', 'top');
+    }
+    isRetryingMedia = true;
+
+    const wantAudio = kinds.includes('audio');
+    const wantVideo = kinds.includes('video');
+    const got = { audio: false, video: false };
+    let rawStream = null;
+    let newStream = null;
+    try {
+        const audioDeviceId = localStorageConfig.audio.devices.select.id || (audioSource && audioSource.value);
+        const videoDeviceId = localStorageConfig.video.devices.select.id || (videoSource && videoSource.value);
+
+        // The video constraints helper keeps the camera selects disabled while the camera is unavailable
+        if (wantVideo) cameraAvailable = true;
+        const stream = (rawStream = await getBestUserMedia({
+            audio: wantAudio && getAudioConstraints(audioDeviceId),
+            video: wantVideo && getVideoConstraints(videoDeviceId),
+        }));
+        got.audio = wantAudio && hasAudioTrack(stream);
+        got.video = wantVideo && hasVideoTrack(stream);
+        if (wantAudio) microphoneAvailable = got.audio;
+        if (wantVideo) cameraAvailable = got.video;
+
+        if (got.audio || got.video) {
+            if (got.audio) activeAudioDeviceId = getStreamDeviceId(stream, 'audio') || activeAudioDeviceId;
+            if (got.video) activeVideoDeviceId = getStreamDeviceId(stream, 'video') || activeVideoDeviceId;
+            newStream = await applyNoiseSuppressionToLocalStream(stream);
+            if (got.video) camera = detectCameraFacingMode(newStream);
+            newStream = await prepareCameraBackground(newStream);
+        }
+    } catch (err) {
+        console.error('[Error] retry media access', err);
+        rawStream?.getTracks().forEach((track) => track.stop());
+        newStream = null;
+        got.audio = got.video = false;
+        if (wantAudio) microphoneAvailable = false;
+        if (wantVideo) cameraAvailable = false;
+    }
+
+    try {
+        if (newStream && (got.audio || got.video)) {
+            // Keep the tracks of the device that was not retried
+            const kept = (localMediaStream?.getTracks() || []).filter((track) => !got[track.kind]);
+            localMediaStream?.getTracks().forEach((track) => got[track.kind] && track.stop());
+            localMediaStream = buildUniqueMediaStream(new MediaStream([...kept, ...newStream.getTracks()]));
+            setLocalMedia(localMediaStream);
+            if (got.video) refreshMyVideoStreamToPeers(localMediaStream);
+            if (got.audio) refreshMyAudioStreamToPeers(localMediaStream);
+            if (got.audio && !isPushToTalkActive) setLocalAudioStatus(true);
+            if (got.video) setLocalVideoStatus(true);
+            handleCameraMirror(window.myVideo, camera);
+            await enumerateDevices();
+            selectDevice(videoSource, activeVideoDeviceId);
+            selectDevice(audioSource, activeAudioDeviceId);
+            selectDevice(audioOutputSource, getSelectedSpeakerId());
+            if (got.audio) changeSpeaker(audioOutputSource.value);
+        }
+        if (got.audio) restoreMicrophoneControls();
+        if (got.video) restoreCameraControls();
+        syncDeviceSelects();
+        updateBackgroundControls();
+        updateMediaUnavailableUI();
+    } catch (err) {
+        console.error('[Error] apply retried media', err);
+    } finally {
+        isRetryingMedia = false;
+    }
+
+    const failed = kinds.filter((kind) => !got[kind === 'audio' ? 'audio' : 'video']);
+    if (failed.length) return showMediaUnavailable(failed[0]);
+    popupMessage(
+        'toast',
+        'Ready',
+        kinds.length > 1
+            ? 'Camera and microphone are ready'
+            : kinds[0] === 'audio'
+              ? 'Microphone is ready'
+              : 'Camera is ready',
+        'top'
+    );
 }
 
 function saveLocalStorageConfig() {

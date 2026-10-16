@@ -200,7 +200,10 @@ function buildUniqueMediaStream(stream) {
 
 async function getBestUserMedia(constraints) {
     try {
-        return await navigator.mediaDevices.getUserMedia(constraints);
+        const fullStream = await navigator.mediaDevices.getUserMedia(constraints);
+        if (constraints.audio) mediaErrors.audio = null;
+        if (constraints.video) mediaErrors.video = null;
+        return fullStream;
     } catch (err) {
         console.warn('[Warning] audio+video denied or not present', err);
     }
@@ -214,8 +217,10 @@ async function getBestUserMedia(constraints) {
                 video: false,
             }));
             audioStream.getAudioTracks().forEach((track) => stream.addTrack(track));
+            mediaErrors.audio = null;
         } catch (err) {
             console.warn('[Warning] audio denied or not present', err);
+            mediaErrors.audio = err?.name || 'Error';
             notifyBusyDevice('audio', err);
         }
     }
@@ -226,8 +231,10 @@ async function getBestUserMedia(constraints) {
                 video: withDeviceId(constraints.video, deviceId),
             }));
             videoStream.getVideoTracks().forEach((track) => stream.addTrack(track));
+            mediaErrors.video = null;
         } catch (err) {
             console.warn('[Warning] video denied or not present', err);
+            mediaErrors.video = err?.name || 'Error';
             notifyBusyDevice('video', err);
         }
     }
