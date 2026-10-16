@@ -199,16 +199,6 @@ function buildUniqueMediaStream(stream) {
 }
 
 async function getBestUserMedia(constraints) {
-    try {
-        const fullStream = await navigator.mediaDevices.getUserMedia(constraints);
-        if (constraints.audio) mediaErrors.audio = null;
-        if (constraints.video) mediaErrors.video = null;
-        return fullStream;
-    } catch (err) {
-        console.warn('[Warning] audio+video denied or not present', err);
-    }
-
-    // Request each device on its own so one busy or missing device does not take down the other
     const stream = new MediaStream();
     if (constraints.audio) {
         try {
