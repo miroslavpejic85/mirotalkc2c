@@ -23,6 +23,7 @@ class LocalStorage {
                 },
                 settings: {
                     noise_suppression: true, // Noise suppression using RNNoise
+                    noise_suppression_user_set: false, // User explicitly toggled it, so the server default no longer applies
                 },
             },
             speaker: {

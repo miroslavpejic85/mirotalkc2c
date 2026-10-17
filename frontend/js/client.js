@@ -7,7 +7,7 @@
  * @link    Live demo: https://c2c.mirotalk.com
  * @license Open source: AGPLv3 | Commercial/closed source (official channel): https://docs.mirotalk.com/sites/c2c/
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.4.77
+ * @version 1.4.78
  */
 
 const savedTheme = window.localStorage.getItem('home-theme');
@@ -335,13 +335,35 @@ async function sendToServer(msg, config = {}) {
     await signalingSocket.emit(msg, config);
 }
 
-function handleConnect() {
+// Priority: URL param (?noiseSuppression=0|1), then the user's own choice, then the server default
+async function applyNoiseSuppressionDefault() {
+    const settings = localStorageConfig.audio.settings;
+    const queryValue = getBoolParam('noiseSuppression');
+    if (queryValue !== null) {
+        settings.noise_suppression = queryValue;
+    } else if (!settings.noise_suppression_user_set) {
+        try {
+            const res = await fetch('/client-config');
+            const { noiseSuppressionDefault } = await res.json();
+            settings.noise_suppression = noiseSuppressionDefault === true;
+        } catch (error) {
+            console.warn('Unable to get the noise suppression default', error);
+            return;
+        }
+    } else {
+        return;
+    }
+    console.log('Noise suppression default', { enabled: settings.noise_suppression });
+}
+
+async function handleConnect() {
     console.log('Connected to signaling server');
     thisPeerId = signalingSocket.id;
     console.log('This peer id: ' + thisPeerId);
     if (localMediaStream) {
         joinToChannel();
     } else {
+        await applyNoiseSuppressionDefault();
         setupLocalMedia(async () => {
             await enumerateDevices();
             handleVideoWrapSize();
@@ -3209,6 +3231,7 @@ async function toggleNoiseSuppressionForLocalStream(enabled = switchNoiseSuppres
     }
 
     localStorageConfig.audio.settings.noise_suppression = enabled;
+    localStorageConfig.audio.settings.noise_suppression_user_set = true;
     switchNoiseSuppression.checked = enabled;
     saveLocalStorageConfig();
     const audioDeviceId = localStorageConfig.audio.devices.select.id || (audioSource && audioSource.value);

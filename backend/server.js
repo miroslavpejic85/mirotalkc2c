@@ -7,7 +7,7 @@
  * @link    Live demo: https://c2c.mirotalk.com
  * @license Open source: AGPLv3 | Commercial/closed source (official channel): https://docs.mirotalk.com/sites/c2c/
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.4.77
+ * @version 1.4.78
  */
 
 require('dotenv').config();
@@ -123,6 +123,7 @@ const mattermostCfg = {
     token: process.env.MATTERMOST_TOKEN,
 };
 
+const noiseSuppressionDefault = getEnvBoolean(process.env.CUSTOM_NOISE_SUPPRESSION_DEFAULT);
 const surveyURL = process.env.SURVEY_URL || false;
 const redirectURL = process.env.REDIRECT_URL || false;
 
@@ -332,6 +333,10 @@ const HomeOIDCAuth = (req, res, next) => {
 
 app.get('/', HomeOIDCAuth, (req, res) => {
     return res.sendFile(htmlHome);
+});
+
+app.get('/client-config', (req, res) => {
+    return res.json({ noiseSuppressionDefault });
 });
 
 app.get('/privacy', (req, res) => {
