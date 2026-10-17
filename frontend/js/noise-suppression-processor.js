@@ -30,10 +30,10 @@ class RNNoiseProcessor extends AudioWorkletProcessor {
     setupMessageHandler() {
         this.port.onmessage = (event) => {
             if (this._destroyed) return;
-            const { type, jsContent, enabled } = event.data;
+            const { type, wasmBytes, enabled } = event.data;
             switch (type) {
-                case 'sync-module':
-                    this.initSyncModule(jsContent);
+                case 'wasm-module':
+                    this.initModule(wasmBytes);
                     break;
                 case 'enable':
                     this.enabled = enabled;
@@ -47,28 +47,37 @@ class RNNoiseProcessor extends AudioWorkletProcessor {
         };
     }
 
-    async initSyncModule(jsContent) {
+    initModule(wasmBytes) {
         try {
             if (this._destroyed) return;
-            if (!jsContent) throw new Error('Missing sync module JS content');
+            if (!wasmBytes) throw new Error('Missing RNNoise wasm binary');
 
-            // Execute the module code directly since it's now AudioWorklet compatible
-            const createFunction = new Function(jsContent + '; return createRNNWasmModuleSync;')();
+            // Standalone wasm, no Emscripten JS glue or eval. Synchronous compile: async
+            // WebAssembly APIs are unreliable inside some AudioWorklet scopes.
+            const instance = new WebAssembly.Instance(new WebAssembly.Module(wasmBytes), {
+                env: { emscripten_notify_memory_growth() {} },
+            });
+            const exports = instance.exports;
+            exports._initialize?.();
 
-            // Initialize the sync module
-            const module = await createFunction();
-
-            // Wait for the module to be ready
-            if (module.ready) {
-                await module.ready;
-            }
-            if (this._destroyed) return;
-            this.Module = module;
+            let heapF32 = new Float32Array(exports.memory.buffer);
+            this.Module = {
+                _malloc: exports.malloc,
+                _free: exports.free,
+                _rnnoise_create: exports.rnnoise_create,
+                _rnnoise_destroy: exports.rnnoise_destroy,
+                _rnnoise_process_frame: exports.rnnoise_process_frame,
+                // Memory growth detaches the old buffer, so refresh the view when it changes
+                get HEAPF32() {
+                    if (heapF32.buffer !== exports.memory.buffer) heapF32 = new Float32Array(exports.memory.buffer);
+                    return heapF32;
+                },
+            };
             this._setupWasm();
             this.initialized = true;
             this.port.postMessage({ type: 'wasm-ready' });
         } catch (error) {
-            console.error('Sync module initialization error:', error);
+            console.error('RNNoise wasm initialization error:', error);
             if (!this._destroyed) {
                 this.destroy();
                 this.port.postMessage({ type: 'wasm-error', error: error.message });
@@ -82,7 +91,7 @@ class RNNoiseProcessor extends AudioWorkletProcessor {
         this.wasmPcmInputF32Index = this.wasmPcmInput >> 2;
         if (!this.wasmPcmInput) throw new Error('Failed to allocate WASM buffer');
 
-        this.rnnoiseContext = this.Module._rnnoise_create();
+        this.rnnoiseContext = this.Module._rnnoise_create(0);
         if (!this.rnnoiseContext) throw new Error('Failed to create RNNoise context');
 
         console.log('WASM setup complete:', {
@@ -122,29 +131,18 @@ class RNNoiseProcessor extends AudioWorkletProcessor {
 
         try {
             // Copy input to WASM buffer (as float32)
+            let heap = this.Module.HEAPF32;
             for (let i = 0; i < RNNOISE_FRAME_SIZE; i++) {
-                this.Module.HEAPF32[this.wasmPcmInputF32Index + i] = this.frameBuffer[i] * SHIFT_16_BIT_NR;
+                heap[this.wasmPcmInputF32Index + i] = this.frameBuffer[i] * SHIFT_16_BIT_NR;
             }
 
             // Process frame (in-place)
-            const vadScore = this.Module._rnnoise_process_frame(
-                this.rnnoiseContext,
-                this.wasmPcmInput,
-                this.wasmPcmInput
-            );
+            this.Module._rnnoise_process_frame(this.rnnoiseContext, this.wasmPcmInput, this.wasmPcmInput);
 
             // Copy denoised output back and scale down
+            heap = this.Module.HEAPF32;
             for (let i = 0; i < RNNOISE_FRAME_SIZE; i++) {
-                this.processedBuffer[i] = this.Module.HEAPF32[this.wasmPcmInputF32Index + i] / SHIFT_16_BIT_NR;
-            }
-
-            // Post VAD score
-            if (this.enabled) {
-                this.port.postMessage({
-                    type: 'vad',
-                    probability: vadScore,
-                    isSpeech: vadScore > 0.5,
-                });
+                this.processedBuffer[i] = heap[this.wasmPcmInputF32Index + i] / SHIFT_16_BIT_NR;
             }
         } catch (error) {
             console.error('Frame processing failed:', error);

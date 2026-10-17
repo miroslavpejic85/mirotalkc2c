@@ -172,33 +172,28 @@ class RNNoiseProcessor {
                 throw new Error('Worklet node is not available');
             }
 
-            this.updateStatus('📦 Loading RNNoise sync module...', 'info');
+            this.updateStatus('📦 Loading RNNoise wasm...', 'info');
 
-            console.log('Fetching rnnoise-sync.js...');
-            const jsResponse = await fetch('./js/rnnoise-sync.js');
+            const wasmResponse = await fetch('./js/rnnoise.wasm');
 
-            if (!jsResponse.ok) {
-                throw new Error(`Failed to load rnnoise-sync.js: ${jsResponse.status} ${jsResponse.statusText}`);
+            if (!wasmResponse.ok) {
+                throw new Error(`Failed to load rnnoise.wasm: ${wasmResponse.status} ${wasmResponse.statusText}`);
             }
 
-            const jsContent = await jsResponse.text();
-            console.log('rnnoise-sync.js loaded, size:', jsContent.length);
-            this.updateStatus('📦 Sending sync module to worklet...', 'info');
+            const wasmBytes = await wasmResponse.arrayBuffer();
+            console.log('rnnoise.wasm loaded, size:', wasmBytes.byteLength);
 
             if (this.workletNode !== workletNode) {
                 this.updateStatus('⚠️ Worklet node disconnected before WASM could be sent', 'warning');
                 throw new Error('Worklet node changed during WASM loading');
             }
 
-            this.workletNode.port.postMessage({
-                type: 'sync-module',
-                jsContent: jsContent,
-            });
+            this.workletNode.port.postMessage({ type: 'wasm-module', wasmBytes }, [wasmBytes]);
 
-            this.updateStatus('📦 Sync module sent to worklet', 'info');
+            this.updateStatus('📦 RNNoise wasm sent to worklet', 'info');
         } catch (error) {
-            console.error('Sync module loading error:', error);
-            this.updateStatus('❌ Failed to load sync module: ' + error.message, 'error');
+            console.error('RNNoise wasm loading error:', error);
+            this.updateStatus('❌ Failed to load RNNoise wasm: ' + error.message, 'error');
             throw error;
         }
     }

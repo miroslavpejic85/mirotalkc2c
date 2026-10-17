@@ -99,7 +99,7 @@ describe('RNNoise startup lifecycle', () => {
             console: quietConsole,
             setTimeout,
             clearTimeout,
-            fetch: async () => ({ ok: true, text: async () => 'module' }),
+            fetch: async () => ({ ok: true, arrayBuffer: async () => new ArrayBuffer(8) }),
         });
         loadSource(context, 'noise-processor.js');
         processor = vm.runInContext('new RNNoiseProcessor(true)', context);
@@ -462,10 +462,19 @@ describe('RNNoise worklet initialization', () => {
     let processor;
     let messages;
     let freed;
+    let exports;
 
     beforeEach(() => {
         messages = [];
         freed = [];
+        exports = {
+            memory: { buffer: new ArrayBuffer(4096) },
+            malloc: () => 4,
+            free: (pointer) => freed.push(pointer),
+            rnnoise_create: () => 8,
+            rnnoise_destroy: (pointer) => freed.push(pointer),
+            rnnoise_process_frame: () => 0,
+        };
         context = vm.createContext({
             AudioWorkletProcessor: class {
                 constructor() {
@@ -475,37 +484,35 @@ describe('RNNoise worklet initialization', () => {
             sampleRate: 48000,
             console: quietConsole,
             registerProcessor() {},
-            module: {
-                HEAPF32: new Float32Array(1024),
-                _malloc: () => 4,
-                _free: (pointer) => freed.push(pointer),
-                _rnnoise_create: () => 8,
-                _rnnoise_destroy: (pointer) => freed.push(pointer),
+            Float32Array,
+            WebAssembly: {
+                Module: class {},
+                Instance: class {
+                    constructor() {
+                        this.exports = exports;
+                    }
+                },
             },
         });
         loadSource(context, 'noise-suppression-processor.js');
         processor = vm.runInContext('new RNNoiseProcessor()', context);
-        context.processor = processor;
     });
 
     function initialize() {
-        return vm.runInContext(
-            'processor.initSyncModule("function createRNNWasmModuleSync() { return module; }")',
-            context
-        );
+        return processor.port.onmessage({ data: { type: 'wasm-module', wasmBytes: new ArrayBuffer(8) } });
     }
 
-    it('announces readiness only after the context and buffer exist', async () => {
-        await initialize();
+    it('announces readiness only after the context and buffer exist', () => {
+        initialize();
         assert.equal(processor.initialized, true);
         assert.equal(processor.rnnoiseContext, 8);
         assert.equal(processor.wasmPcmInput, 4);
         assert.equal(messages.at(-1).type, 'wasm-ready');
     });
 
-    it('frees a partial allocation and reports context creation failure', async () => {
-        context.module._rnnoise_create = () => 0;
-        await initialize();
+    it('frees a partial allocation and reports context creation failure', () => {
+        exports.rnnoise_create = () => 0;
+        initialize();
         assert.equal(processor.initialized, false);
         assert.equal(messages.at(-1).type, 'wasm-error');
         assert.equal(
@@ -515,14 +522,15 @@ describe('RNNoise worklet initialization', () => {
         assert.deepEqual(freed, [4]);
     });
 
-    it('does not recreate WASM resources after destruction during initialization', async () => {
-        const ready = deferred();
-        context.module.ready = ready.promise;
-        const operation = initialize();
-        await flush();
-        processor.destroy();
-        ready.resolve();
-        await operation;
+    it('reports a missing wasm binary without announcing readiness', () => {
+        processor.port.onmessage({ data: { type: 'wasm-module' } });
+        assert.equal(processor.initialized, false);
+        assert.equal(messages.at(-1).type, 'wasm-error');
+    });
+
+    it('does not create WASM resources after destruction', () => {
+        processor.port.onmessage({ data: { type: 'destroy' } });
+        initialize();
         assert.equal(processor.initialized, false);
         assert.equal(processor.rnnoiseContext, null);
         assert.equal(
@@ -530,5 +538,53 @@ describe('RNNoise worklet initialization', () => {
             false
         );
         assert.equal(processor.process([], []), false);
+    });
+});
+
+describe('RNNoise worklet with the real wasm binary', () => {
+    it('instantiates rnnoise.wasm without eval and suppresses background noise', () => {
+        const messages = [];
+        const context = vm.createContext({
+            AudioWorkletProcessor: class {
+                constructor() {
+                    this.port = { postMessage: (message) => messages.push(message) };
+                }
+            },
+            sampleRate: 48000,
+            console: quietConsole,
+            registerProcessor() {},
+            Float32Array,
+            WebAssembly,
+        });
+        loadSource(context, 'noise-suppression-processor.js');
+        const processor = vm.runInContext('new RNNoiseProcessor()', context);
+
+        const wasm = fs.readFileSync(path.join(__dirname, '..', 'frontend/js/rnnoise.wasm'));
+        const wasmBytes = wasm.buffer.slice(wasm.byteOffset, wasm.byteOffset + wasm.byteLength);
+        processor.port.onmessage({ data: { type: 'wasm-module', wasmBytes } });
+        assert.equal(messages.at(-1).type, 'wasm-ready');
+        processor.port.onmessage({ data: { type: 'enable', enabled: true } });
+
+        let seed = 1;
+        const noise = () => (((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff) * 2 - 1) * 0.05;
+        const rms = (values) => Math.sqrt(values.reduce((sum, v) => sum + v * v, 0) / values.length);
+        const inputRms = [];
+        const outputRms = [];
+        // 2 seconds of white noise in 128-sample render quanta
+        for (let block = 0; block < 750; block++) {
+            const input = Float32Array.from({ length: 128 }, noise);
+            const output = new Float32Array(128);
+            assert.equal(processor.process([[input]], [[output]]), true);
+            if (block >= 375) {
+                inputRms.push(rms(input));
+                outputRms.push(rms(output));
+            }
+        }
+        const avg = (values) => values.reduce((sum, v) => sum + v, 0) / values.length;
+        assert.ok(avg(outputRms) < avg(inputRms) * 0.1, `noise not suppressed: ${avg(outputRms)} vs ${avg(inputRms)}`);
+
+        processor.port.onmessage({ data: { type: 'destroy' } });
+        assert.equal(processor.rnnoiseContext, null);
+        assert.equal(processor.wasmPcmInput, null);
     });
 });
