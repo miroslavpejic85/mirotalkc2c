@@ -7,7 +7,7 @@
  * @link    Live demo: https://c2c.mirotalk.com
  * @license Open source: AGPLv3 | Commercial/closed source (official channel): https://docs.mirotalk.com/sites/c2c/
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.4.76
+ * @version 1.4.77
  */
 
 require('dotenv').config();
@@ -187,9 +187,9 @@ const peers = {};
 app.set('trust proxy', trustProxy); // Enables trust for proxy headers (e.g., X-Forwarded-For) based on the trustProxy setting
 app.use(helmet.noSniff()); // Enable content type sniffing prevention
 app.use(applyEmbedHeaders); // Apply iframe embedding restrictions (CSP frame-ancestors / X-Frame-Options)
+app.use(compression()); // Enable response compression must be before serving static files
 app.use(express.static(frontendDir));
 app.use(cors(corsOptions));
-app.use(compression());
 app.use(express.json()); // Api parse body data as json
 app.use(express.urlencoded({ extended: false })); // Mattermost
 app.use(apiBasePath + '/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument)); // api docs
