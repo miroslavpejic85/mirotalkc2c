@@ -72,9 +72,34 @@ class LocalStorage {
     }
 
     getConfig() {
-        const config = this.getItem('C2C_CONFIG');
-        if (config) return JSON.parse(config);
-        this.setConfig(this.C2C_CONFIG);
-        return this.C2C_CONFIG;
+        const stored = this.getItem('C2C_CONFIG');
+        if (stored) {
+            try {
+                const parsed = JSON.parse(stored);
+                // Config saved by older versions may miss newer keys, so fill them from the defaults
+                const config = this.mergeDefaults(this.C2C_CONFIG, parsed);
+                this.setConfig(config);
+                return config;
+            } catch (error) {
+                console.warn('Invalid stored config, resetting to defaults', error);
+            }
+        }
+        const defaults = JSON.parse(JSON.stringify(this.C2C_CONFIG));
+        this.setConfig(defaults);
+        return defaults;
+    }
+
+    mergeDefaults(defaults, stored) {
+        const isObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+        if (!isObject(stored)) return JSON.parse(JSON.stringify(defaults));
+        const result = { ...stored };
+        for (const key of Object.keys(defaults)) {
+            result[key] = isObject(defaults[key])
+                ? this.mergeDefaults(defaults[key], stored[key])
+                : key in stored
+                  ? stored[key]
+                  : defaults[key];
+        }
+        return result;
     }
 }
