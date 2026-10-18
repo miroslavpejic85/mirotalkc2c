@@ -7,7 +7,7 @@
  * @link    Live demo: https://c2c.mirotalk.com
  * @license Open source: AGPLv3 | Commercial/closed source (official channel): https://docs.mirotalk.com/sites/c2c/
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.4.79
+ * @version 1.4.80
  */
 
 const savedTheme = window.localStorage.getItem('home-theme');
@@ -233,6 +233,9 @@ let peerDevice = {};
 let peerConnections = {};
 let peerMediaElements = {};
 let dataChannels = {};
+const blockedMediaElements = new Set(); // remote <video>/<audio> blocked by the browser autoplay policy (e.g. Safari)
+let mediaUnlockPrompt = null;
+let mediaUnlockListening = false;
 
 let incomingFileMeta = null;
 let incomingFileBuffer = [];
@@ -656,6 +659,7 @@ function handleDisconnect() {
     localMediaStream = null;
     cleanupPeerConnections();
     cleanupPeerMediaElements();
+    updateMediaUnlockPrompt();
     saveLocalStorageConfig();
 }
 
@@ -666,6 +670,7 @@ function handleRemovePeer(config) {
     delete dataChannels[peerId];
     delete peerConnections[peerId];
     delete peerMediaElements[peerId];
+    updateMediaUnlockPrompt();
 
     if (!thereIsPeerConnections()) {
         elemDisplay(waitingDivContainer, true);
@@ -808,6 +813,142 @@ function createAudioElement(id, stream, muted = false) {
     audio.play().catch(() => {});
     return audio;
 }
+
+/**
+ * Play a remote media element, tracking it when blocked by the browser autoplay policy (e.g. Safari)
+ * @param {HTMLMediaElement} elem
+ * @returns {Promise<boolean>} true if playback started
+ */
+function playRemoteMedia(elem) {
+    if (!elem || !elem.isConnected) return Promise.resolve(false);
+    let playPromise;
+    try {
+        playPromise = elem.play();
+    } catch (err) {
+        playPromise = Promise.reject(err);
+    }
+    return Promise.resolve(playPromise)
+        .then(() => {
+            if (blockedMediaElements.delete(elem)) updateMediaUnlockPrompt();
+            return true;
+        })
+        .catch((err) => {
+            if (err?.name === 'NotAllowedError') {
+                console.warn('[MEDIA] Remote playback blocked by the browser autoplay policy', elem._peerName);
+                if (elem.isConnected) {
+                    blockedMediaElements.add(elem);
+                    updateMediaUnlockPrompt();
+                }
+            } else if (err?.name !== 'AbortError') {
+                console.warn('[MEDIA] Remote playback error', err);
+            }
+            return false;
+        });
+}
+
+/**
+ * Start a remote media element and resume it if the browser interrupts it (e.g. iOS call/Siri)
+ * @param {HTMLMediaElement} elem
+ * @param {string} peerName
+ */
+function startRemoteMedia(elem, peerName) {
+    if (!elem) return;
+    elem._peerName = peerName;
+    // Remote media is never paused on purpose, so a pause means the browser interrupted it.
+    // Detaching the element also pauses it: skip that case.
+    elem.addEventListener('pause', () => {
+        if (!elem.isConnected || document.hidden || blockedMediaElements.has(elem)) return;
+        playRemoteMedia(elem);
+    });
+    // autoplay alone fails silently when blocked (e.g. Safari with no active capture)
+    playRemoteMedia(elem);
+}
+
+/**
+ * Retry the blocked remote media elements, must run inside a user gesture handler
+ */
+function unlockBlockedMedia() {
+    // play() must be invoked synchronously inside the user gesture handler
+    for (const elem of [...blockedMediaElements]) {
+        if (!elem.isConnected) {
+            blockedMediaElements.delete(elem);
+            continue;
+        }
+        playRemoteMedia(elem);
+    }
+    updateMediaUnlockPrompt();
+}
+
+/**
+ * Resume remote media elements paused by the browser (e.g. iOS call/Siri, app in background)
+ */
+function resumeInterruptedMedia() {
+    const medias = document.querySelectorAll('.remoteVideoWrap video, .remoteVideoWrap audio');
+    for (const elem of medias) {
+        if (elem.paused && elem.srcObject && !blockedMediaElements.has(elem)) {
+            playRemoteMedia(elem);
+        }
+    }
+}
+
+/**
+ * Add or remove the user gesture listeners used to unlock the blocked remote media
+ * @param {boolean} enabled
+ */
+function setMediaUnlockListeners(enabled) {
+    if (mediaUnlockListening === enabled) return;
+    mediaUnlockListening = enabled;
+    const method = enabled ? 'addEventListener' : 'removeEventListener';
+    // Events that grant user activation on desktop and touch devices (touchstart/pointerdown don't on iOS)
+    for (const type of ['click', 'touchend', 'pointerup', 'keydown']) {
+        window[method](type, unlockBlockedMedia, true);
+    }
+}
+
+/**
+ * Show, update or hide the prompt asking the user to enable the blocked remote media
+ */
+function updateMediaUnlockPrompt() {
+    for (const elem of [...blockedMediaElements]) {
+        if (!elem.isConnected) blockedMediaElements.delete(elem);
+    }
+
+    const blocked = blockedMediaElements.size > 0;
+    setMediaUnlockListeners(blocked);
+
+    if (!blocked) {
+        mediaUnlockPrompt?.classList.remove('is-visible');
+        return;
+    }
+
+    if (!mediaUnlockPrompt) {
+        const btn = document.createElement('button');
+        btn.id = 'mediaUnlockPrompt';
+        btn.type = 'button';
+        btn.className = 'media-unlock-prompt';
+        btn.setAttribute('aria-live', 'polite');
+        const icon = document.createElement('i');
+        icon.className = 'fas fa-volume-high';
+        icon.setAttribute('aria-hidden', 'true');
+        const text = document.createElement('span');
+        btn.append(icon, text);
+        // The click is also caught by the capture-phase gesture listener; this keeps the button self-contained
+        btn.addEventListener('click', unlockBlockedMedia);
+        document.body.appendChild(btn);
+        mediaUnlockPrompt = btn;
+    }
+
+    const names = [...new Set([...blockedMediaElements].map((elem) => elem._peerName).filter(Boolean))];
+    const label = names.length === 1 ? `Enable audio to hear ${names[0]}` : 'Enable audio to hear participants';
+
+    mediaUnlockPrompt.lastChild.textContent = label;
+    mediaUnlockPrompt.setAttribute('aria-label', label);
+    mediaUnlockPrompt.classList.add('is-visible');
+}
+
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) resumeInterruptedMedia();
+});
 
 function setLocalMedia(stream) {
     localMediaStream = stream;
@@ -1049,6 +1190,10 @@ function setRemoteMedia(stream, peers, peerId) {
     if (remoteVideoElem) remoteVideoWrap.appendChild(remoteVideoElem);
     if (remoteAudioElem && !hasVideo) remoteVideoWrap.appendChild(remoteAudioElem);
     document.body.appendChild(remoteVideoWrap);
+
+    startRemoteMedia(remoteVideoElem, peerName);
+    if (!hasVideo) startRemoteMedia(remoteAudioElem, peerName);
+    updateMediaUnlockPrompt(); // drop elements of a replaced wrap
 
     peerMediaElements[peerId] = hasVideo ? remoteVideoElem : hasAudio ? remoteAudioElem : remoteVideoAvatarImage;
 
