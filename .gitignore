@@ -16,3 +16,4 @@ npm-debug.log
 docker-push.sh
 docker-compose.yml
 turnserver.conf
+frontend/js/config.js

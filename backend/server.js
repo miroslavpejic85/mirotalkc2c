@@ -7,7 +7,7 @@
  * @link    Live demo: https://c2c.mirotalk.com
  * @license Open source: AGPLv3 | Commercial/closed source (official channel): https://docs.mirotalk.com/sites/c2c/
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.4.82
+ * @version 1.4.83
  */
 
 require('dotenv').config();
@@ -180,6 +180,8 @@ const frontendDir = path.join(__dirname, '../', 'frontend');
 const htmlClient = path.join(__dirname, '../', 'frontend/html/client.html');
 const htmlHome = path.join(__dirname, '../', 'frontend/html/home.html');
 const htmlPrivacy = path.join(__dirname, '../', 'frontend/html/privacy.html');
+const jsConfig = path.join(frontendDir, 'js/config.js');
+const jsConfigTemplate = path.join(frontendDir, 'js/config.template.js');
 
 const channels = {};
 const sockets = {};
@@ -189,6 +191,10 @@ app.set('trust proxy', trustProxy); // Enables trust for proxy headers (e.g., X-
 app.use(helmet.noSniff()); // Enable content type sniffing prevention
 app.use(applyEmbedHeaders); // Apply iframe embedding restrictions (CSP frame-ancestors / X-Frame-Options)
 app.use(compression()); // Enable response compression must be before serving static files
+// Serve the user's config.js, falling back to the template when it has not been created yet
+app.get('/js/config.js', (req, res) => {
+    res.sendFile(fs.existsSync(jsConfig) ? jsConfig : jsConfigTemplate);
+});
 app.use(express.static(frontendDir));
 app.use(cors(corsOptions));
 app.use(express.json()); // Api parse body data as json

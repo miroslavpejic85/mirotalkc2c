@@ -11,6 +11,7 @@ services:
             - '${PORT}:${PORT}'
         volumes:
             - .env:/src/.env:ro
+            - ./frontend/js/config.js:/src/frontend/js/config.js:ro
             # Optional volumes for real-time updates:
             # - ./frontend/:/src/frontend/:ro
             # - ./backend/:/src/backend/:ro

@@ -55,12 +55,13 @@ href="https://github.com/sponsors/miroslavpejic85">Sponsor</a>
 
 <br/>
 
-**Start in 5 commands:**
+**Start in 6 commands:**
 
 ```bash
 git clone https://github.com/miroslavpejic85/mirotalkc2c.git
 cd mirotalkc2c
 cp .env.template .env
+cp frontend/js/config.template.js frontend/js/config.js
 npm install
 npm start
 ```
@@ -93,6 +94,7 @@ Effect output is capped at 1280 x 720 and 15 FPS. Off uses the original camera w
 git clone https://github.com/miroslavpejic85/mirotalkc2c.git
 cd mirotalkc2c
 cp .env.template .env
+cp frontend/js/config.template.js frontend/js/config.js
 cp docker-compose.template.yml docker-compose.yml
 docker-compose pull    # optional: pull official image
 docker-compose up      # add -d to run in background
@@ -101,7 +103,8 @@ docker-compose up      # add -d to run in background
 Open [http://localhost:8080](http://localhost:8080) - done!
 
 > **Note:**
-> Edit `.env` and `docker-compose.yml` to customize your setup.
+> Edit `.env`, `frontend/js/config.js`, and `docker-compose.yml` to customize your setup.
+> `frontend/js/config.js` is sent to the browser, so never put secrets in it.
 
 </details>
 
