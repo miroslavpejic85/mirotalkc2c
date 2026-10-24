@@ -54,6 +54,7 @@ class LocalStorage {
                     fps_index: 0,
                     best_quality: false,
                     aspect_ratio: false,
+                    screen_camera: 'off', // camera bubble over the shared screen: off | bottom-right | bottom-left | top-right | top-left
                 },
             },
         };

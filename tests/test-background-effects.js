@@ -99,6 +99,7 @@ describe('camera background integration', () => {
             BackgroundEffects: Processor,
             MediaStream: TestStream,
             cameraEffects: null,
+            screenComposer: null,
             backgroundImage: null,
             backgroundEffectsBusy: false,
             backgroundEffectSelect: { value: 'off' },
@@ -170,6 +171,10 @@ describe('camera background integration', () => {
             'setVideoButtons',
             'refreshVideoConstraints',
             'toggleScreenSharing',
+            'handleScreenTrackEnded',
+            'getScreenCameraPosition',
+            'composeScreenWithCamera',
+            'stopScreenComposer',
             'changeCamera',
         ]);
     });

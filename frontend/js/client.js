@@ -7,7 +7,7 @@
  * @link    Live demo: https://c2c.mirotalk.com
  * @license Open source: AGPLv3 | Commercial/closed source (official channel): https://docs.mirotalk.com/sites/c2c/
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.4.83
+ * @version 1.4.84
  */
 
 const savedTheme = window.localStorage.getItem('home-theme');
@@ -62,6 +62,8 @@ const backgroundEffectLoading = document.getElementById('backgroundEffectLoading
 const backgroundImageInput = document.getElementById('backgroundImageInput');
 const backgroundImageBtn = document.getElementById('backgroundImageBtn');
 const backgroundImageName = document.getElementById('backgroundImageName');
+const screenCameraDiv = document.getElementById('screenCameraDiv');
+const screenCameraSelect = document.getElementById('screenCameraSelect');
 const videoQualitySelect = document.getElementById('videoQualitySelect');
 const videoFpsDiv = document.getElementById('videoFpsDiv');
 const videoFpsSelect = document.getElementById('videoFpsSelect');
@@ -210,6 +212,7 @@ let noiseSuppressionRequest = 0;
 let noiseSuppressionConstraints = Promise.resolve();
 let microphoneRequest = 0;
 let cameraEffects = null;
+let screenComposer = null; // draws the camera over the shared screen, when enabled
 // Devices actually in use, to restore the selects when a swap fails or a fallback device was opened
 let activeVideoDeviceId = null;
 let activeAudioDeviceId = null;
@@ -1399,6 +1402,10 @@ function handleEvents() {
         screenShareBtn.onclick = async () => {
             await toggleScreenSharing();
         };
+        screenCameraDiv.hidden = !ScreenCameraComposer.supported();
+        screenCameraSelect.onchange = () => {
+            setScreenCameraPosition(screenCameraSelect.value);
+        };
     } else {
         elemDisplay(initScreenShareBtn, false);
         elemDisplay(screenShareBtn, false);
@@ -1664,6 +1671,7 @@ function handleBackgroundError(processor, error) {
     const track = processor.cameraTrack;
     backgroundEffectSelect.value = 'off';
     if (localMediaStream?.getVideoTracks()[0] === processor.outputTrack) attachCameraBackgroundTrack(track);
+    if (screenComposer?.cameraTrack === processor.outputTrack) screenComposer.setCameraTrack(track);
     stopCameraEffects(false);
     updateBackgroundControls();
     popupMessage('warning', 'Camera background', 'Background effects unavailable. Continuing without effects.');
@@ -1807,7 +1815,14 @@ async function toggleScreenSharing() {
                 newStream,
                 '✅ Noise suppression applied to screen sharing audio'
             );
+            handleScreenTrackEnded(newStream.getVideoTracks()[0]);
+            newStream = await composeScreenWithCamera(newStream);
         } else {
+            if (screenComposer) {
+                // Release the camera shown over the screen before opening it again
+                stopScreenComposer();
+                stopCameraEffects();
+            }
             newStream = await getBestUserMedia(constraints);
             newStream = await applyNoiseSuppressionWithLogging(
                 newStream,
@@ -1816,8 +1831,11 @@ async function toggleScreenSharing() {
         }
 
         if (newStream) {
-            stopCameraEffects();
-            localMediaStream?.getVideoTracks().forEach((track) => track.stop());
+            // The camera keeps running while it is drawn over the screen
+            if (!screenComposer) {
+                stopCameraEffects();
+                localMediaStream?.getVideoTracks().forEach((track) => track.stop());
+            }
             if (isScreenStreaming) {
                 if (hasVideoTrack(newStream)) camera = detectCameraFacingMode(newStream);
                 newStream = await prepareCameraBackground(newStream);
@@ -1849,6 +1867,63 @@ async function toggleScreenSharing() {
         console.error('[Error] toggleScreenSharing', err);
         isScreenStreaming = false;
     }
+}
+
+/**
+ * Go back to the camera when sharing is stopped from the browser UI ("Stop sharing")
+ * @param {MediaStreamTrack} track the screen video track
+ */
+function handleScreenTrackEnded(track) {
+    track?.addEventListener(
+        'ended',
+        () => {
+            if (isScreenStreaming) toggleScreenSharing();
+        },
+        { once: true }
+    );
+}
+
+function getScreenCameraPosition() {
+    const position = localStorageConfig.video.settings.screen_camera;
+    return typeof ScreenCameraComposer !== 'undefined' && ScreenCameraComposer.isPosition(position) ? position : 'off';
+}
+
+function setScreenCameraPosition(position) {
+    localStorageConfig.video.settings.screen_camera = position;
+    saveLocalStorageConfig();
+    if (screenComposer) {
+        screenComposer.setPosition(position);
+    } else if (isScreenStreaming && position !== 'off') {
+        popupMessage('toast', 'Camera while sharing screen', 'Applies the next time you share your screen', 'top');
+    }
+}
+
+/**
+ * Draw the camera over the shared screen, if enabled and the camera is on
+ * @param {MediaStream} screenStream
+ * @returns {Promise<MediaStream>} the composed stream, or the screen stream as is
+ */
+async function composeScreenWithCamera(screenStream) {
+    const position = getScreenCameraPosition();
+    const cameraTrack = localMediaStream?.getVideoTracks()[0];
+    if (position === 'off' || !isMyVideoActiveBefore || cameraTrack?.readyState !== 'live') return screenStream;
+    if (!ScreenCameraComposer.supported()) return screenStream;
+    const composer = new ScreenCameraComposer(position);
+    try {
+        const stream = await composer.start(screenStream, cameraTrack);
+        screenComposer = composer;
+        return stream;
+    } catch (err) {
+        console.warn('[Warning] Unable to show the camera over the shared screen', err);
+        composer.stop(false);
+        return screenStream;
+    }
+}
+
+function stopScreenComposer() {
+    const composer = screenComposer;
+    screenComposer = null;
+    composer?.stop();
 }
 
 function changeCamera(deviceId = false) {
@@ -2353,6 +2428,7 @@ function loadLocalStorageConfig() {
     switchNoiseSuppression.checked = localStorageConfig?.audio?.settings?.noise_suppression ?? false;
     switchMaxVideoQuality.checked = localStorageConfig.video.settings.best_quality;
     switchKeepAspectRatio.checked = localStorageConfig.video.settings.aspect_ratio;
+    screenCameraSelect.value = getScreenCameraPosition();
     if (localStorageConfig.video.init.hide) initHideMeBtn.click();
     if (
         !localStorageConfig.video.settings.best_quality &&

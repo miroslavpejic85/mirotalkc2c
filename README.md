@@ -73,11 +73,20 @@ Open [http://localhost:8080](http://localhost:8080) - done!
 <details>
 <summary>🖼️ Camera backgrounds</summary>
 
-In **Settings > Video > Background**, select **Off**, **Blur**, or **Image**. PNG, JPEG, and WebP images up to 10 MB are processed locally in your browser and are not uploaded. Effects appear in the camera preview, outgoing camera video, and camera recordings. Screen sharing is unaffected; the selected effect resumes when returning to the camera. Background changes are blocked while recording.
+In **Settings > Video > Background**, select **Off**, **Blur**, or **Image**. PNG, JPEG, and WebP images up to 10 MB are processed locally in your browser and are not uploaded. Effects appear in the camera preview, outgoing camera video, and camera recordings. Screen sharing is unaffected unless the camera is shown over the shared screen (see below); the selected effect resumes when returning to the camera. Background changes are blocked while recording.
 
 Effects require WebGL2 and canvas stream capture; blur also requires canvas filter support. MediaPipe Tasks Vision 0.10.21 and its WASM files are lazy-loaded from jsDelivr, and the selfie segmentation model (version 1) is loaded from Google Storage. These hosts must be reachable and allowed by any custom CSP, including WASM execution. Processing failures fall back to the original camera.
 
 Effect output is capped at 1280 x 720 and 15 FPS. Off uses the original camera without processing. Performance varies by device, and background tabs may throttle rendering. Image selections are not persisted across page reloads.
+
+</details>
+
+<details>
+<summary>🎥 Camera while sharing screen</summary>
+
+In **Settings > Video > Camera while sharing screen**, pick a corner (**Bottom right**, **Bottom left**, **Top right**, **Top left**) to show your camera as a picture-in-picture bubble over your shared screen, or **Off** (default) to share the screen only. The bubble is drawn in your browser and sent together with the screen as a single video, so the other participant and recordings see it without any extra setup. The corner can be changed while sharing; turning it on mid-share applies the next time you share.
+
+The bubble is shown only if your camera is on when you start sharing, and keeps the selected camera background effect. The composed video is capped at 1920 x 1080 and 30 FPS, uses a bit more CPU than plain screen sharing, and needs canvas stream capture (it falls back to the plain screen when unavailable). Desktop browsers only.
 
 </details>
 

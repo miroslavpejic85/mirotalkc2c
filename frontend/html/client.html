@@ -54,6 +54,7 @@
         <script defer src="../js/fix-webm-duration.js"></script>
         <script defer src="../js/recording.js"></script>
         <script defer src="../js/background-effects.js"></script>
+        <script defer src="../js/screen-camera.js"></script>
         <script defer src="../js/client.js"></script>
         <script defer src="../js/translate.js"></script>
         <script defer src="../js/noise-processor.js"></script>
@@ -272,6 +273,16 @@
                             <i class="fas fa-image" aria-hidden="true"></i> Choose image
                         </button>
                         <div id="backgroundImageName" class="background-image-name" hidden></div>
+                    </div>
+                    <div id="screenCameraDiv" class="settings-field" hidden>
+                        <label for="screenCameraSelect">Camera while sharing screen</label>
+                        <select id="screenCameraSelect">
+                            <option value="off">Off</option>
+                            <option value="bottom-right">Bottom right</option>
+                            <option value="bottom-left">Bottom left</option>
+                            <option value="top-right">Top right</option>
+                            <option value="top-left">Top left</option>
+                        </select>
                     </div>
                 </div>
 
