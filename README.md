@@ -195,5 +195,15 @@ Do you find MiroTalk C2C indispensable for your needs? Join us in supporting thi
 ---
 
 <p align="center">
+  <a href="https://www.star-history.com/#miroslavpejic85/mirotalkc2c&type=date&legend=top-left">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=miroslavpejic85/mirotalkc2c&type=date&theme=dark&legend=top-left" />
+      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=miroslavpejic85/mirotalkc2c&type=date&legend=top-left" />
+      <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=miroslavpejic85/mirotalkc2c&type=date&legend=top-left" />
+    </picture>
+  </a>
+</p>
+
+<p align="center">
   Built with ❤️ by <a href="https://www.linkedin.com/in/miroslav-pejic-976a07101/">Miroslav</a> and the open-source community
 </p>
