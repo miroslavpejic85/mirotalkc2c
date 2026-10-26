@@ -7,7 +7,7 @@
  * @link    Live demo: https://c2c.mirotalk.com
  * @license Open source: AGPLv3 | Commercial/closed source (official channel): https://docs.mirotalk.com/sites/c2c/
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.4.84
+ * @version 1.4.85
  */
 
 require('dotenv').config();
@@ -179,6 +179,7 @@ const OIDCAuth = function (req, res, next) {
 const frontendDir = path.join(__dirname, '../', 'frontend');
 const htmlClient = path.join(__dirname, '../', 'frontend/html/client.html');
 const htmlHome = path.join(__dirname, '../', 'frontend/html/home.html');
+const htmlHomeContent = fs.readFileSync(htmlHome, 'utf8').replace(/{{APP_VERSION}}/g, `v${packageJson.version}`);
 const htmlPrivacy = path.join(__dirname, '../', 'frontend/html/privacy.html');
 const jsConfig = path.join(frontendDir, 'js/config.js');
 const jsConfigTemplate = path.join(frontendDir, 'js/config.template.js');
@@ -338,7 +339,7 @@ const HomeOIDCAuth = (req, res, next) => {
 };
 
 app.get('/', HomeOIDCAuth, (req, res) => {
-    return res.sendFile(htmlHome);
+    return res.type('html').send(htmlHomeContent);
 });
 
 app.get('/client-config', (req, res) => {

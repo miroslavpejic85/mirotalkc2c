@@ -231,6 +231,12 @@ a {
 .privacy-link {
     cursor: pointer;
 }
+.app-version {
+    opacity: 0.75;
+}
+.app-version:empty {
+    display: none;
+}
 .privacy-link:hover {
     color: var(--accent);
 }

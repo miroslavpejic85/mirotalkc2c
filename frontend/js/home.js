@@ -22,6 +22,7 @@ const themeToggleBtn = document.getElementById('themeToggleBtn');
 const homeBrand = document.getElementById('homeBrand');
 const appName = document.getElementById('appName');
 const copyrightLabel = document.getElementById('copyrightLabel');
+const appVersion = document.getElementById('appVersion');
 const aboutBtn = document.getElementById('aboutBtn');
 
 const LS = new LocalStorage();
@@ -113,6 +114,7 @@ async function initHome() {
 
     const aboutUrl = getSafeAboutUrl(homeConfig.about?.url);
     elementDisplay(copyrightLabel, homeConfig.showCopyright !== false);
+    elementDisplay(appVersion, homeConfig.showVersion !== false);
     elementDisplay(aboutBtn, homeConfig.about?.show !== false && Boolean(aboutUrl));
     if (aboutUrl) aboutBtn.href = aboutUrl;
     //...
