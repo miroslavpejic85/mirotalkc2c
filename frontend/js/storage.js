@@ -57,6 +57,11 @@ class LocalStorage {
                     screen_camera: 'off', // camera bubble over the shared screen: off | bottom-right | bottom-left | top-right | top-left
                 },
             },
+            chat: {
+                settings: {
+                    convert_emoticons: false,
+                },
+            },
         };
     }
 

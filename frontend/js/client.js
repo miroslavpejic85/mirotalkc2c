@@ -7,7 +7,7 @@
  * @link    Live demo: https://c2c.mirotalk.com
  * @license Open source: AGPLv3 | Commercial/closed source (official channel): https://docs.mirotalk.com/sites/c2c/
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.4.85
+ * @version 1.4.86
  */
 
 const savedTheme = window.localStorage.getItem('home-theme');
@@ -71,6 +71,7 @@ const maxVideoQualityDiv = document.getElementById('maxVideoQualityDiv');
 const pushToTalkDiv = document.getElementById('pushToTalkDiv');
 const noiseSuppressionDiv = document.getElementById('noiseSuppressionDiv');
 const switchLightTheme = document.getElementById('switchLightTheme');
+const switchConvertEmoticons = document.getElementById('switchConvertEmoticons');
 const switchNoiseSuppression = document.getElementById('switchNoiseSuppression');
 const switchMaxVideoQuality = document.getElementById('switchMaxVideoQuality');
 const switchKeepAspectRatio = document.getElementById('switchKeepAspectRatio');
@@ -180,6 +181,7 @@ const chatInputEmoji = {
     ':N': '🥶',
     ':J': '🥴',
 };
+const chatInputEmoticons = Object.keys(chatInputEmoji).sort((a, b) => b.length - a.length);
 
 const isVideoPIPSupported = document.pictureInPictureEnabled;
 const isWebRTCSupported = checkWebRTCSupported();
@@ -206,7 +208,6 @@ let isSpaceDown = false;
 let pushToTalkAudioContext = null;
 let isMyAudioActiveBefore = false;
 let isMyVideoActiveBefore = false;
-let isChatPasteTxt = false;
 let noiseProcessor = null;
 let noiseSuppressionRequest = 0;
 let noiseSuppressionConstraints = Promise.resolve();
@@ -1473,6 +1474,11 @@ function handleEvents() {
         window.localStorage.setItem('home-theme', theme);
         playSound('switch');
     };
+    switchConvertEmoticons.onchange = (e) => {
+        localStorageConfig.chat.settings.convert_emoticons = e.currentTarget.checked;
+        saveLocalStorageConfig();
+        playSound('switch');
+    };
     //switchMaxVideoQuality.checked = localStorageConfig.video.settings.best_quality;
     switchMaxVideoQuality.onchange = (e) => {
         localStorageConfig.video.settings.best_quality = e.currentTarget.checked;
@@ -1564,16 +1570,13 @@ function handleEvents() {
             chatSendBtn.click();
         }
     };
-    chatInput.oninput = function () {
-        if (isChatPasteTxt) return;
-        for (let i in chatInputEmoji) {
-            let regex = new RegExp(i.replace(/([()[{*+.$^\\|?])/g, '\\$1'), 'gim');
-            this.value = this.value.replace(regex, chatInputEmoji[i]);
+    chatInput.oninput = function (event) {
+        if (localStorageConfig.chat.settings.convert_emoticons && event.inputType !== 'insertFromPaste') {
+            for (const emoticon of chatInputEmoticons) {
+                const regex = new RegExp(emoticon.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+                this.value = this.value.replace(regex, chatInputEmoji[emoticon]);
+            }
         }
-        checkLineBreaks();
-    };
-    chatInput.onpaste = () => {
-        isChatPasteTxt = true;
         checkLineBreaks();
     };
     leaveBtn.onclick = () => {
@@ -2426,6 +2429,7 @@ function loadLocalStorageConfig() {
         audioOutputSource.selectedIndex = localStorageConfig?.speaker?.devices?.select?.index ?? 0;
     }
     switchNoiseSuppression.checked = localStorageConfig?.audio?.settings?.noise_suppression ?? false;
+    switchConvertEmoticons.checked = localStorageConfig.chat.settings.convert_emoticons;
     switchMaxVideoQuality.checked = localStorageConfig.video.settings.best_quality;
     switchKeepAspectRatio.checked = localStorageConfig.video.settings.aspect_ratio;
     screenCameraSelect.value = getScreenCameraPosition();
@@ -2943,7 +2947,6 @@ function sendMessage() {
 
 function emitDcMsg(msg) {
     if (msg) {
-        isChatPasteTxt = false;
         console.log('Send msg: ' + msg);
         appendMessage(peerName, msg);
         Object.keys(dataChannels).map((peerId) =>
