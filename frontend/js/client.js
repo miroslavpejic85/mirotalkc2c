@@ -7,7 +7,7 @@
  * @link    Live demo: https://c2c.mirotalk.com
  * @license Open source: AGPLv3 | Commercial/closed source (official channel): https://docs.mirotalk.com/sites/c2c/
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.4.86
+ * @version 1.4.87
  */
 
 const savedTheme = window.localStorage.getItem('home-theme');
@@ -329,6 +329,8 @@ function initClient() {
 
     signalingSocket.on('connect', handleConnect);
     signalingSocket.on('error', handleError);
+    signalingSocket.on('connect_error', handleConnectError);
+    signalingSocket.on('unauthorized', handleUnauthorized);
     signalingSocket.on('serverInfo', handleServerInfo);
     signalingSocket.on('addPeer', handleAddPeer);
     signalingSocket.on('sessionDescription', handleSessionDescription);
@@ -387,6 +389,17 @@ async function handleConnect() {
 
 function handleError(error) {
     console.error('WebSocket connection error:', error);
+}
+
+function handleConnectError(error) {
+    console.error('Signaling connection error:', error);
+    if (error && error.message === 'Unauthorized') handleUnauthorized();
+}
+
+function handleUnauthorized() {
+    signalingSocket.disconnect();
+    popupMessage('warning', 'Authentication', 'Authentication required to access this room.');
+    setTimeout(() => (window.location.href = '/'), 3000);
 }
 
 function joinToChannel() {

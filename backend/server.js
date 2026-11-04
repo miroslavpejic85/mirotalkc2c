@@ -7,7 +7,7 @@
  * @link    Live demo: https://c2c.mirotalk.com
  * @license Open source: AGPLv3 | Commercial/closed source (official channel): https://docs.mirotalk.com/sites/c2c/
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.4.86
+ * @version 1.4.87
  */
 
 require('dotenv').config();
@@ -20,6 +20,7 @@ const express = require('express');
 const cors = require('cors');
 const checkXSS = require('./xss.js');
 const path = require('path');
+const { ServerResponse } = require('http');
 const ngrok = require('@ngrok/ngrok');
 const app = express();
 const helmet = require('helmet');
@@ -188,6 +189,8 @@ const channels = {};
 const sockets = {};
 const peers = {};
 
+const roomExists = (room) => typeof room === 'string' && Object.hasOwn(peers, room);
+
 app.set('trust proxy', trustProxy); // Enables trust for proxy headers (e.g., X-Forwarded-For) based on the trustProxy setting
 app.use(helmet.noSniff()); // Enable content type sniffing prevention
 app.use(applyEmbedHeaders); // Apply iframe embedding restrictions (CSP frame-ancestors / X-Frame-Options)
@@ -196,7 +199,19 @@ app.use(compression()); // Enable response compression must be before serving st
 app.get('/js/config.js', (req, res) => {
     res.sendFile(fs.existsSync(jsConfig) ? jsConfig : jsConfigTemplate);
 });
-app.use(express.static(frontendDir));
+// The room page and home page are served only by their guarded routes ('/join' and '/'), never as static files
+const guardedPages = new Set(['/html/client.html', '/html/home.html']);
+app.use((req, res, next) => {
+    let pathname = req.path;
+    try {
+        pathname = decodeURIComponent(pathname);
+    } catch {
+        return notFound(res);
+    }
+    if (guardedPages.has(pathname.toLowerCase())) return notFound(res);
+    next();
+});
+app.use(express.static(frontendDir, { index: false }));
 app.use(cors(corsOptions));
 app.use(express.json()); // Api parse body data as json
 app.use(express.urlencoded({ extended: false })); // Mattermost
@@ -257,23 +272,35 @@ if (OIDC.enabled) {
     // Cache auth middleware per host+protocol to avoid re-creating on every request
     const authMiddlewareCache = new Map();
 
-    const getAuthMiddleware = (host, protocol) => {
+    const getAuthMiddleware = (host, protocol, forSocket = false) => {
+        // The Socket.IO handshake only needs the session, it must never trigger a login redirect
+        const config = forSocket ? { ...OIDC.config, authRequired: false } : OIDC.config;
+        const prefix = forSocket ? 'socket:' : '';
+
+        const create = (cfg) => {
+            log.debug('OIDC baseURL', cfg.baseURL);
+            if (!forSocket) return auth(cfg);
+            // express-openid-connect needs Express req/res helpers, which are missing on Engine.IO requests
+            const socketAuthApp = express();
+            socketAuthApp.set('trust proxy', trustProxy);
+            socketAuthApp.use(auth(cfg));
+            return socketAuthApp;
+        };
+
         if (!OIDC.baseUrlDynamic) {
-            if (!authMiddlewareCache.has('static')) {
-                log.debug('OIDC baseURL', OIDC.config.baseURL);
-                authMiddlewareCache.set('static', auth(OIDC.config));
-            }
-            return authMiddlewareCache.get('static');
+            const staticKey = `${prefix}static`;
+            if (!authMiddlewareCache.has(staticKey)) authMiddlewareCache.set(staticKey, create(config));
+            return authMiddlewareCache.get(staticKey);
         }
 
-        const key = `${protocol}://${host}`;
+        const key = `${prefix}${protocol}://${host}`;
         if (!authMiddlewareCache.has(key)) {
-            const config = { ...OIDC.config, baseURL: key };
-            log.debug('OIDC baseURL', config.baseURL);
-            authMiddlewareCache.set(key, auth(config));
+            authMiddlewareCache.set(key, create({ ...config, baseURL: `${protocol}://${host}` }));
         }
         return authMiddlewareCache.get(key);
     };
+
+    const isHostAllowed = (origin) => !OIDC.baseUrlDynamic || allowedOrigins.has(origin);
 
     // Apply the cached authentication middleware
     app.use((req, res, next) => {
@@ -285,7 +312,7 @@ if (OIDC.enabled) {
         // baseUrlDynamic is enabled. Without this, an attacker can force the
         // OIDC library to issue a redirect_uri pointing to a domain they
         // control and steal the authorization code.
-        if (OIDC.baseUrlDynamic && !allowedOrigins.has(cacheKey)) {
+        if (!isHostAllowed(cacheKey)) {
             log.warn('OIDC Host header not in allowlist - rejecting request', {
                 host,
                 origin: cacheKey,
@@ -299,6 +326,25 @@ if (OIDC.enabled) {
         } catch (err) {
             log.error('OIDC Auth Middleware Error', err);
             process.exit(1);
+        }
+    });
+
+    // Load the OIDC session on the Socket.IO handshake (req.oidc), so realtime access can be authorized
+    io.engine.use((req, res, next) => {
+        const host = req.headers.host;
+        const forwardedHttps = trustProxy && String(req.headers['x-forwarded-proto']).split(',')[0].trim() === 'https';
+        const protocol = req.socket.encrypted || forwardedHttps ? 'https' : 'http';
+
+        if (!isHostAllowed(`${protocol}://${host}`)) {
+            return next(new Error('Invalid Host header'));
+        }
+
+        try {
+            // A throwaway response keeps Express from altering the Engine.IO response, session cookie writes are discarded
+            getAuthMiddleware(host, protocol, true)(req, new ServerResponse(req), next);
+        } catch (err) {
+            log.error('OIDC Socket Auth Middleware Error', err);
+            next(err);
         }
     });
 }
@@ -330,7 +376,7 @@ const HomeOIDCAuth = (req, res, next) => {
     if (OIDC.enabled && !OIDC.config.authRequired && !req.oidc.isAuthenticated()) {
         const query = checkXSS(req.query || {});
         const room = query && query.room;
-        if (room && room in peers) {
+        if (roomExists(room)) {
             log.debug('OIDC ------> Guest allowed on home for existing room', { room });
             return next();
         }
@@ -369,8 +415,7 @@ app.get(
         }
         // OIDC enabled not authorized user, allow join room only if exist
         if (OIDC.enabled && !req.oidc.isAuthenticated()) {
-            const roomExist = room in peers;
-            if (!roomExist) {
+            if (!roomExists(room)) {
                 return notFound(res);
             }
         }
@@ -508,6 +553,18 @@ io.on('error', (error) => {
     log.error('Socket.IO error:', error);
 });
 
+// Realtime channel authorization: the OIDC session was loaded on the handshake (io.engine.use above)
+io.use((socket, next) => {
+    if (!OIDC.enabled) return next();
+    const authenticated = !!socket.request.oidc?.isAuthenticated();
+    if (OIDC.config.authRequired && !authenticated) {
+        log.warn('OIDC ------> Socket connection rejected, authentication required', { id: socket.id });
+        return next(new Error('Unauthorized'));
+    }
+    socket.oidcAuthenticated = authenticated;
+    next();
+});
+
 io.sockets.on('connect', (socket) => {
     log.debug('[' + socket.id + '] connection accepted');
     socket.channels = {};
@@ -519,6 +576,16 @@ io.sockets.on('connect', (socket) => {
         log.debug('[' + socket.id + '] join ', config);
 
         const channel = config.channel;
+
+        if (typeof channel !== 'string' || !channel) {
+            return log.warn('[' + socket.id + '] join blocked: invalid channel');
+        }
+
+        // OIDC enabled: unauthenticated users may only join already existing rooms
+        if (OIDC.enabled && !socket.oidcAuthenticated && !roomExists(channel)) {
+            log.warn('[' + socket.id + '] join blocked: authentication required to create room', { channel });
+            return sendToPeer(socket.id, sockets, 'unauthorized', { message: 'Authentication required' });
+        }
 
         if (channel in socket.channels) {
             return log.debug('[' + socket.id + '] [Warning] already joined', channel);
