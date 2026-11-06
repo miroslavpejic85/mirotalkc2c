@@ -295,6 +295,21 @@ a {
     color: var(--accent);
     transform: translateY(-1px);
 }
+/* Match the app switcher to the page theme and the other topbar buttons */
+#appSwitcher {
+    --landing-surface: var(--surface);
+    --landing-text: var(--ink);
+    --landing-text-muted: var(--ink-soft);
+    --landing-primary: var(--accent);
+    --landing-accent: var(--accent);
+    --landing-border: var(--panel-border);
+    --landing-hover: var(--field-bg);
+    --landing-tint: color-mix(in srgb, var(--accent) 14%, transparent);
+    --landing-trigger-size: 38px;
+    --landing-trigger-bg: var(--field-bg);
+    --landing-trigger-border: var(--line);
+    --landing-trigger-radius: var(--radius);
+}
 .panel-content {
     width: 100%;
     max-width: 520px;

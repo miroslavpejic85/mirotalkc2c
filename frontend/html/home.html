@@ -38,6 +38,7 @@
         <script defer src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
         <script defer src="../js/storage.js"></script>
         <script defer src="../js/config.js"></script>
+        <script defer src="../js/appSwitcher.js"></script>
         <script defer src="../js/home.js"></script>
     </head>
     <body>
@@ -73,6 +74,7 @@
                     <div class="panel-topbar">
                         <div class="privacy-status"><i class="fas fa-shield-halved"></i> End-to-end encrypted</div>
                         <div class="topbar-actions">
+                            <mirotalk-app-switcher id="appSwitcher" active-app="c2c" hidden></mirotalk-app-switcher>
                             <button
                                 type="button"
                                 id="themeToggleBtn"
