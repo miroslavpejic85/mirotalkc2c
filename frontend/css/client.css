@@ -753,6 +753,13 @@ body {
     }
 }
 
+/* Lift the peer name above the buttons bar when the bar is wide enough to reach it */
+@media (max-width: 720px) {
+    .remoteVideoWrap .remoteVideoFooter {
+        bottom: calc(max(8px, env(safe-area-inset-bottom)) + 68px);
+    }
+}
+
 /*--------------------------------------------------------------
 # Video Wrap - Header - Footer
 --------------------------------------------------------------*/
