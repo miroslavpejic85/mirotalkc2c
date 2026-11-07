@@ -7,7 +7,7 @@
  * @link    Live demo: https://c2c.mirotalk.com
  * @license Open source: AGPLv3 | Commercial/closed source (official channel): https://docs.mirotalk.com/sites/c2c/
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.4.90
+ * @version 1.4.92
  */
 
 const savedTheme = window.localStorage.getItem('home-theme');
@@ -1722,7 +1722,14 @@ async function applyCameraBackground() {
     if (recording && recording.isStreamRecording()) {
         backgroundEffectSelect.value = cameraEffects?.mode || 'off';
         updateBackgroundControls();
-        return popupMessage('toast', 'Recording', 'Cannot change camera background while recording', 'top');
+        return popupMessage(
+            'toast',
+            'Recording',
+            'Cannot change camera background while recording',
+            'top',
+            null,
+            'warning'
+        );
     }
     const stream = localMediaStream;
     const processor = cameraEffects;
@@ -1788,7 +1795,7 @@ async function loadBackgroundImage(file) {
 function swapCamera() {
     if (backgroundEffectsBusy || isScreenStreaming) return;
     if (recording && recording.isStreamRecording()) {
-        return popupMessage('toast', 'Recording', 'Cannot swap camera while recording', 'top');
+        return popupMessage('toast', 'Recording', 'Cannot swap camera while recording', 'top', null, 'warning');
     }
     camera = camera == 'user' ? 'environment' : 'user';
     const camVideo = camera == 'user' ? true : { facingMode: { exact: camera } };
@@ -1818,7 +1825,14 @@ function swapCamera() {
 async function toggleScreenSharing() {
     if (backgroundEffectsBusy) return;
     if (recording && recording.isStreamRecording()) {
-        return popupMessage('toast', 'Recording', 'Cannot toggle screen sharing while recording', 'top');
+        return popupMessage(
+            'toast',
+            'Recording',
+            'Cannot toggle screen sharing while recording',
+            'top',
+            null,
+            'warning'
+        );
     }
     const constraints = { audio: true, video: true };
     try {
@@ -1945,7 +1959,7 @@ function stopScreenComposer() {
 function changeCamera(deviceId = false) {
     if (backgroundEffectsBusy || isScreenStreaming) return;
     if (recording && recording.isStreamRecording()) {
-        return popupMessage('toast', 'Recording', 'Cannot change camera while recording', 'top');
+        return popupMessage('toast', 'Recording', 'Cannot change camera while recording', 'top', null, 'warning');
     }
     const videoConstraints = getVideoConstraints(deviceId);
 
@@ -1987,7 +2001,7 @@ function changeCamera(deviceId = false) {
 
 async function changeMicrophone(deviceId = false) {
     if (recording && recording.isStreamRecording()) {
-        return popupMessage('toast', 'Recording', 'Cannot change microphone while recording', 'top');
+        return popupMessage('toast', 'Recording', 'Cannot change microphone while recording', 'top', null, 'warning');
     }
     return replaceLocalMicrophone(deviceId);
 }
@@ -2020,7 +2034,10 @@ async function applySinkId(element, sinkId) {
     try {
         await element.setSinkId(sinkId);
     } catch (err) {
-        console.error('[Error] applySinkId', err);
+        // The saved speaker may be gone: the default output keeps working
+        if (err.name === 'NotFoundError')
+            console.warn('applySinkId: speaker not found, using the default output', sinkId);
+        else console.error('[Error] applySinkId', err);
     }
 }
 
@@ -2040,7 +2057,7 @@ async function playTestSound() {
         await audioToPlay.play();
     } catch (err) {
         console.error('[Error] playTestSound', err);
-        popupMessage('toast', 'Test speaker', 'Unable to play test sound', 'top');
+        popupMessage('toast', 'Test speaker', 'Unable to play test sound', 'top', null, 'warning');
     }
 }
 
@@ -2340,10 +2357,24 @@ function showMediaUnavailable(kind) {
 async function retryMediaAccess(kinds) {
     if (isRetryingMedia || !kinds.length) return;
     if (isScreenStreaming) {
-        return popupMessage('toast', 'Screen sharing', 'Stop screen sharing to retry the camera/microphone', 'top');
+        return popupMessage(
+            'toast',
+            'Screen sharing',
+            'Stop screen sharing to retry the camera/microphone',
+            'top',
+            null,
+            'warning'
+        );
     }
     if (recording && recording.isStreamRecording()) {
-        return popupMessage('toast', 'Recording', 'Cannot retry the camera/microphone while recording', 'top');
+        return popupMessage(
+            'toast',
+            'Recording',
+            'Cannot retry the camera/microphone while recording',
+            'top',
+            null,
+            'warning'
+        );
     }
     isRetryingMedia = true;
 
@@ -3146,7 +3177,7 @@ function toggleRecording() {
 
 function startRecording() {
     if (!isVideoStreaming && !isAudioStreaming) {
-        return popupMessage('toast', 'Video', "There isn't a video/audio stream to recording", 'top');
+        return popupMessage('toast', 'Video', "There isn't a video/audio stream to recording", 'top', null, 'warning');
     } else {
         try {
             audioRecorder = new MixedAudioRecorder();
@@ -3410,12 +3441,23 @@ function replaceLocalAudioTrack(stream) {
     refreshMyAudioStreamToPeers(localMediaStream);
 }
 
+async function getMicrophoneStream(deviceId) {
+    try {
+        return await navigator.mediaDevices.getUserMedia({ audio: getAudioConstraints(deviceId) });
+    } catch (error) {
+        // A saved device can be gone (unplugged or its id rotated): fall back to the default microphone
+        if (!deviceId || !['OverconstrainedError', 'NotFoundError'].includes(error.name)) throw error;
+        console.warn('Microphone not available, using the default one', error);
+        return navigator.mediaDevices.getUserMedia({ audio: getAudioConstraints() });
+    }
+}
+
 async function replaceLocalMicrophone(deviceId) {
     const request = ++microphoneRequest;
     noiseSuppressionRequest++;
     let micStream;
     try {
-        micStream = await navigator.mediaDevices.getUserMedia({ audio: getAudioConstraints(deviceId) });
+        micStream = await getMicrophoneStream(deviceId);
         if (request !== microphoneRequest) {
             micStream.getAudioTracks().forEach((track) => track.stop());
             return;
@@ -3471,7 +3513,9 @@ async function toggleNoiseSuppressionForLocalStream(enabled = switchNoiseSuppres
     localStorageConfig.audio.settings.noise_suppression_user_set = true;
     switchNoiseSuppression.checked = enabled;
     saveLocalStorageConfig();
-    const audioDeviceId = localStorageConfig.audio.devices.select.id || (audioSource && audioSource.value);
+    // Keep the microphone in use: the saved one may be gone while a fallback device is active
+    const audioDeviceId =
+        activeAudioDeviceId || localStorageConfig.audio.devices.select.id || (audioSource && audioSource.value);
     return replaceLocalMicrophone(audioDeviceId);
 }
 

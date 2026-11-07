@@ -1580,6 +1580,11 @@ video::-webkit-media-controls {
     background: var(--swal-backdrop) !important;
 }
 
+/* Toasts never dim the page */
+body.swal2-toast-shown .swal2-container.swal2-backdrop-show {
+    background: transparent !important;
+}
+
 .swal2-timer-progress-bar-container {
     border-radius: 0 0 var(--border-radius) var(--border-radius);
     overflow: hidden;

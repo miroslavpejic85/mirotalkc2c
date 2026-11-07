@@ -313,6 +313,7 @@ describe('client noise suppression lifecycle', () => {
             'setMicrophoneNoiseSuppression',
             'fallbackNoiseSuppression',
             'replaceLocalAudioTrack',
+            'getMicrophoneStream',
             'replaceLocalMicrophone',
             'toggleNoiseSuppressionForLocalStream',
             'changeMicrophone',
@@ -390,6 +391,28 @@ describe('client noise suppression lifecycle', () => {
         assert.equal(olderRaw.readyState, 'ended');
         assert.equal(newerRaw.readyState, 'live');
         assert.equal(published.length, 1);
+    });
+
+    it('falls back to the default microphone when the saved device is gone', async () => {
+        const requests = [];
+        context.navigator = {
+            mediaDevices: {
+                async getUserMedia(constraints) {
+                    requests.push(constraints.audio.deviceId?.exact);
+                    if (constraints.audio.deviceId)
+                        throw Object.assign(new Error('gone'), { name: 'OverconstrainedError' });
+                    return new TestStream([makeTrack()]);
+                },
+            },
+        };
+        const stream = await context.getMicrophoneStream('stale');
+        assert.equal(stream.getAudioTracks().length, 1);
+        assert.deepEqual(requests, ['stale', undefined]);
+
+        context.navigator.mediaDevices.getUserMedia = async () => {
+            throw Object.assign(new Error('denied'), { name: 'NotAllowedError' });
+        };
+        await assert.rejects(context.getMicrophoneStream('stale'), { name: 'NotAllowedError' });
     });
 
     it('restores native suppression and clears the setting on startup failure', async () => {
