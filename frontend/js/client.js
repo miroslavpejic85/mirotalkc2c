@@ -7,7 +7,7 @@
  * @link    Live demo: https://c2c.mirotalk.com
  * @license Open source: AGPLv3 | Commercial/closed source (official channel): https://docs.mirotalk.com/sites/c2c/
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.4.94
+ * @version 1.4.95
  */
 
 const savedTheme = window.localStorage.getItem('home-theme');
@@ -677,6 +677,7 @@ function handleDisconnect() {
     cleanupPeerConnections();
     cleanupPeerMediaElements();
     updateMediaUnlockPrompt();
+    syncRecordingAudio();
     saveLocalStorageConfig();
 }
 
@@ -688,6 +689,7 @@ function handleRemovePeer(config) {
     delete peerConnections[peerId];
     delete peerMediaElements[peerId];
     updateMediaUnlockPrompt();
+    syncRecordingAudio();
 
     if (!thereIsPeerConnections()) {
         elemDisplay(waitingDivContainer, true);
@@ -1101,6 +1103,7 @@ function setLocalMedia(stream) {
 
     setLocalAudioStatus(hasAudio && audioInitActive ? stream.getAudioTracks()[0].enabled : false);
     setLocalVideoStatus(hasVideo && videoInitActive ? stream.getVideoTracks()[0].enabled : false);
+    syncRecordingAudio();
 }
 
 function setRemoteMedia(stream, peers, peerId) {
@@ -1211,6 +1214,7 @@ function setRemoteMedia(stream, peers, peerId) {
     startRemoteMedia(remoteVideoElem, peerName);
     if (!hasVideo) startRemoteMedia(remoteAudioElem, peerName);
     updateMediaUnlockPrompt(); // drop elements of a replaced wrap
+    syncRecordingAudio();
 
     peerMediaElements[peerId] = hasVideo ? remoteVideoElem : hasAudio ? remoteAudioElem : remoteVideoAvatarImage;
 
@@ -3180,23 +3184,14 @@ function startRecording() {
         return popupMessage('toast', 'Video', "There isn't a video/audio stream to recording", 'top', null, 'warning');
     } else {
         try {
+            releaseRecordingAudioMixer();
             audioRecorder = new MixedAudioRecorder();
 
-            const audioStreamFromVideoElements = getAudioStreamFromVideoElements();
-            const audioStreamFromAudioElements = getAudioStreamFromAudioElements();
-            const audioStreams =
-                audioStreamFromVideoElements.getTracks().length > 0
-                    ? audioStreamFromVideoElements
-                    : audioStreamFromAudioElements;
+            const audioTracks = getRecordingAudioTracks();
 
-            console.log('Recording Audio streams tracks --->', audioStreams.getTracks());
+            console.log('Recording Audio streams tracks --->', audioTracks);
 
-            const audioMixerStreams = audioRecorder.getMixedAudioStream(
-                audioStreams
-                    .getTracks()
-                    .filter((track) => track.kind === 'audio')
-                    .map((track) => new MediaStream([track]))
-            );
+            const audioMixerStreams = audioRecorder.getMixedAudioStream([new MediaStream(audioTracks)]);
 
             const audioMixerTracks = audioMixerStreams.getTracks();
             console.log('Recording Audio mixer tracks --->', audioMixerTracks);
@@ -3211,14 +3206,47 @@ function startRecording() {
                 videoSource,
                 audioSource
             );
-            recording.start();
+            if (!recording.start()) return releaseRecordingAudioMixer();
 
             // Notice for recording
             emitPeerStatus('recording', true);
         } catch (err) {
+            releaseRecordingAudioMixer();
             popupMessage('error', 'Recording', 'Exception while creating MediaRecorder: ' + err);
         }
     }
+}
+
+function getRecordingAudioTracks() {
+    const audioStreamFromVideoElements = getAudioStreamFromVideoElements();
+    const audioStreams =
+        audioStreamFromVideoElements.getTracks().length > 0
+            ? audioStreamFromVideoElements
+            : getAudioStreamFromAudioElements();
+    return audioStreams.getAudioTracks();
+}
+
+/**
+ * The recording mix is built at start: keep it in sync with participants who join/leave later
+ * and with local microphone replacements.
+ */
+function syncRecordingAudio() {
+    if (!audioRecorder?.audioDestination) return;
+    try {
+        audioRecorder.syncTracks(getRecordingAudioTracks());
+    } catch (err) {
+        console.warn('Recording audio sync failed', err);
+    }
+}
+
+function releaseRecordingAudioMixer() {
+    if (!audioRecorder) return;
+    try {
+        audioRecorder.stopMixedAudioStream();
+    } catch (err) {
+        console.warn('Recording audio mixer release failed', err);
+    }
+    audioRecorder = null;
 }
 
 function getAudioStreamFromVideoElements() {
@@ -3276,9 +3304,7 @@ function getRecordingStream(audioMixerTracks) {
 
 function stopRecording() {
     recording.stop();
-    if (audioRecorder) {
-        audioRecorder.stopMixedAudioStream();
-    }
+    releaseRecordingAudioMixer();
     emitPeerStatus('recording', false);
 }
 

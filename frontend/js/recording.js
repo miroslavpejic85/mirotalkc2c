@@ -47,10 +47,12 @@ class Recording {
                 stopRecordingTimer();
                 this.downloadRecordedStream();
             });
+            return true;
         } catch (err) {
             this._recordingStream = false;
             console.error('MediaRecorder error', err);
-            return popupMessage('error', 'MediaRecorder', "Can't start stream recording" + err);
+            popupMessage('error', 'MediaRecorder', "Can't start stream recording" + err);
+            return false;
         }
     }
 
