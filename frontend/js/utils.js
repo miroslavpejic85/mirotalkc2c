@@ -147,6 +147,15 @@ function safeXSS(input) {
     return typeof filterXSS === 'function' ? filterXSS(input, { whiteList: {}, css: false }) : input;
 }
 
+function escapeHtml(input) {
+    return String(input ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 function removeAllChildren(node) {
     while (node.firstChild) node.removeChild(node.firstChild);
 }
@@ -422,7 +431,7 @@ function copyRoom() {
             <br/>
             <p class="qr-room-heading">Join from your mobile device</p>
             <p class="qr-room-description">No app needed. Scan the QR code with your mobile camera or share the room link below.</p>
-            <p class="qr-room-url">${roomURL}</p>`
+            <p class="qr-room-url">${escapeHtml(roomURL)}</p>`
         );
         makeRoomQR();
     });

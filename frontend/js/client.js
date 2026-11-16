@@ -7,7 +7,7 @@
  * @link    Live demo: https://c2c.mirotalk.com
  * @license Open source: AGPLv3 | Commercial/closed source (official channel): https://docs.mirotalk.com/sites/c2c/
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.4.95
+ * @version 1.4.96
  */
 
 const savedTheme = window.localStorage.getItem('home-theme');
@@ -96,7 +96,7 @@ const recordingTime = document.getElementById('recordingTime');
 
 let chatMessages = []; // collect chat messages to save it later
 
-const roomURL = window.location.origin + '/?room=' + roomId;
+const roomURL = window.location.origin + '/?room=' + encodeURIComponent(roomId || '');
 
 const LS = new LocalStorage();
 
