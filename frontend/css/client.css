@@ -1313,7 +1313,8 @@ video::-webkit-media-controls {
     padding: 5px 0;
 }
 
-.settings-toggle-row + .settings-toggle-row {
+.settings-toggle-row + .settings-toggle-row,
+.settings-field + .settings-toggle-row {
     border-top: 1px solid var(--panel-divider);
 }
 
