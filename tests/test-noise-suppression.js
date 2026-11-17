@@ -287,8 +287,9 @@ describe('client noise suppression lifecycle', () => {
             audioSource: { value: 'mic' },
             navigator: {
                 mediaDevices: {
-                    getUserMedia() {
+                    getUserMedia(constraints) {
                         const acquisition = deferred();
+                        acquisition.constraints = constraints;
                         acquisitions.push(acquisition);
                         return acquisition.promise;
                     },
@@ -306,11 +307,14 @@ describe('client noise suppression lifecycle', () => {
             popupMessage: (...args) => warnings.push(args),
         });
         loadFunctions(context, [
+            'isRNNoiseSelected',
             'getAudioConstraints',
             'initNoiseProcessor',
             'stopNoiseProcessor',
             'applyNoiseSuppressionToLocalStream',
             'setMicrophoneNoiseSuppression',
+            'recaptureMicrophone',
+            'logNoiseSuppressionState',
             'fallbackNoiseSuppression',
             'replaceLocalAudioTrack',
             'getMicrophoneStream',
@@ -328,8 +332,47 @@ describe('client noise suppression lifecycle', () => {
         return { operation, raw, processor: processors.at(-1) };
     }
 
-    it('acquires raw audio with native suppression enabled', () => {
+    it('acquires raw audio with native suppression only when RNNoise is off', () => {
+        assert.equal(context.getAudioConstraints().noiseSuppression, false);
+        context.localStorageConfig.audio.settings.noise_suppression = false;
         assert.equal(context.getAudioConstraints().noiseSuppression, true);
+    });
+
+    it('re-captures the microphone when the browser ignores live constraint changes', async () => {
+        // Chromium keeps the audio processing of an open source and ignores applyConstraints for it
+        const chromiumTrack = (noiseSuppression) => {
+            const track = makeTrack();
+            track.settings = { noiseSuppression, deviceId: 'mic' };
+            track.applyConstraints = async () => {};
+            return track;
+        };
+        const enable = context.toggleNoiseSuppressionForLocalStream(true);
+        const shared = chromiumTrack(true);
+        acquisitions.at(-1).resolve(new TestStream([shared]));
+        await flush();
+        assert.equal(shared.readyState, 'ended');
+        assert.equal(acquisitions.at(-1).constraints.audio.noiseSuppression, false);
+        const rnnoiseRaw = chromiumTrack(false);
+        acquisitions.at(-1).resolve(new TestStream([rnnoiseRaw]));
+        await flush();
+        const processor = processors.at(-1);
+        assert.equal(processor.mediaStream.getAudioTracks()[0], rnnoiseRaw);
+        processor.ready.resolve(true);
+        await enable;
+        assert.equal(published.at(-1), processor.output);
+
+        const disable = context.toggleNoiseSuppressionForLocalStream(false);
+        const inherited = chromiumTrack(false);
+        acquisitions.at(-1).resolve(new TestStream([inherited]));
+        await flush();
+        assert.equal(inherited.readyState, 'ended');
+        assert.equal(rnnoiseRaw.readyState, 'ended');
+        assert.equal(acquisitions.at(-1).constraints.audio.noiseSuppression, true);
+        const nativeRaw = chromiumTrack(true);
+        acquisitions.at(-1).resolve(new TestStream([nativeRaw]));
+        await disable;
+        assert.equal(published.at(-1), nativeRaw);
+        assert.equal(nativeRaw.readyState, 'live');
     });
 
     it('preserves mute across enabling, unmuting, and disabling', async () => {
@@ -349,6 +392,31 @@ describe('client noise suppression lifecycle', () => {
         assert.equal(second.raw.enabled, true);
         assert.equal(first.raw.readyState, 'ended');
         assert.equal(camera.readyState, 'live');
+    });
+
+    it('keeps native suppression on when RNNoise is switched off', async () => {
+        const states = [];
+        context.console = {
+            ...quietConsole,
+            log: (message, state) => message === 'Noise suppression state' && states.push(state),
+        };
+        const first = await begin();
+        first.processor.ready.resolve(true);
+        await first.operation;
+        assert.equal(first.raw.settings.noiseSuppression, false);
+        const operation = context.toggleNoiseSuppressionForLocalStream(false);
+        // The browser may hand back the already open source with native suppression still disabled
+        const raw = makeTrack();
+        raw.settings.noiseSuppression = false;
+        acquisitions.at(-1).resolve(new TestStream([raw]));
+        await operation;
+        assert.equal(published.at(-1), raw);
+        assert.equal(raw.settings.noiseSuppression, true);
+        assert.equal(first.raw.readyState, 'ended');
+        assert.deepEqual(JSON.parse(JSON.stringify(states)), [
+            { rnnoise: true, native: false },
+            { rnnoise: false, native: true },
+        ]);
     });
 
     it('publishes only the latest overlapping enable request', async () => {
@@ -432,6 +500,8 @@ describe('client noise suppression lifecycle', () => {
 
     it('does not claim native fallback when constraints fail', async () => {
         const first = await begin();
+        // Without a reported state (e.g. Safari) the microphone is not re-captured
+        first.raw.settings = {};
         first.raw.applyConstraints = async () => {
             throw new Error('unsupported');
         };

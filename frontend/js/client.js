@@ -7,7 +7,7 @@
  * @link    Live demo: https://c2c.mirotalk.com
  * @license Open source: AGPLv3 | Commercial/closed source (official channel): https://docs.mirotalk.com/sites/c2c/
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.4.96
+ * @version 1.4.97
  */
 
 const savedTheme = window.localStorage.getItem('home-theme');
@@ -2010,11 +2010,20 @@ async function changeMicrophone(deviceId = false) {
     return replaceLocalMicrophone(deviceId);
 }
 
+function isRNNoiseSelected() {
+    return (
+        !!localStorageConfig?.audio?.settings?.noise_suppression &&
+        typeof RNNoiseProcessor !== 'undefined' &&
+        RNNoiseProcessor.isSupported()
+    );
+}
+
 function getAudioConstraints(deviceId = null) {
     const audioConstraints = {
         echoCancellation: true,
         autoGainControl: true,
-        noiseSuppression: true,
+        // Browser noise suppression is on unless RNNoise replaces it
+        noiseSuppression: !isRNNoiseSelected(),
     };
     // Safari and Firefox work better with 'ideal' instead of 'exact'
     if (deviceId) {
@@ -3378,7 +3387,18 @@ async function applyNoiseSuppressionToLocalStream(stream) {
         if (!stream.getAudioTracks().includes(track)) track.stop();
     });
     const enabled = localStorageConfig?.audio?.settings?.noise_suppression ?? false;
-    if (!enabled || !previousProcessor) return stream;
+    const useRNNoise = enabled && !!previousProcessor;
+    // RNNoise and browser noise suppression are mutually exclusive: switch the native one before RNNoise reads the mic
+    try {
+        await setMicrophoneNoiseSuppression(stream, !useRNNoise, () => request === noiseSuppressionRequest);
+    } catch (err) {
+        console.warn('Could not update native noise suppression:', err);
+    }
+    if (!useRNNoise) {
+        logNoiseSuppressionState(false, stream.getAudioTracks()[0]);
+        return stream;
+    }
+    if (request !== noiseSuppressionRequest) throw new Error('Noise suppression request superseded');
     const processor = new RNNoiseProcessor(true);
     noiseProcessor = processor;
     const isCurrent = () => request === noiseSuppressionRequest && noiseProcessor === processor;
@@ -3398,15 +3418,7 @@ async function applyNoiseSuppressionToLocalStream(stream) {
             throw new Error('Noise suppression request superseded');
         }
         if (processedStream === stream) return await fallbackNoiseSuppression(stream, processor, isCurrent);
-        try {
-            await setMicrophoneNoiseSuppression(stream.getAudioTracks()[0], false, isCurrent);
-        } catch (err) {
-            console.warn('Could not disable native noise suppression:', err);
-        }
-        if (!isCurrent()) {
-            processor.stopProcessing();
-            throw new Error('Noise suppression request superseded');
-        }
+        logNoiseSuppressionState(true, stream.getAudioTracks()[0]);
         return processedStream;
     } catch (err) {
         if (!isCurrent()) throw err;
@@ -3415,16 +3427,68 @@ async function applyNoiseSuppressionToLocalStream(stream) {
     }
 }
 
-function setMicrophoneNoiseSuppression(track, enabled, isCurrent) {
+// Switch the browser (native) noise suppression of the stream's raw microphone.
+// Updates are chained so rapid toggles always settle on the latest state.
+// Resolves true when the raw microphone of the stream reports the wanted native suppression state.
+function setMicrophoneNoiseSuppression(stream, enabled, isCurrent) {
     const operation = noiseSuppressionConstraints
         .catch(() => {})
         .then(async () => {
-            if (!isCurrent() || !track?.applyConstraints || track.readyState === 'ended') return false;
-            await track.applyConstraints({ ...track.getConstraints?.(), noiseSuppression: enabled });
-            return track.getSettings?.().noiseSuppression === enabled;
+            const track = stream?.getAudioTracks()[0];
+            if (!isCurrent() || !track || track.readyState === 'ended') return false;
+            if (track.getSettings?.().noiseSuppression === enabled) return true;
+            try {
+                await track.applyConstraints?.({ ...track.getConstraints?.(), noiseSuppression: enabled });
+            } catch (err) {
+                console.warn('Browser noise suppression could not be updated live:', err);
+            }
+            const applied = track.getSettings?.().noiseSuppression;
+            if (applied === enabled) return true;
+            if (applied === undefined || !isCurrent()) return false;
+            // Chromium ignores audio processing changes via applyConstraints (crbug.com/390804131): re-capture the mic
+            return recaptureMicrophone(stream, track, enabled);
         });
     noiseSuppressionConstraints = operation;
     return operation;
+}
+
+// Re-capture the microphone with the wanted native noise suppression and swap the new track into the stream in place
+async function recaptureMicrophone(stream, track, enabled) {
+    const deviceId = track.getSettings?.().deviceId;
+    // Chromium hands back the already open source (and its processing) while any track uses it: release them first
+    track.stop();
+    localMediaStream?.getAudioTracks().forEach((t) => {
+        if (deviceId && t.getSettings?.().deviceId === deviceId) t.stop();
+    });
+    const getMic = (id) =>
+        navigator.mediaDevices.getUserMedia({ audio: { ...getAudioConstraints(id), noiseSuppression: enabled } });
+    let newStream;
+    try {
+        newStream = await getMic(deviceId);
+    } catch (err) {
+        console.warn('Microphone re-capture failed, retrying with the default microphone:', err);
+        try {
+            newStream = await getMic();
+        } catch (retryErr) {
+            console.warn('Browser noise suppression could not be updated:', retryErr);
+            return false;
+        }
+    }
+    const newTrack = newStream.getAudioTracks()[0];
+    if (!newTrack) return false;
+    newTrack.enabled = track.enabled;
+    stream.removeTrack(track);
+    stream.addTrack(newTrack);
+    console.log('Re-captured microphone to switch browser noise suppression', newTrack.getSettings?.());
+    return newTrack.getSettings?.().noiseSuppression === enabled;
+}
+
+// Effective RNNoise and browser (native) noise suppression state of the raw microphone track
+function logNoiseSuppressionState(rnnoise, track) {
+    console.log('Noise suppression state', {
+        rnnoise,
+        native: track?.getSettings?.().noiseSuppression ?? 'not reported',
+    });
 }
 
 async function fallbackNoiseSuppression(stream, processor, isCurrent) {
@@ -3432,7 +3496,7 @@ async function fallbackNoiseSuppression(stream, processor, isCurrent) {
     processor.stopProcessing();
     let nativeSuppressionEnabled = false;
     try {
-        nativeSuppressionEnabled = await setMicrophoneNoiseSuppression(stream.getAudioTracks()[0], true, isCurrent);
+        nativeSuppressionEnabled = await setMicrophoneNoiseSuppression(stream, true, isCurrent);
     } catch (error) {
         console.warn('Could not enable native noise suppression:', error);
     }
@@ -3440,6 +3504,7 @@ async function fallbackNoiseSuppression(stream, processor, isCurrent) {
     stream.getAudioTracks().forEach((track) => {
         track.enabled = isAudioStreaming;
     });
+    logNoiseSuppressionState(false, stream.getAudioTracks()[0]);
     localStorageConfig.audio.settings.noise_suppression = false;
     switchNoiseSuppression.checked = false;
     saveLocalStorageConfig();
