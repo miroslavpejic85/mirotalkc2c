@@ -189,7 +189,13 @@ describe('camera background integration', () => {
                 context.localMediaStream = stream;
                 peerStreams.push(stream);
             },
-            localStorageConfig: { video: { settings: { background: { mode: 'off', image: null, custom: false } } } },
+            localStorageConfig: {
+                audio: { devices: { select: { id: null } } },
+                video: {
+                    devices: { select: { id: null } },
+                    settings: { background: { mode: 'off', image: null, custom: false } },
+                },
+            },
             backgroundImagePresets: ['forest', 'beach'].map((name) => ({
                 name,
                 url: `../images/backgrounds/${name}.webp`,
@@ -206,7 +212,10 @@ describe('camera background integration', () => {
             getScreenWithMic: async () => new TestStream([makeTrack('video', 'screen'), audio]),
             getBestUserMedia: async () => new TestStream([makeTrack('video', 'returned-camera'), audio]),
             getVideoConstraints: () => ({ frameRate: 30 }),
+            getAudioConstraints: () => ({}),
             activeVideoDeviceId: null,
+            activeAudioDeviceId: null,
+            audioSource: control(),
             cameraAvailable: true,
             getStreamDeviceId: () => undefined,
             selectDevice: () => false,
@@ -235,6 +244,8 @@ describe('camera background integration', () => {
             'setVideoButtons',
             'refreshVideoConstraints',
             'toggleScreenSharing',
+            'getPreferredVideoDeviceId',
+            'getPreferredAudioDeviceId',
             'handleScreenTrackEnded',
             'getScreenCameraPosition',
             'composeScreenWithCamera',

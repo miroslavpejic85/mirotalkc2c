@@ -259,6 +259,8 @@ describe('screen sharing with the camera bubble', () => {
     let composers;
     let peerStreams;
     let toasts;
+    let mediaRequests;
+    const plain = (value) => JSON.parse(JSON.stringify(value));
 
     beforeEach(() => {
         camera = makeTrack('video', 'camera');
@@ -267,6 +269,7 @@ describe('screen sharing with the camera bubble', () => {
         composers = [];
         peerStreams = [];
         toasts = [];
+        mediaRequests = [];
         class Composer {
             static supported() {
                 return true;
@@ -345,12 +348,26 @@ describe('screen sharing with the camera bubble', () => {
                 context.localMediaStream = stream;
                 peerStreams.push(stream);
             },
-            localStorageConfig: { video: { settings: { screen_camera: 'bottom-right' } } },
+            localStorageConfig: {
+                audio: { devices: { select: { id: 'stored-mic' } } },
+                video: { devices: { select: { id: 'stored-cam' } }, settings: { screen_camera: 'bottom-right' } },
+            },
             saveLocalStorageConfig() {},
             applyNoiseSuppressionWithLogging: async (stream) => stream,
-            getScreenWithMic: async () => new TestStream([screen, audio]),
-            getBestUserMedia: async () => {
+            activeVideoDeviceId: 'external-cam',
+            activeAudioDeviceId: 'external-mic',
+            audioSource: control(),
+            getAudioConstraints: (deviceId) => ({ deviceId }),
+            getVideoConstraints: (deviceId) => ({ deviceId }),
+            getStreamDeviceId: () => undefined,
+            selectDevice: () => false,
+            getScreenWithMic: async (constraints, micConstraints) => {
+                mediaRequests.push({ screen: constraints, mic: micConstraints });
+                return new TestStream([screen, audio]);
+            },
+            getBestUserMedia: async (constraints) => {
                 assert.equal(camera.readyState, 'ended', 'camera released before it is opened again');
+                mediaRequests.push(constraints);
                 return new TestStream([makeTrack('video', 'returned-camera'), audio]);
             },
             className: { videoOn: 'on', videoOff: 'off', screenOn: 'screen', screenOff: 'stop' },
@@ -364,6 +381,8 @@ describe('screen sharing with the camera bubble', () => {
             'prepareCameraBackground',
             'setVideoButtons',
             'toggleScreenSharing',
+            'getPreferredVideoDeviceId',
+            'getPreferredAudioDeviceId',
             'handleScreenTrackEnded',
             'getScreenCameraPosition',
             'setScreenCameraPosition',
@@ -395,6 +414,27 @@ describe('screen sharing with the camera bubble', () => {
         assert.equal(camera.stopped, 1);
         assert.equal(context.localMediaStream.getVideoTracks()[0].id, 'returned-camera');
         assert.equal(context.isScreenStreaming, false);
+    });
+
+    it('returns to the camera and microphone used before sharing, not the defaults', async () => {
+        await context.toggleScreenSharing();
+        await context.toggleScreenSharing();
+        assert.deepEqual(plain(mediaRequests[0].mic), { deviceId: 'external-mic' });
+        assert.deepEqual(plain(mediaRequests[1]), {
+            audio: { deviceId: 'external-mic' },
+            video: { deviceId: 'external-cam' },
+        });
+    });
+
+    it('falls back to the stored devices when the active ones are unknown', async () => {
+        context.activeVideoDeviceId = null;
+        context.activeAudioDeviceId = null;
+        await context.toggleScreenSharing();
+        await context.toggleScreenSharing();
+        assert.deepEqual(plain(mediaRequests[1]), {
+            audio: { deviceId: 'stored-mic' },
+            video: { deviceId: 'stored-cam' },
+        });
     });
 
     it('shares the plain screen when the setting is off', async () => {

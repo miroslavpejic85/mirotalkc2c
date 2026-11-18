@@ -7,7 +7,7 @@
  * @link    Live demo: https://c2c.mirotalk.com
  * @license Open source: AGPLv3 | Commercial/closed source (official channel): https://docs.mirotalk.com/sites/c2c/
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.5.00
+ * @version 1.5.01
  */
 
 const savedTheme = window.localStorage.getItem('home-theme');
@@ -1997,7 +1997,7 @@ async function toggleScreenSharing() {
         if (!isScreenStreaming) {
             isMyAudioActiveBefore = localMediaStream?.getAudioTracks()[0]?.enabled ?? false;
             isMyVideoActiveBefore = localMediaStream?.getVideoTracks()[0]?.enabled ?? false;
-            newStream = await getScreenWithMic(constraints);
+            newStream = await getScreenWithMic(constraints, getAudioConstraints(getPreferredAudioDeviceId()));
             newStream = await applyNoiseSuppressionWithLogging(
                 newStream,
                 '✅ Noise suppression applied to screen sharing audio'
@@ -2010,7 +2010,15 @@ async function toggleScreenSharing() {
                 stopScreenComposer();
                 stopCameraEffects();
             }
-            newStream = await getBestUserMedia(constraints);
+            // Go back to the camera/microphone used before sharing, not the browser defaults
+            newStream = await getBestUserMedia({
+                audio: getAudioConstraints(getPreferredAudioDeviceId()),
+                video: getVideoConstraints(getPreferredVideoDeviceId()),
+            });
+            activeVideoDeviceId = getStreamDeviceId(newStream, 'video') || activeVideoDeviceId;
+            activeAudioDeviceId = getStreamDeviceId(newStream, 'audio') || activeAudioDeviceId;
+            selectDevice(videoSource, activeVideoDeviceId);
+            selectDevice(audioSource, activeAudioDeviceId);
             newStream = await applyNoiseSuppressionWithLogging(
                 newStream,
                 '✅ Noise suppression restored after screen sharing'
@@ -2054,6 +2062,14 @@ async function toggleScreenSharing() {
         console.error('[Error] toggleScreenSharing', err);
         isScreenStreaming = false;
     }
+}
+
+function getPreferredVideoDeviceId() {
+    return activeVideoDeviceId || localStorageConfig.video.devices.select.id || videoSource?.value || null;
+}
+
+function getPreferredAudioDeviceId() {
+    return activeAudioDeviceId || localStorageConfig.audio.devices.select.id || audioSource?.value || null;
 }
 
 /**

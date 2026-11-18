@@ -322,11 +322,11 @@ function notifyBusyDevice(mediaType, err) {
     );
 }
 
-async function getScreenWithMic(constraints) {
+async function getScreenWithMic(constraints, micConstraints = true) {
     const screenStream = await navigator.mediaDevices.getDisplayMedia(constraints);
     let micStream = null;
     try {
-        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: micConstraints });
     } catch (err) {
         console.warn('[Warning] Could not get mic for screen sharing', err);
     }
