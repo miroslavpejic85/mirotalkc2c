@@ -19,9 +19,11 @@ Thanks in advance for your support to make our products safer!
 
 We would like to extend our gratitude to the following individuals for their responsible disclosure of security vulnerabilities:
 
-| Name           | Contact                                |
-| -------------- | -------------------------------------- |
-| `The Raw`      | [GitHub](https://github.com/therawdev) |
-| `Deleted user` | [GitHub](https://github.com/ghost)     |
+| Name            | Contact                                    |
+| --------------- | ------------------------------------------ |
+| `The Raw`       | [GitHub](https://github.com/therawdev)     |
+| `Deleted user`  | [GitHub](https://github.com/ghost)         |
+| `SoronaReports` | [GitHub](https://github.com/SoronaReports) |
+| `Mathiaz`       | [GitHub](https://github.com/Mathiaz)       |
 
 Their dedication to security has contributed to the continuous improvement of our systems, ensuring the safety and privacy of our users and data.
