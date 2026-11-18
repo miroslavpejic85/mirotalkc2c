@@ -59,8 +59,9 @@ class BackgroundEffects {
                 const files = await FilesetResolver.forVisionTasks(`${base}/wasm`);
                 const segmenter = await ImageSegmenter.createFromOptions(files, {
                     baseOptions: {
+                        // General (256x256) model: more accurate edges than the landscape one
                         modelAssetPath:
-                            'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter_landscape/float16/1/selfie_segmenter_landscape.tflite',
+                            'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/1/selfie_segmenter.tflite',
                         delegate: 'GPU',
                     },
                     canvas: this.maskCanvas,
