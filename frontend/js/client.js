@@ -7,7 +7,7 @@
  * @link    Live demo: https://c2c.mirotalk.com
  * @license Open source: AGPLv3 | Commercial/closed source (official channel): https://docs.mirotalk.com/sites/c2c/
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.5.01
+ * @version 1.5.02
  */
 
 const savedTheme = window.localStorage.getItem('home-theme');
@@ -296,7 +296,44 @@ document.addEventListener('DOMContentLoaded', function () {
     handleChatEmojiPicker();
     handleChatFileSharing();
     observeSidePanels();
+    observeButtonsBarReserve();
 });
+
+// On mobile and narrow screens, keep the video above the buttons bar (in room and while waiting) instead of under it
+function observeButtonsBarReserve() {
+    const waitingBar = document.getElementById('waitingOverlayBottom');
+    const bars = [
+        {
+            el: buttonsBar,
+            prop: '--buttons-bar-reserve',
+            className: 'buttons-bar-reserved',
+            offset: (el) => parseFloat(getComputedStyle(el).bottom) || 0,
+        },
+        {
+            el: waitingBar,
+            prop: '--waiting-bar-reserve',
+            className: 'waiting-bar-reserved',
+            offset: (el) => -(parseFloat(getComputedStyle(el).paddingTop) || 0),
+        },
+    ].filter(({ el }) => el);
+    const reserves = new Map();
+    const sync = () => {
+        bars.forEach(({ el, prop, className, offset }) => {
+            const barHeight = isButtonsBarPinned() ? el.offsetHeight : 0;
+            const next = barHeight ? Math.ceil(barHeight + offset(el) + 6) : 0;
+            if (reserves.get(el) === next) return;
+            reserves.set(el, next);
+            document.documentElement.style.setProperty(prop, `${next}px`);
+            document.body.classList.toggle(className, next > 0);
+        });
+    };
+    if (window.ResizeObserver) {
+        const observer = new ResizeObserver(sync);
+        bars.forEach(({ el }) => observer.observe(el));
+    }
+    window.addEventListener('resize', sync);
+    sync();
+}
 
 // Mirror chat/settings visibility to toggle buttons (aria-expanded) and <body> (layout), whatever code path opens them
 function observeSidePanels() {

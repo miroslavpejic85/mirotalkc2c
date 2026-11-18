@@ -545,6 +545,16 @@ body {
     z-index: 1 !important;
 }
 
+/* Mobile: the waiting preview sits above the waiting buttons (--waiting-bar-reserve is set in client.js) */
+body.waiting-bar-reserved .myVideoWrap.waitingFullScreen {
+    height: calc(100vh - var(--waiting-bar-reserve, 0px)) !important;
+    height: calc(100dvh - var(--waiting-bar-reserve, 0px)) !important;
+}
+
+body.waiting-bar-reserved #waitingOverlayBottom {
+    background: none;
+}
+
 .myVideoWrap.waitingFullScreen .videoHeader {
     display: none !important;
 }
@@ -807,6 +817,16 @@ body {
     background: var(--video-stage-bg);
     overflow: hidden;
     transition: width 0.18s ease;
+}
+
+/* Mobile: the video sits above the buttons bar (--buttons-bar-reserve is set in client.js) */
+body.buttons-bar-reserved .remoteVideoWrap {
+    height: calc(100vh - var(--buttons-bar-reserve, 0px));
+    height: calc(100dvh - var(--buttons-bar-reserve, 0px));
+}
+
+body.buttons-bar-reserved .remoteVideoWrap .remoteVideoFooter {
+    bottom: 5px;
 }
 
 /* Resize the video stage so the open side panel never covers it */

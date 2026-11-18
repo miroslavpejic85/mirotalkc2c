@@ -456,8 +456,13 @@ function handleBodyEvents() {
     };
 }
 
+// Mobile devices and narrow screens keep the buttons always visible, with the video sitting above them
+function isButtonsBarPinned() {
+    return isMobileDevice || window.matchMedia('(max-width: 600px)').matches;
+}
+
 function checkElements() {
-    if (buttonsBar.style.display != 'none') {
+    if (!isButtonsBarPinned() && buttonsBar.style.display != 'none') {
         toggleClassElements('videoHeader', false);
         animateCSS(buttonsBar, 'fadeOutDown').then((msg) => {
             elemDisplay(buttonsBar, false);
