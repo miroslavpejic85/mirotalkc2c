@@ -60,8 +60,7 @@ const backgroundEffectsSection = document.getElementById('backgroundEffectsSecti
 const backgroundEffectSelect = document.getElementById('backgroundEffectSelect');
 const backgroundEffectLoading = document.getElementById('backgroundEffectLoading');
 const backgroundImageInput = document.getElementById('backgroundImageInput');
-const backgroundImageBtn = document.getElementById('backgroundImageBtn');
-const backgroundImageName = document.getElementById('backgroundImageName');
+const backgroundImageGrid = document.getElementById('backgroundImageGrid');
 const screenCameraDiv = document.getElementById('screenCameraDiv');
 const screenCameraSelect = document.getElementById('screenCameraSelect');
 const videoQualitySelect = document.getElementById('videoQualitySelect');
@@ -222,7 +221,16 @@ let microphoneAvailable = true;
 let mediaErrors = { audio: null, video: null }; // last getUserMedia error name per device type
 let isRetryingMedia = false;
 let backgroundImage = null;
+let backgroundImageSource = null; // { type: 'preset' | 'custom', url }
+let backgroundCustomImageUrl = null;
 let backgroundEffectsBusy = false;
+const backgroundImagePresets = ['forest', 'beach', 'mountains', 'lake', 'aurora', 'abstract'].map((name) => ({
+    name,
+    url: `../images/backgrounds/${name}.webp`,
+}));
+const cameraBackgroundDB = typeof indexedDB !== 'undefined' ? new ImageStore('c2cCameraBackground') : null;
+const CAMERA_BG_CUSTOM_KEY = 'custom';
+let backgroundRestored = false;
 let localMediaStream = null;
 let remoteMediaStream = null;
 let camera = 'user';
@@ -724,6 +732,7 @@ async function setupLocalMedia(callback, errorBack) {
         const originalStream = stream;
         stream = await applyNoiseSuppressionToLocalStream(stream);
         if (hasVideoTrack(stream)) camera = detectCameraFacingMode(stream);
+        await restoreCameraBackground();
         stream = await prepareCameraBackground(stream);
 
         // Check if noise suppression was applied and if we have peer connections
@@ -1460,20 +1469,15 @@ function handleEvents() {
     backgroundEffectsSection.hidden = !BackgroundEffects.supported();
     backgroundEffectSelect.onchange = () => {
         updateBackgroundControls();
-        if (backgroundEffectSelect.value === 'image' && !backgroundImage) {
-            backgroundImageInput.click();
-            return;
-        }
         applyCameraBackground();
     };
-    backgroundImageBtn.onclick = () => backgroundImageInput.click();
-    backgroundImageInput.onchange = () => loadBackgroundImage(backgroundImageInput.files[0]);
-    backgroundImageInput.oncancel = () => {
-        if (!backgroundImage) {
-            backgroundEffectSelect.value = cameraEffects?.mode || 'off';
-            updateBackgroundControls();
-        }
+    backgroundImageInput.onchange = () => {
+        const [file] = backgroundImageInput.files || [];
+        // Reset so picking the same file again still fires "change"
+        backgroundImageInput.value = '';
+        loadBackgroundImage(file);
     };
+    createBackgroundImageGrid();
     updateBackgroundControls();
     videoQualitySelect.onchange = (e) => {
         refreshVideoConstraints();
@@ -1658,17 +1662,105 @@ function toggleSettings() {
 }
 
 function updateBackgroundControls() {
-    const imageMode = backgroundEffectSelect.value === 'image';
-    backgroundEffectSelect.disabled = backgroundEffectsBusy || isScreenStreaming || !cameraAvailable;
-    backgroundImageBtn.disabled = backgroundEffectsBusy || isScreenStreaming || !cameraAvailable;
-    backgroundImageBtn.hidden = !imageMode;
-    backgroundImageName.hidden = !imageMode || !backgroundImage;
+    const disabled = backgroundEffectsBusy || isScreenStreaming || !cameraAvailable;
+    backgroundEffectSelect.disabled = disabled;
+    updateBackgroundImageGrid(disabled);
     backgroundEffectLoading.hidden = !backgroundEffectsBusy;
     backgroundEffectsSection.setAttribute('aria-busy', String(backgroundEffectsBusy));
     videoSource.disabled = backgroundEffectsBusy || isScreenStreaming || !cameraAvailable;
     swapCameraBtn.disabled = backgroundEffectsBusy || isScreenStreaming || !cameraAvailable;
     screenShareBtn.disabled = backgroundEffectsBusy;
     initScreenShareBtn.disabled = backgroundEffectsBusy;
+}
+
+// Image mode shows Upload, the last uploaded image (if any) and the bundled presets
+function createBackgroundImageGrid() {
+    backgroundImageGrid.replaceChildren();
+    const createCard = (type, label, url) => {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'camera-bg-card';
+        card.dataset.bgType = type;
+        if (url) card.dataset.bgValue = url;
+        card.title = label;
+        card.setAttribute('aria-label', label);
+        card.setAttribute('aria-pressed', 'false');
+        backgroundImageGrid.appendChild(card);
+        return card;
+    };
+    const appendImage = (card, url) => {
+        const img = document.createElement('img');
+        img.alt = '';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        if (url) img.src = url;
+        card.appendChild(img);
+    };
+
+    const uploadCard = createCard('upload', 'Upload image');
+    uploadCard.innerHTML = '<i class="fas fa-upload" aria-hidden="true"></i><span>Upload</span>';
+    uploadCard.onclick = () => backgroundImageInput.click();
+
+    const customCard = createCard('custom', 'Uploaded image');
+    customCard.hidden = true;
+    appendImage(customCard);
+    customCard.onclick = () => {
+        if (backgroundCustomImageUrl) selectBackgroundImage({ type: 'custom', url: backgroundCustomImageUrl });
+    };
+
+    for (const { name, url } of backgroundImagePresets) {
+        const card = createCard('preset', `${name.charAt(0).toUpperCase()}${name.slice(1)} background`, url);
+        appendImage(card, url);
+        card.onclick = () => selectBackgroundImage({ type: 'preset', url });
+    }
+
+    backgroundImageGrid.ondragover = (event) => {
+        event.preventDefault();
+        backgroundImageGrid.classList.add('drag-over');
+    };
+    backgroundImageGrid.ondragleave = () => backgroundImageGrid.classList.remove('drag-over');
+    backgroundImageGrid.ondrop = (event) => {
+        event.preventDefault();
+        backgroundImageGrid.classList.remove('drag-over');
+        const [file] = event.dataTransfer?.files || [];
+        if (file && !backgroundEffectSelect.disabled) loadBackgroundImage(file);
+    };
+}
+
+function updateBackgroundImageGrid(disabled) {
+    const imageMode = backgroundEffectSelect.value === 'image';
+    backgroundImageGrid.hidden = !imageMode;
+    for (const card of backgroundImageGrid.querySelectorAll('.camera-bg-card')) {
+        const type = card.dataset.bgType;
+        if (type === 'custom') {
+            card.hidden = !backgroundCustomImageUrl;
+            const img = card.querySelector('img');
+            if (img && backgroundCustomImageUrl && img.getAttribute('src') !== backgroundCustomImageUrl) {
+                img.src = backgroundCustomImageUrl;
+            }
+        }
+        const source = backgroundImageSource;
+        const active =
+            imageMode &&
+            !!backgroundImage &&
+            source?.type === type &&
+            (type === 'custom' || card.dataset.bgValue === source.url);
+        card.classList.toggle('active', active);
+        card.setAttribute('aria-pressed', String(active));
+        card.disabled = disabled;
+    }
+}
+
+// Image mode without a picked image is effectively Off
+function getBackgroundMode() {
+    const mode = backgroundEffectSelect.value;
+    return mode === 'image' && !backgroundImage ? 'off' : mode;
+}
+
+function isBackgroundLockedByRecording() {
+    if (!recording || !recording.isStreamRecording()) return false;
+    popupMessage('toast', 'Recording', 'Cannot change camera background while recording', 'top', null, 'warning');
+    return true;
 }
 
 function stopCameraEffects(stopCamera = true) {
@@ -1699,7 +1791,7 @@ function handleBackgroundError(processor, error) {
 
 async function prepareCameraBackground(stream) {
     const track = stream.getVideoTracks()[0];
-    const mode = backgroundEffectSelect.value;
+    const mode = getBackgroundMode();
     if (!track || mode === 'off' || !BackgroundEffects.supported()) return stream;
     backgroundEffectsBusy = true;
     updateBackgroundControls();
@@ -1707,8 +1799,10 @@ async function prepareCameraBackground(stream) {
     processor.cameraTrack = track;
     cameraEffects = processor;
     try {
-        await processor.setMode(mode, backgroundImage);
+        // Start first: the worker engine passes frames through until it receives the background
         const processed = await processor.start(stream);
+        await processor.setMode(mode, backgroundImage);
+        if (processor.stopped) throw new Error('Camera processing stopped');
         if (cameraEffects !== processor) return stream;
         processor.outputTrack.enabled = track.enabled;
         return processed;
@@ -1723,30 +1817,26 @@ async function prepareCameraBackground(stream) {
 
 async function applyCameraBackground() {
     if (backgroundEffectsBusy || isScreenStreaming || !hasVideoTrack(localMediaStream)) return;
-    if (recording && recording.isStreamRecording()) {
+    if (isBackgroundLockedByRecording()) {
         backgroundEffectSelect.value = cameraEffects?.mode || 'off';
         updateBackgroundControls();
-        return popupMessage(
-            'toast',
-            'Recording',
-            'Cannot change camera background while recording',
-            'top',
-            null,
-            'warning'
-        );
+        return;
     }
     const stream = localMediaStream;
     const processor = cameraEffects;
+    const mode = getBackgroundMode();
+    // Remember the requested choice, not a later failure fallback, so a flaky network keeps the preference
+    saveCameraBackground();
     backgroundEffectsBusy = true;
     updateBackgroundControls();
     try {
-        if (backgroundEffectSelect.value === 'off') {
+        if (mode === 'off') {
             if (processor) {
                 attachCameraBackgroundTrack(processor.cameraTrack);
                 stopCameraEffects(false);
             }
         } else if (processor) {
-            await processor.setMode(backgroundEffectSelect.value, backgroundImage);
+            await processor.setMode(mode, backgroundImage);
         } else {
             const processed = await prepareCameraBackground(stream);
             if (localMediaStream === stream && !isScreenStreaming) {
@@ -1761,39 +1851,102 @@ async function applyCameraBackground() {
     }
 }
 
-async function loadBackgroundImage(file) {
-    if (!file || backgroundEffectsBusy || isScreenStreaming) return;
-    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 10 * 1024 * 1024) {
-        backgroundEffectSelect.value = cameraEffects?.mode || 'off';
-        backgroundImageInput.value = '';
-        updateBackgroundControls();
-        return popupMessage('warning', 'Camera background', 'Choose a PNG, JPEG or WebP image up to 10 MB.');
-    }
+function loadBackgroundImageElement(url) {
+    return new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error('Unable to load background image'));
+        image.src = url;
+    });
+}
+
+// Load and apply a background image ({ type: 'preset' | 'custom', url }), false keeps the current one
+async function selectBackgroundImage(source) {
+    if (backgroundEffectsBusy || isScreenStreaming || isBackgroundLockedByRecording()) return false;
     backgroundEffectsBusy = true;
     updateBackgroundControls();
-    const url = URL.createObjectURL(file);
     try {
-        const selectedImage = new Image();
-        await new Promise((resolve, reject) => {
-            selectedImage.onload = resolve;
-            selectedImage.onerror = () => reject(new Error('Unable to load background image'));
-            selectedImage.src = url;
-        });
-        backgroundImage = selectedImage;
-        backgroundImageName.textContent = file.name;
-        backgroundImageName.title = file.name;
+        backgroundImage = await loadBackgroundImageElement(source.url);
+        backgroundImageSource = { type: source.type, url: source.url };
         backgroundEffectSelect.value = 'image';
     } catch (error) {
         console.error('Camera background image', error);
-        backgroundEffectSelect.value = cameraEffects?.mode || 'off';
         popupMessage('warning', 'Camera background', 'Unable to load background image.');
+        return false;
     } finally {
-        URL.revokeObjectURL(url);
-        backgroundImageInput.value = '';
         backgroundEffectsBusy = false;
         updateBackgroundControls();
     }
     await applyCameraBackground();
+    return true;
+}
+
+async function loadBackgroundImage(file) {
+    if (!file || backgroundEffectsBusy || isScreenStreaming) return;
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 10 * 1024 * 1024) {
+        return popupMessage('warning', 'Camera background', 'Choose a PNG, JPEG or WebP image up to 10 MB.');
+    }
+    const url = URL.createObjectURL(file);
+    if (!(await selectBackgroundImage({ type: 'custom', url }))) return URL.revokeObjectURL(url);
+    // Keep the last upload as a tile, so it can be picked again after a preset
+    if (backgroundCustomImageUrl && backgroundCustomImageUrl !== url) URL.revokeObjectURL(backgroundCustomImageUrl);
+    backgroundCustomImageUrl = url;
+    updateBackgroundControls();
+    try {
+        await cameraBackgroundDB?.put(CAMERA_BG_CUSTOM_KEY, file);
+        localStorageConfig.video.settings.background.custom = true;
+        saveLocalStorageConfig();
+    } catch (error) {
+        console.warn('Camera background: unable to save the image in this browser', error);
+    }
+}
+
+function saveCameraBackground() {
+    const source = backgroundImageSource;
+    const saved = localStorageConfig.video.settings.background;
+    saved.mode = getBackgroundMode();
+    if (source?.type === 'preset') saved.image = { type: 'preset', url: source.url };
+    else if (source?.type === 'custom') saved.image = { type: 'custom' };
+    saveLocalStorageConfig();
+}
+
+// Restore the remembered background before the first camera starts, so it comes up with it
+async function restoreCameraBackground() {
+    if (backgroundRestored) return;
+    backgroundRestored = true;
+    const saved = localStorageConfig.video.settings.background;
+    if (!saved || !BackgroundEffects.supported()) return;
+
+    if (saved.custom) {
+        try {
+            const blob = await cameraBackgroundDB?.get(CAMERA_BG_CUSTOM_KEY);
+            if (blob && typeof blob.type === 'string' && blob.type.startsWith('image/')) {
+                backgroundCustomImageUrl = URL.createObjectURL(blob);
+            }
+        } catch (error) {
+            console.warn('Camera background: unable to read the saved image', error);
+        }
+    }
+
+    const { image } = saved;
+    let source = null;
+    if (image?.type === 'preset' && backgroundImagePresets.some((preset) => preset.url === image.url)) {
+        source = { type: 'preset', url: image.url };
+    } else if (image?.type === 'custom' && backgroundCustomImageUrl) {
+        source = { type: 'custom', url: backgroundCustomImageUrl };
+    }
+
+    let mode = ['blur', 'image'].includes(saved.mode) ? saved.mode : 'off';
+    if (source) {
+        try {
+            backgroundImage = await loadBackgroundImageElement(source.url);
+            backgroundImageSource = source;
+        } catch (error) {
+            console.warn('Camera background: unable to restore the saved image', error);
+        }
+    }
+    if (mode === 'image' && !backgroundImage) mode = 'off';
+    backgroundEffectSelect.value = mode;
 }
 
 function swapCamera() {

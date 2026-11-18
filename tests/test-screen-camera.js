@@ -311,9 +311,8 @@ describe('screen sharing with the camera bubble', () => {
             backgroundEffectSelect: { value: 'off' },
             backgroundEffectsSection: control(),
             backgroundEffectLoading: control(),
-            backgroundImageBtn: control(),
             backgroundImageInput: control(),
-            backgroundImageName: control(),
+            backgroundImageGrid: { hidden: true, querySelectorAll: () => [] },
             videoSource: control(),
             swapCameraBtn: control(),
             screenShareBtn: control(),
@@ -358,6 +357,8 @@ describe('screen sharing with the camera bubble', () => {
         });
         loadFunctions(context, [
             'updateBackgroundControls',
+            'updateBackgroundImageGrid',
+            'getBackgroundMode',
             'stopCameraEffects',
             'handleBackgroundError',
             'prepareCameraBackground',

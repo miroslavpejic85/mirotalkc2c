@@ -55,6 +55,13 @@ class LocalStorage {
                     best_quality: false,
                     aspect_ratio: false,
                     screen_camera: 'off', // camera bubble over the shared screen: off | bottom-right | bottom-left | top-right | top-left
+                    // camera background: mode off | blur | image, image { type: 'preset', url } | { type: 'custom' } | null,
+                    // custom: an uploaded image is kept in IndexedDB (ImageStore)
+                    background: {
+                        mode: 'off',
+                        image: null,
+                        custom: false,
+                    },
                 },
             },
             chat: {
@@ -107,5 +114,48 @@ class LocalStorage {
                   : defaults[key];
         }
         return result;
+    }
+}
+
+// Minimal IndexedDB blob store: images stay in this browser and are never uploaded
+class ImageStore {
+    constructor(dbName, storeName = 'images') {
+        this.dbName = dbName;
+        this.storeName = storeName;
+    }
+
+    open() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(this.dbName, 1);
+            request.onupgradeneeded = () => {
+                const db = request.result;
+                if (!db.objectStoreNames.contains(this.storeName)) db.createObjectStore(this.storeName);
+            };
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    async run(mode, action) {
+        const db = await this.open();
+        try {
+            return await new Promise((resolve, reject) => {
+                const tx = db.transaction(this.storeName, mode);
+                const request = action(tx.objectStore(this.storeName));
+                tx.oncomplete = () => resolve(request?.result);
+                tx.onerror = () => reject(tx.error);
+                tx.onabort = () => reject(tx.error);
+            });
+        } finally {
+            db.close();
+        }
+    }
+
+    get(key) {
+        return this.run('readonly', (store) => store.get(key));
+    }
+
+    put(key, blob) {
+        return this.run('readwrite', (store) => store.put(blob, key));
     }
 }
