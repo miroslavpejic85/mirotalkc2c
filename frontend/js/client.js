@@ -7,7 +7,7 @@
  * @link    Live demo: https://c2c.mirotalk.com
  * @license Open source: AGPLv3 | Commercial/closed source (official channel): https://docs.mirotalk.com/sites/c2c/
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.5.04
+ * @version 1.5.05
  */
 
 const savedTheme = window.localStorage.getItem('home-theme');
@@ -69,6 +69,7 @@ const videoFpsSelect = document.getElementById('videoFpsSelect');
 const maxVideoQualityDiv = document.getElementById('maxVideoQualityDiv');
 const pushToTalkDiv = document.getElementById('pushToTalkDiv');
 const noiseSuppressionDiv = document.getElementById('noiseSuppressionDiv');
+const switchButtonsBarPinned = document.getElementById('switchButtonsBarPinned');
 const switchLightTheme = document.getElementById('switchLightTheme');
 const switchConvertEmoticons = document.getElementById('switchConvertEmoticons');
 const switchNoiseSuppression = document.getElementById('switchNoiseSuppression');
@@ -314,12 +315,13 @@ document.addEventListener('DOMContentLoaded', function () {
     initClient();
     handleChatEmojiPicker();
     handleChatFileSharing();
+    handleBodyEvents();
     observeSidePanels();
     observeButtonsBarReserve();
 });
 
 // On mobile and narrow screens, keep the video above the buttons bar (in room and while waiting) instead of under it
-function observeButtonsBarReserve() {
+function syncButtonsBarReserve() {
     const waitingBar = document.getElementById('waitingOverlayBottom');
     const bars = [
         {
@@ -335,23 +337,26 @@ function observeButtonsBarReserve() {
             offset: (el) => -(parseFloat(getComputedStyle(el).paddingTop) || 0),
         },
     ].filter(({ el }) => el);
-    const reserves = new Map();
-    const sync = () => {
-        bars.forEach(({ el, prop, className, offset }) => {
-            const barHeight = isButtonsBarPinned() ? el.offsetHeight : 0;
-            const next = barHeight ? Math.ceil(barHeight + offset(el) + 6) : 0;
-            if (reserves.get(el) === next) return;
-            reserves.set(el, next);
-            document.documentElement.style.setProperty(prop, `${next}px`);
-            document.body.classList.toggle(className, next > 0);
-        });
-    };
+    bars.forEach(({ el, prop, className, offset }) => {
+        const barHeight = isButtonsBarPinned() ? el.offsetHeight : 0;
+        const next = barHeight ? Math.ceil(barHeight + offset(el) + 6) : 0;
+        const value = `${next}px`;
+        if (document.documentElement.style.getPropertyValue(prop) !== value) {
+            document.documentElement.style.setProperty(prop, value);
+        }
+        document.body.classList.toggle(className, next > 0);
+    });
+}
+
+function observeButtonsBarReserve() {
+    const waitingBar = document.getElementById('waitingOverlayBottom');
+    const bars = [buttonsBar, waitingBar].filter((el) => el);
     if (window.ResizeObserver) {
-        const observer = new ResizeObserver(sync);
-        bars.forEach(({ el }) => observer.observe(el));
+        const observer = new ResizeObserver(syncButtonsBarReserve);
+        bars.forEach((el) => observer.observe(el));
     }
-    window.addEventListener('resize', sync);
-    sync();
+    window.addEventListener('resize', syncButtonsBarReserve);
+    syncButtonsBarReserve();
 }
 
 // Mirror chat/settings visibility to toggle buttons (aria-expanded) and <body> (layout), whatever code path opens them
@@ -533,8 +538,6 @@ function handleAddPeer(config) {
         elemDisplay(waitingDivContainer, false);
         if (window.myVideoWrap) window.myVideoWrap.classList.remove('waitingFullScreen');
     }
-    handleBodyEvents();
-
     if (chatInput.value !== '') {
         setTimeout(() => {
             sendMessage();
@@ -1549,6 +1552,33 @@ function handleEvents() {
         const theme = e.currentTarget.checked ? 'light' : 'dark';
         document.documentElement.dataset.theme = theme;
         window.localStorage.setItem('home-theme', theme);
+        playSound('switch');
+    };
+    switchButtonsBarPinned.onchange = (e) => {
+        localStorageConfig.video.settings.buttons_bar_pinned = e.currentTarget.checked;
+        saveLocalStorageConfig();
+        const waitingBar = document.getElementById('waitingOverlayBottom');
+        const isWaiting = waitingDivContainer.style.display !== 'none' && waitingDivContainer.style.display !== '';
+        if (isButtonsBarPinned()) {
+            if (isWaiting && waitingBar.style.display === 'none') {
+                elemDisplay(waitingBar, true, 'flex');
+                animateCSS(waitingBar, 'fadeInUp');
+            } else if (buttonsBar.style.display === 'none' && !isWaiting) {
+                toggleClassElements('videoHeader', true);
+                elemDisplay(buttonsBar, true, 'flex');
+                animateCSS(buttonsBar, 'fadeInUp');
+            }
+        } else if (isWaiting && waitingBar.style.display !== 'none') {
+            animateCSS(waitingBar, 'fadeOutDown').then(() => {
+                elemDisplay(waitingBar, false);
+            });
+        } else if (buttonsBar.style.display !== 'none' && buttonsBar.style.display !== '') {
+            toggleClassElements('videoHeader', false);
+            animateCSS(buttonsBar, 'fadeOutDown').then(() => {
+                elemDisplay(buttonsBar, false);
+            });
+        }
+        syncButtonsBarReserve();
         playSound('switch');
     };
     switchConvertEmoticons.onchange = (e) => {
@@ -2712,6 +2742,7 @@ function loadLocalStorageConfig() {
         audioOutputSource.selectedIndex = localStorageConfig?.speaker?.devices?.select?.index ?? 0;
     }
     switchNoiseSuppression.checked = localStorageConfig?.audio?.settings?.noise_suppression ?? false;
+    switchButtonsBarPinned.checked = isButtonsBarPinned();
     switchConvertEmoticons.checked = localStorageConfig.chat.settings.convert_emoticons;
     switchMaxVideoQuality.checked = localStorageConfig.video.settings.best_quality;
     switchKeepAspectRatio.checked = localStorageConfig.video.settings.aspect_ratio;

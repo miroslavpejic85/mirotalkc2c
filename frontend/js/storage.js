@@ -54,6 +54,7 @@ class LocalStorage {
                     fps_index: 0,
                     best_quality: false,
                     aspect_ratio: false,
+                    buttons_bar_pinned: null,
                     screen_camera: 'off', // camera bubble over the shared screen: off | bottom-right | bottom-left | top-right | top-left
                     // camera background: mode off | blur | image, image { type: 'preset', url } | { type: 'custom' } | null,
                     // custom: an uploaded image is kept in IndexedDB (ImageStore)

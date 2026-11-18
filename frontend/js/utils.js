@@ -447,26 +447,41 @@ async function shareRoom() {
 
 function handleBodyEvents() {
     checkElements();
-    document.body.onmousemove = () => {
-        if (buttonsBar.style.display == 'none' && waitingDivContainer.style.display == 'none') {
+    const waitingBar = document.getElementById('waitingOverlayBottom');
+    const revealButtons = () => {
+        const isWaiting = waitingDivContainer.style.display !== 'none' && waitingDivContainer.style.display !== '';
+        if (isWaiting && waitingBar.style.display === 'none') {
+            elemDisplay(waitingBar, true, 'flex');
+            animateCSS(waitingBar, 'fadeInUp');
+            syncButtonsBarReserve();
+        } else if (buttonsBar.style.display === 'none' && !isWaiting) {
             toggleClassElements('videoHeader', true);
             elemDisplay(buttonsBar, true, 'flex');
             animateCSS(buttonsBar, 'fadeInUp');
+            syncButtonsBarReserve();
         }
     };
+    document.body.onmousemove = revealButtons;
+    document.body.addEventListener('pointerdown', revealButtons);
 }
 
-// Mobile devices and narrow screens keep the buttons always visible, with the video sitting above them
+// Mobile devices and narrow screens keep the buttons visible by default; users can override this in settings
 function isButtonsBarPinned() {
-    return isMobileDevice || window.matchMedia('(max-width: 600px)').matches;
+    const pinnedSetting = localStorageConfig?.video?.settings?.buttons_bar_pinned;
+    return pinnedSetting ?? (isMobileDevice || window.matchMedia('(max-width: 600px)').matches);
 }
 
 function checkElements() {
-    if (!isButtonsBarPinned() && buttonsBar.style.display != 'none') {
-        toggleClassElements('videoHeader', false);
-        animateCSS(buttonsBar, 'fadeOutDown').then((msg) => {
-            elemDisplay(buttonsBar, false);
-        });
+    if (!isButtonsBarPinned()) {
+        const waitingBar = document.getElementById('waitingOverlayBottom');
+        const isWaiting = waitingDivContainer.style.display !== 'none' && waitingDivContainer.style.display !== '';
+        const bar = isWaiting ? waitingBar : buttonsBar;
+        if (bar && getComputedStyle(bar).display !== 'none') {
+            if (!isWaiting) toggleClassElements('videoHeader', false);
+            animateCSS(bar, 'fadeOutDown').then(() => {
+                elemDisplay(bar, false);
+            });
+        }
     }
     setTimeout(checkElements, 20000);
 }
