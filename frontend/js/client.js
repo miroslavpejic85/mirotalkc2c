@@ -7,7 +7,7 @@
  * @link    Live demo: https://c2c.mirotalk.com
  * @license Open source: AGPLv3 | Commercial/closed source (official channel): https://docs.mirotalk.com/sites/c2c/
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.5.03
+ * @version 1.5.04
  */
 
 const savedTheme = window.localStorage.getItem('home-theme');
@@ -224,7 +224,26 @@ let backgroundImage = null;
 let backgroundImageSource = null; // { type: 'preset' | 'custom', url }
 let backgroundCustomImageUrl = null;
 let backgroundEffectsBusy = false;
-const backgroundImagePresets = ['forest', 'beach', 'mountains', 'lake', 'aurora', 'abstract'].map((name) => ({
+const backgroundImagePresets = [
+    'forest',
+    'beach',
+    'mountains',
+    'lake',
+    'aurora',
+    'abstract',
+    'white-room',
+    'living-room',
+    'bookshelf',
+    'lounge',
+    'loft',
+    'space-office',
+    'savanna',
+    'autumn',
+    'cabin',
+    'pier',
+    'gradient',
+    'mirotalk',
+].map((name) => ({
     name,
     url: `../images/backgrounds/${name}.webp`,
 }));
@@ -1746,7 +1765,8 @@ function createBackgroundImageGrid() {
     };
 
     for (const { name, url } of backgroundImagePresets) {
-        const card = createCard('preset', `${name.charAt(0).toUpperCase()}${name.slice(1)} background`, url);
+        const label = name.replace(/-/g, ' ');
+        const card = createCard('preset', `${label.charAt(0).toUpperCase()}${label.slice(1)} background`, url);
         appendImage(card, url);
         card.onclick = () => selectBackgroundImage({ type: 'preset', url });
     }
