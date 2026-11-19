@@ -1227,6 +1227,47 @@ video::-webkit-media-controls {
     font-size: 0.68rem;
 }
 
+/* Live camera preview (full-screen settings only) */
+.settings-video-preview {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    max-height: 40vh;
+    margin-bottom: 13px;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #000000;
+}
+
+.settings-video-preview[hidden] {
+    display: none;
+}
+
+.settings-video-preview video {
+    display: block;
+    border-radius: 0;
+    cursor: default;
+}
+
+.settings-video-preview video:hover {
+    filter: none;
+}
+
+.settings-video-preview-off {
+    position: absolute;
+    inset: 0;
+    display: none;
+    place-items: center;
+    font-size: 1.6rem;
+    color: var(--panel-text-muted);
+    background: #000000;
+}
+
+.settings-video-preview.is-off .settings-video-preview-off {
+    display: grid;
+}
+
 /* Fields (label + select) */
 .settings-field {
     margin-bottom: 13px;

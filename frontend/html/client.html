@@ -224,6 +224,17 @@
             <div class="settings-content">
                 <div class="settings-section">
                     <div class="settings-section-title"><i class="fas fa-video"></i> Video</div>
+                    <div id="settingsVideoPreview" class="settings-video-preview" hidden>
+                        <video
+                            id="settingsVideoPreviewVideo"
+                            autoplay
+                            muted
+                            playsinline
+                            disablepictureinpicture
+                            aria-label="Camera preview"
+                        ></video>
+                        <i class="fas fa-video-slash settings-video-preview-off" aria-hidden="true"></i>
+                    </div>
                     <div class="settings-field">
                         <label for="videoSource">Camera</label>
                         <select id="videoSource"></select>

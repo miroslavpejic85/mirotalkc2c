@@ -7,7 +7,7 @@
  * @link    Live demo: https://c2c.mirotalk.com
  * @license Open source: AGPLv3 | Commercial/closed source (official channel): https://docs.mirotalk.com/sites/c2c/
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.5.06
+ * @version 1.5.07
  */
 
 const savedTheme = window.localStorage.getItem('home-theme');
@@ -51,6 +51,9 @@ const screenShareBtn = document.getElementById('screenShareBtn');
 const leaveBtn = document.getElementById('leaveBtn');
 const settings = document.getElementById('settings');
 const settingsCloseBtn = document.getElementById('settingsCloseBtn');
+const settingsVideoPreview = document.getElementById('settingsVideoPreview');
+const settingsVideoPreviewVideo = document.getElementById('settingsVideoPreviewVideo');
+const settingsFullScreenQuery = window.matchMedia('(max-width: 768px)');
 const audioSource = document.getElementById('audioSource');
 const audioOutputDiv = document.getElementById('audioOutputDiv');
 const audioOutputSource = document.getElementById('audioOutputSource');
@@ -763,6 +766,7 @@ function handleRemovePeer(config) {
         elemDisplay(buttonsBar, false);
         elemDisplay(settings, false);
         elemDisplay(chat, false);
+        syncSettingsVideoPreview();
         if (window.myVideoWrap) window.myVideoWrap.classList.add('waitingFullScreen');
     }
     playSound('leave');
@@ -1149,7 +1153,9 @@ function setLocalMedia(stream) {
         handlePictureInPicture(myVideoPiPBtn, myLocalMedia);
         handleVideoRotate(myVideoRotateBtn, myLocalMedia);
         handleFullScreen(myFullScreenBtn, myVideoWrap, myLocalMedia);
+        watchSettingsVideoPreview(myLocalMedia);
     }
+    syncSettingsVideoPreview();
     setPeerVideoAvatarImgName(myVideoAvatarImage, peerName);
 
     // Tooltips
@@ -1506,6 +1512,7 @@ function handleEvents() {
     settingsCloseBtn.onclick = () => {
         toggleSettings();
     };
+    settingsFullScreenQuery.addEventListener('change', syncSettingsVideoPreview);
     audioSource.onchange = (e) => {
         setLocalStorageAudioConfig(e.target);
         saveLocalStorageConfig();
@@ -1726,6 +1733,7 @@ function openSidePanel(panel, mode = 'block') {
     if (isSidePanelOpen(other)) elemDisplay(other, false);
     elemDisplay(panel, true, mode);
     animateCSS(panel, 'fadeInRight');
+    syncSettingsVideoPreview();
 }
 
 function closeSidePanel(panel) {
@@ -1736,6 +1744,7 @@ function closeSidePanel(panel) {
     animateCSS(panel, 'fadeOutRight').then(() => {
         delete panel.dataset.animating;
         elemDisplay(panel, false);
+        syncSettingsVideoPreview();
     });
 }
 
@@ -1745,6 +1754,32 @@ function toggleSidePanel(panel, mode = 'block') {
 
 function toggleSettings() {
     toggleSidePanel(settings);
+}
+
+// Mirror my own video (with background effects) above the camera select when settings covers the screen
+function syncSettingsVideoPreview() {
+    const source = window.myVideo;
+    const stream = source instanceof HTMLVideoElement ? source.srcObject : null;
+    const videoTrack = stream?.getVideoTracks?.()[0];
+    const show = !!videoTrack && settingsFullScreenQuery.matches && isSidePanelOpen(settings);
+    settingsVideoPreview.hidden = !show;
+    if (!show) {
+        if (settingsVideoPreviewVideo.srcObject) settingsVideoPreviewVideo.srcObject = null;
+        return;
+    }
+    if (settingsVideoPreviewVideo.srcObject !== stream) {
+        settingsVideoPreviewVideo.srcObject = stream;
+        settingsVideoPreviewVideo.play().catch(() => {});
+    }
+    settingsVideoPreviewVideo.classList.toggle('mirror', source.classList.contains('mirror'));
+    settingsVideoPreviewVideo.style.objectFit = isScreenStreaming ? 'contain' : 'cover';
+    settingsVideoPreview.classList.toggle('is-off', !videoTrack.enabled);
+}
+
+function watchSettingsVideoPreview(video) {
+    // Assigning srcObject (camera swap, background effect) fires loadstart; mirroring toggles the class
+    video.addEventListener('loadstart', syncSettingsVideoPreview);
+    new MutationObserver(syncSettingsVideoPreview).observe(video, { attributes: true, attributeFilter: ['class'] });
 }
 
 function updateBackgroundControls() {
@@ -2821,6 +2856,7 @@ function setLocalVideoStatus(active = true, e = false) {
     localStorageConfig.video.init.active = active;
     saveLocalStorageConfig();
     elemDisable(videoQualitySelect, !active || localStorageConfig.video.settings.best_quality || !cameraAvailable);
+    syncSettingsVideoPreview();
 }
 
 function setLocalScreenStatus(active = false, e = false) {
