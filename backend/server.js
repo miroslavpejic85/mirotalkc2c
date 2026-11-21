@@ -7,7 +7,7 @@
  * @link    Live demo: https://c2c.mirotalk.com
  * @license Open source: AGPLv3 | Commercial/closed source (official channel): https://docs.mirotalk.com/sites/c2c/
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.5.07
+ * @version 1.5.08
  */
 
 require('dotenv').config();
@@ -553,6 +553,19 @@ io.on('error', (error) => {
     log.error('Socket.IO error:', error);
 });
 
+function isPlainObject(value) {
+    return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+// Safety net: a single bad packet must not take down every room
+process.on('uncaughtException', (error) => {
+    log.error('Uncaught exception:', error);
+});
+
+process.on('unhandledRejection', (reason) => {
+    log.error('Unhandled rejection:', reason);
+});
+
 // Realtime channel authorization: the OIDC session was loaded on the handshake (io.engine.use above)
 io.use((socket, next) => {
     if (!OIDC.enabled) return next();
@@ -571,6 +584,10 @@ io.sockets.on('connect', (socket) => {
     sockets[socket.id] = socket;
 
     socket.on('join', (cfg) => {
+        if (!isPlainObject(cfg)) {
+            return log.warn('[' + socket.id + '] join blocked: invalid payload');
+        }
+
         const config = checkXSS(cfg);
 
         log.debug('[' + socket.id + '] join ', config);
@@ -593,7 +610,9 @@ io.sockets.on('connect', (socket) => {
         if (!(channel in channels)) channels[channel] = {};
         if (!(channel in peers)) peers[channel] = {};
 
-        peers[channel][socket.id] = config.peerInfo;
+        const peerInfo = isPlainObject(config.peerInfo) ? config.peerInfo : {};
+
+        peers[channel][socket.id] = peerInfo;
 
         const activeRooms = getActiveRooms();
 
@@ -616,11 +635,11 @@ io.sockets.on('connect', (socket) => {
 
         // SCENARIO: Notify when the first user join room and is awaiting assistance...
         if (peerCounts === 1) {
-            const { peerName, osName, osVersion, browserName, browserVersion } = config.peerInfo;
+            const { peerName, osName, osVersion, browserName, browserVersion } = peerInfo;
             nodemailer.sendEmailAlert('join', {
                 room_id: channel,
                 peer_name: peerName,
-                domain: socket.handshake.headers.host.split(':')[0],
+                domain: String(socket.handshake.headers.host || '').split(':')[0],
                 os: osName ? `${osName} ${osVersion}` : '',
                 browser: browserName ? `${browserName} ${browserVersion}` : '',
             }); // .env EMAIL_ALERT=true
@@ -691,11 +710,15 @@ io.sockets.on('connect', (socket) => {
     });
 
     socket.on('peerStatus', (cfg) => {
+        if (!isPlainObject(cfg)) {
+            return log.warn('[' + socket.id + '] peerStatus blocked: invalid payload');
+        }
+
         const config = checkXSS(cfg);
 
         const { roomId, peerName, element, active } = config;
 
-        if (!Object.hasOwn(socket.channels, roomId)) return;
+        if (typeof roomId !== 'string' || !Object.hasOwn(socket.channels, roomId)) return;
 
         if (peers[roomId]) {
             for (let peerId in peers[roomId]) {
