@@ -7,7 +7,7 @@
  * @link    Live demo: https://c2c.mirotalk.com
  * @license Open source: AGPLv3 | Commercial/closed source (official channel): https://docs.mirotalk.com/sites/c2c/
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.5.08
+ * @version 1.5.10
  */
 
 const savedTheme = window.localStorage.getItem('home-theme');
@@ -119,6 +119,8 @@ const className = {
     clock: 'fas fa-clock',
     audioOn: 'fas fa-microphone',
     audioOff: 'fas fa-microphone-slash',
+    volumeOn: 'fas fa-volume-high',
+    volumeOff: 'fas fa-volume-xmark',
     videoOn: 'fas fa-video',
     videoOff: 'fas fa-video-slash',
     screenOn: 'fas fa-desktop',
@@ -267,6 +269,7 @@ let peersInfo = {};
 let peerDevice = {};
 let peerConnections = {};
 let peerMediaElements = {};
+let peerVolumes = {}; // local playback preferences per remote peer: { volume, muted }
 let dataChannels = {};
 const blockedMediaElements = new Set(); // remote <video>/<audio> blocked by the browser autoplay policy (e.g. Safari)
 let mediaUnlockPrompt = null;
@@ -758,6 +761,7 @@ function handleRemovePeer(config) {
     delete dataChannels[peerId];
     delete peerConnections[peerId];
     delete peerMediaElements[peerId];
+    delete peerVolumes[peerId];
     updateMediaUnlockPrompt();
     syncRecordingAudio();
 
@@ -1215,6 +1219,9 @@ function setRemoteMedia(stream, peers, peerId) {
     const remoteVideoPiPBtn = document.createElement('button');
     const remoteVideoRotateBtn = document.createElement('button');
     const remoteAudioStatusIcon = document.createElement('button');
+    const remoteVolumeControl = document.createElement('span');
+    const remoteVolumeSlider = document.createElement('input');
+    const remoteVolumeBtn = document.createElement('button');
     const remoteVideoAvatarImage = document.createElement('img');
 
     remoteVideoWrap.id = peerId + '_remoteVideoWrap';
@@ -1235,6 +1242,18 @@ function setRemoteMedia(stream, peers, peerId) {
     remoteVideoRotateBtn.className = className.rotate;
     remoteAudioStatusIcon.id = peerId + '_remoteAudioStatus';
     remoteAudioStatusIcon.className = hasAudio ? className.audioOn : className.audioOff;
+    remoteVolumeControl.id = peerId + '_remoteVolumeControl';
+    remoteVolumeControl.className = 'peerVolumeControl';
+    remoteVolumeSlider.id = peerId + '_remoteVolume';
+    remoteVolumeSlider.className = 'peerVolumeSlider';
+    remoteVolumeSlider.type = 'range';
+    remoteVolumeSlider.min = '0';
+    remoteVolumeSlider.max = '100';
+    remoteVolumeSlider.step = '1';
+    remoteVolumeSlider.setAttribute('aria-label', 'Volume of ' + peerName);
+    remoteVolumeBtn.id = peerId + '_remoteVolumeBtn';
+    remoteVolumeBtn.className = className.volumeOn;
+    remoteVolumeControl.append(remoteVolumeSlider, remoteVolumeBtn);
     remoteVideoAvatarImage.id = peerId + '_remoteVideoAvatar';
     remoteVideoAvatarImage.src = image.camOff;
     remoteVideoAvatarImage.className = 'videoAvatarImage';
@@ -1246,6 +1265,7 @@ function setRemoteMedia(stream, peers, peerId) {
         remoteVideoHeader.appendChild(remoteVideoPiPBtn);
         remoteVideoHeader.appendChild(remoteVideoRotateBtn);
     }
+    if (hasVideo || hasAudio) remoteVideoHeader.appendChild(remoteVolumeControl);
     remoteVideoHeader.appendChild(remoteAudioStatusIcon);
     remoteVideoFooter.appendChild(remoteVideoPeerName);
 
@@ -1266,10 +1286,11 @@ function setRemoteMedia(stream, peers, peerId) {
         }
     }
 
-    // Audio element (if audio track)
-    if (hasAudio) {
+    // Audio element (audio only): with video, the video element already plays the audio track.
+    // A second element would keep playing when the video is muted (e.g. via the browser controls).
+    if (hasAudio && !hasVideo) {
         remoteAudioElem = createAudioElement(peerId + '_remoteAudio', stream, false);
-        remoteAudioElem.style.display = hasVideo ? 'none' : 'block';
+        remoteAudioElem.style.display = 'block';
     }
 
     // If neither, show avatar only
@@ -1282,15 +1303,17 @@ function setRemoteMedia(stream, peers, peerId) {
     remoteVideoWrap.appendChild(remoteVideoFooter);
     remoteVideoWrap.appendChild(remoteVideoAvatarImage);
     if (remoteVideoElem) remoteVideoWrap.appendChild(remoteVideoElem);
-    if (remoteAudioElem && !hasVideo) remoteVideoWrap.appendChild(remoteAudioElem);
+    if (remoteAudioElem) remoteVideoWrap.appendChild(remoteAudioElem);
     document.body.appendChild(remoteVideoWrap);
 
     startRemoteMedia(remoteVideoElem, peerName);
-    if (!hasVideo) startRemoteMedia(remoteAudioElem, peerName);
+    startRemoteMedia(remoteAudioElem, peerName);
     updateMediaUnlockPrompt(); // drop elements of a replaced wrap
     syncRecordingAudio();
 
     peerMediaElements[peerId] = hasVideo ? remoteVideoElem : hasAudio ? remoteAudioElem : remoteVideoAvatarImage;
+
+    handlePeerVolume(peerId, remoteVolumeBtn, remoteVolumeSlider, remoteVideoElem || remoteAudioElem);
 
     // Feature handlers
     if (hasVideo && remoteVideoElem) {
@@ -1312,7 +1335,54 @@ function setRemoteMedia(stream, peers, peerId) {
         setTippy(remoteVideoRotateBtn, 'Rotate video', 'bottom');
     }
     setTippy(remoteAudioStatusIcon, 'Audio status', 'bottom');
+    setTippy(remoteVolumeBtn, 'Mute/unmute participant', 'bottom');
     setTippy(remoteVideoPeerName, 'Username', 'top');
+}
+
+/**
+ * Local volume and mute of a remote peer (only affects what this user hears)
+ * @param {string} peerId
+ * @param {HTMLButtonElement} volumeBtn
+ * @param {HTMLInputElement} volumeSlider
+ * @param {HTMLMediaElement|null} mediaElem
+ */
+function handlePeerVolume(peerId, volumeBtn, volumeSlider, mediaElem) {
+    if (!mediaElem) return;
+
+    // Kept per peer so it survives the media wrap being rebuilt on new tracks
+    const state = (peerVolumes[peerId] ??= { volume: 1, muted: false });
+    mediaElem.volume = state.volume;
+    mediaElem.muted = state.muted;
+
+    const render = () => {
+        const silent = mediaElem.muted || mediaElem.volume === 0;
+        volumeBtn.className = silent ? className.volumeOff : className.volumeOn;
+        volumeBtn.setAttribute('aria-pressed', String(silent));
+        volumeSlider.value = String(Math.round((mediaElem.muted ? 0 : mediaElem.volume) * 100));
+    };
+
+    volumeBtn.addEventListener('click', () => {
+        if (mediaElem.muted || mediaElem.volume === 0) {
+            if (mediaElem.volume === 0) mediaElem.volume = 1;
+            mediaElem.muted = false;
+        } else {
+            mediaElem.muted = true;
+        }
+    });
+
+    volumeSlider.addEventListener('input', () => {
+        mediaElem.volume = Number(volumeSlider.value) / 100;
+        mediaElem.muted = false;
+    });
+
+    // Also mirrors changes made through the browser's own media controls (e.g. picture-in-picture)
+    mediaElem.addEventListener('volumechange', () => {
+        state.volume = mediaElem.volume;
+        state.muted = mediaElem.muted;
+        render();
+    });
+
+    render();
 }
 
 function handleIncomingDataChannelMessage(config) {
@@ -1571,7 +1641,7 @@ function handleEvents() {
                 elemDisplay(waitingBar, true, 'flex');
                 animateCSS(waitingBar, 'fadeInUp');
             } else if (buttonsBar.style.display === 'none' && !isWaiting) {
-                toggleClassElements('videoHeader', true);
+                toggleClassElements('videoHeader', true, 'flex');
                 elemDisplay(buttonsBar, true, 'flex');
                 animateCSS(buttonsBar, 'fadeInUp');
             }

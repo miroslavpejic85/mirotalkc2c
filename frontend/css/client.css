@@ -910,6 +910,44 @@ body.buttons-bar-reserved .remoteVideoWrap .remoteVideoFooter {
     box-shadow: 0 0 0 3px rgba(115, 145, 255, 0.32);
 }
 
+.videoHeader .peerVolumeControl {
+    display: inline-flex;
+    align-items: center;
+    margin-left: -1px;
+}
+
+.videoHeader .peerVolumeControl:first-child {
+    margin-left: 0;
+}
+
+.videoHeader .peerVolumeControl button {
+    border-radius: 0;
+}
+
+.videoHeader .peerVolumeControl:first-child button {
+    border-radius: 6px 0 0 6px;
+}
+
+.videoHeader .peerVolumeControl + button {
+    margin-left: -1px;
+}
+
+.peerVolumeSlider {
+    display: none;
+    width: 80px;
+    margin: 0 8px;
+    accent-color: rgb(55, 109, 249);
+    cursor: pointer;
+}
+
+/* Touch devices keep only the mute toggle (iOS ignores programmatic volume) */
+@media (hover: hover) {
+    .peerVolumeControl:hover .peerVolumeSlider,
+    .peerVolumeControl:focus-within .peerVolumeSlider {
+        display: block;
+    }
+}
+
 .videoFooter {
     position: absolute;
     z-index: 3;

@@ -187,6 +187,7 @@ function isDisplayStream(stream) {
 function cleanupPeerMediaElements() {
     Object.values(peerMediaElements).forEach((el) => removeElement(el.parentNode));
     peerMediaElements = {};
+    peerVolumes = {};
 }
 
 function cleanupPeerConnections() {
@@ -455,7 +456,7 @@ function handleBodyEvents() {
             animateCSS(waitingBar, 'fadeInUp');
             syncButtonsBarReserve();
         } else if (buttonsBar.style.display === 'none' && !isWaiting) {
-            toggleClassElements('videoHeader', true);
+            toggleClassElements('videoHeader', true, 'flex');
             elemDisplay(buttonsBar, true, 'flex');
             animateCSS(buttonsBar, 'fadeInUp');
             syncButtonsBarReserve();
@@ -486,10 +487,10 @@ function checkElements() {
     setTimeout(checkElements, 20000);
 }
 
-function toggleClassElements(className, displayState) {
+function toggleClassElements(className, displayState, mode = 'block') {
     const elements = document.getElementsByClassName(className);
     for (let i = 0; i < elements.length; i++) {
-        elemDisplay(elements[i], displayState);
+        elemDisplay(elements[i], displayState, mode);
     }
 }
 
