@@ -25,5 +25,6 @@ We would like to extend our gratitude to the following individuals for their res
 | `Deleted user`  | [GitHub](https://github.com/ghost)         |
 | `SoronaReports` | [GitHub](https://github.com/SoronaReports) |
 | `Mathiaz`       | [GitHub](https://github.com/Mathiaz)       |
+| `kta1kri`       | [GitHub](https://github.com/kta1kri)       |
 
 Their dedication to security has contributed to the continuous improvement of our systems, ensuring the safety and privacy of our users and data.
