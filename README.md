@@ -91,6 +91,15 @@ The bubble is shown only if your camera is on when you start sharing, and keeps 
 </details>
 
 <details>
+<summary>📲 Installable app (PWA)</summary>
+
+MiroTalk C2C can be installed as an app on desktop and phones: own window, dock / home screen icon, no app stores. Open it over HTTPS (or `localhost`) and use the browser's **Install app** / **Add to Home Screen** option.
+
+A small service worker only adds an offline page for navigations; calls, socket.io, and APIs always go to the network. Embedded (iframe) calls do not register it. Configure it with the `PWA_*` variables in `.env` (name, colors, icons), or set `PWA_ENABLED=false` to turn it off; already-installed workers then remove themselves.
+
+</details>
+
+<details>
 <summary>🐳 Docker</summary>
 
 <br/>

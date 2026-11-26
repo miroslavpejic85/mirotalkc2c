@@ -28,8 +28,13 @@
             content="Build private 1-to-1 video calling into your website or application with MiroTalk C2C. Self-hosted open-source WebRTC for consultations, coaching, customer support, telehealth, remote assistance and secure real-time communication."
         />
         <meta name="twitter:image" content="https://c2c.mirotalk.com/images/ui.png" />
-        <link rel="apple-touch-icon" href="../images/favicon.png" />
+        <link rel="apple-touch-icon" href="../images/pwa/apple-touch-icon.png" />
         <link rel="icon" type="image/x-icon" href="../images/favicon.ico" />
+        <!-- PWA_START -->
+        <link rel="manifest" href="/manifest.webmanifest" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <script defer src="../js/pwa.js"></script>
+        <!-- PWA_END -->
         <link rel="stylesheet" href="../css/home.css" />
         <link rel="stylesheet" href="../css/common.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />

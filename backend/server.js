@@ -7,7 +7,7 @@
  * @link    Live demo: https://c2c.mirotalk.com
  * @license Open source: AGPLv3 | Commercial/closed source (official channel): https://docs.mirotalk.com/sites/c2c/
  * @author  Miroslav Pejic - miroslav.pejic.85@gmail.com
- * @version 1.5.10
+ * @version 1.5.11
  */
 
 require('dotenv').config();
@@ -37,6 +37,7 @@ const swaggerDocument = yaml.load(fs.readFileSync(path.join(__dirname, '/api/swa
 const queryJoin = '/join?room=test&name=test';
 const queryRoom = '/?room=test';
 const packageJson = require('../package.json');
+const { getPwaConfig, isPwaEnabled, applyPwaSection, buildWebManifest, buildServiceWorker } = require('./pwa');
 
 // Email alerts and notifications
 const nodemailer = require('./lib/nodemailer');
@@ -128,6 +129,8 @@ const noiseSuppressionDefault = getEnvBoolean(process.env.CUSTOM_NOISE_SUPPRESSI
 const surveyURL = process.env.SURVEY_URL || false;
 const redirectURL = process.env.REDIRECT_URL || false;
 
+const pwaConfig = getPwaConfig();
+
 const OIDC = {
     enabled: process.env.OIDC_ENABLED ? getEnvBoolean(process.env.OIDC_ENABLED) : false,
     baseUrlDynamic: process.env.OIDC_BASE_URL_DYNAMIC ? getEnvBoolean(process.env.OIDC_BASE_URL_DYNAMIC) : false,
@@ -180,7 +183,11 @@ const OIDCAuth = function (req, res, next) {
 const frontendDir = path.join(__dirname, '../', 'frontend');
 const htmlClient = path.join(__dirname, '../', 'frontend/html/client.html');
 const htmlHome = path.join(__dirname, '../', 'frontend/html/home.html');
-const htmlHomeContent = fs.readFileSync(htmlHome, 'utf8').replace(/{{APP_VERSION}}/g, `v${packageJson.version}`);
+const htmlHomeContent = applyPwaSection(
+    fs.readFileSync(htmlHome, 'utf8').replace(/{{APP_VERSION}}/g, `v${packageJson.version}`),
+    pwaConfig
+);
+const htmlClientContent = applyPwaSection(fs.readFileSync(htmlClient, 'utf8'), pwaConfig);
 const htmlPrivacy = path.join(__dirname, '../', 'frontend/html/privacy.html');
 const jsConfig = path.join(frontendDir, 'js/config.js');
 const jsConfigTemplate = path.join(frontendDir, 'js/config.template.js');
@@ -198,6 +205,17 @@ app.use(compression()); // Enable response compression must be before serving st
 // Serve the user's config.js, falling back to the template when it has not been created yet
 app.get('/js/config.js', (req, res) => {
     res.sendFile(fs.existsSync(jsConfig) ? jsConfig : jsConfigTemplate);
+});
+// Installable app (PWA): public like other static assets, browsers fetch the manifest without credentials
+app.get('/manifest.webmanifest', (req, res) => {
+    if (!isPwaEnabled(pwaConfig)) return notFound(res.status(404));
+    res.setHeader('Cache-Control', 'no-cache');
+    res.type('application/manifest+json').send(JSON.stringify(buildWebManifest(pwaConfig)));
+});
+// Must precede express.static, frontend/sw.js is a template (app version placeholder)
+app.get('/sw.js', (req, res) => {
+    res.setHeader('Cache-Control', 'no-cache');
+    res.type('application/javascript').send(buildServiceWorker(pwaConfig));
 });
 // The room page and home page are served only by their guarded routes ('/join' and '/'), never as static files
 const guardedPages = new Set(['/html/client.html', '/html/home.html']);
@@ -419,11 +437,11 @@ app.get(
                 return notFound(res);
             }
         }
-        return res.sendFile(htmlClient);
+        return res.type('html').send(htmlClientContent);
     },
     (req, res) => {
         // Reached only after OIDCAuth completes the login flow above.
-        return res.sendFile(htmlClient);
+        return res.type('html').send(htmlClientContent);
     }
 );
 
@@ -512,6 +530,7 @@ function getServerConfig(tunnelHttps = false) {
         apiKeySecret: apiKeySecret,
         mattermost: mattermostCfg.enabled ? mattermostCfg : false,
         redirectURL: redirectURL,
+        pwa: pwaConfig.enabled ? pwaConfig : false,
         environment: process.env.NODE_ENV || 'development',
         app_version: packageJson.version,
         nodeVersion: process.versions.node,
